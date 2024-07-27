@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.51.15",
+    "@tauri-apps/api": "^1.6.0",
     "babel-plugin-react-compiler": "^0.0.0-experimental-334f00b-20240725",
     "next": "15.0.0-rc.0",
     "react": "19.0.0-rc-f994737d14-20240522",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "@tanstack/react-query-devtools": "^5.51.15",
+    "@tauri-apps/cli": "^1.6.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
