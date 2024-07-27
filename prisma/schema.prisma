@@ -1,0 +1,19 @@
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = env("PRISMA_CLIENT_PROVIDER")
+    output   = env("PRISMA_OUTPUT")
+}
+
+model User {
+    id           String   @id @default(auto()) @map("_id") @db.ObjectId
+    email        String   @unique
+    passwordHash String
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    @@map("users")
+}
