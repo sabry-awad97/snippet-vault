@@ -1,24 +1,19 @@
 #[derive(Debug, thiserror::Error)]
-pub enum DbError {
-    #[error("Prisma Client Error: {0}")]
-    NewClientError(#[from] prisma::NewClientError),
-    #[error("Prisma Query Error: {0}")]
-    QueryError(#[from] prisma::QueryError),
-}
-
-impl serde::Serialize for DbError {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        serializer.serialize_str(self.to_string().as_ref())
-    }
-}
-
-#[derive(Debug, thiserror::Error)]
 pub enum AppError {
-    #[error(transparent)]
-    QueryError(#[from] DbError),
+    #[error("Bcrypt error: {0}")]
+    BcryptError(#[from] bcrypt::BcryptError),
+    #[error("Figment error: {0}")]
+    FigmentError(#[from] figment::Error),
+    #[error("IO error: {0}")]
+    IoError(#[from] std::io::Error),
+    #[error("JWT error: {0}")]
+    JwtError(#[from] jsonwebtoken::errors::Error),
+    #[error("Prisma query error: {0}")]
+    PrismaQueryError(#[from] prisma::QueryError),
+    #[error("Serde error: {0}")]
+    SerdeError(#[from] serde_json::Error),
+    #[error("Tauri error: {0}")]
+    TauriError(#[from] tauri::Error),
 
     #[error("Error: {0}")]
     Other(String),

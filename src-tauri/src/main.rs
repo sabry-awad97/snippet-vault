@@ -14,15 +14,11 @@ mod prelude;
 mod state;
 
 use ipc::commands;
+use prelude::AppResult;
 use state::init_state;
 use tauri::Manager;
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}!", name)
-}
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> AppResult<()> {
     tauri::Builder::default()
         .setup(|app| {
             #[cfg(debug_assertions)]
@@ -36,11 +32,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .await
                     .expect("Failed to initialize state");
             });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            greet,
-            commands::user::create_user,
+            commands::auth::login,
+            commands::auth::register,
+            commands::auth::refresh_token,
             commands::user::get_user,
             commands::user::list_users,
             commands::user::update_user,

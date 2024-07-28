@@ -3,26 +3,13 @@ use tauri::AppHandle;
 use crate::{
     database::{
         handle_db_operation,
-        models::{User, UserData, UserFilter},
+        models::{User, UserFilter, UserForm},
     },
     ipc::{
-        params::{GetParams, ListParams, PostParams, PutParams},
+        params::{GetParams, ListParams, PutParams},
         responses::IpcResponse,
     },
 };
-
-#[tauri::command]
-pub async fn create_user(app: AppHandle, params: PostParams<UserData>) -> IpcResponse<User> {
-    handle_db_operation(app, |client| async move {
-        let new_user = client
-            .user()
-            .create(params.data.email, params.data.password_hash, vec![])
-            .exec()
-            .await?;
-        Ok(new_user)
-    })
-    .await
-}
 
 #[tauri::command]
 pub async fn get_user(app: AppHandle, params: GetParams) -> IpcResponse<Option<User>> {
@@ -58,16 +45,13 @@ pub async fn list_users(app: AppHandle, params: ListParams<UserFilter>) -> IpcRe
 }
 
 #[tauri::command]
-pub async fn update_user(app: AppHandle, params: PutParams<UserData>) -> IpcResponse<User> {
+pub async fn update_user(app: AppHandle, params: PutParams<UserForm>) -> IpcResponse<User> {
     handle_db_operation(app, |client| async move {
         let user = client
             .user()
             .update(
                 prisma::user::id::equals(params.id),
-                vec![
-                    prisma::user::email::set(params.data.email),
-                    prisma::user::password_hash::set(params.data.password_hash),
-                ],
+                vec![prisma::user::email::set(params.data.email)],
             )
             .exec()
             .await?;

@@ -3,10 +3,7 @@ use prisma::PrismaClient;
 use std::{future::Future, sync::Arc};
 use tauri::{AppHandle, Manager};
 
-use crate::{
-    database::init_db,
-    error::{AppError, DbError},
-};
+use crate::{database::init_db, error::AppError};
 
 pub struct AppState {
     pub db: Arc<PrismaClient>,
@@ -20,19 +17,19 @@ impl AppState {
 
 #[async_trait]
 pub trait ServiceAccess {
-    async fn db<F, Fut, TResult>(&self, operation: F) -> Result<TResult, DbError>
+    async fn db<F, Fut, TResult>(&self, operation: F) -> Result<TResult, AppError>
     where
         F: FnOnce(Arc<prisma::PrismaClient>) -> Fut + Send + Sync + 'static,
-        Fut: Future<Output = Result<TResult, DbError>> + Send + 'static,
+        Fut: Future<Output = Result<TResult, AppError>> + Send + 'static,
         TResult: Send + 'static;
 }
 
 #[async_trait]
 impl ServiceAccess for AppHandle {
-    async fn db<F, Fut, TResult>(&self, operation: F) -> Result<TResult, DbError>
+    async fn db<F, Fut, TResult>(&self, operation: F) -> Result<TResult, AppError>
     where
         F: FnOnce(Arc<prisma::PrismaClient>) -> Fut + Send + Sync + 'static,
-        Fut: Future<Output = Result<TResult, DbError>> + Send + 'static,
+        Fut: Future<Output = Result<TResult, AppError>> + Send + 'static,
         TResult: Send + 'static,
     {
         let app_state: tauri::State<AppState> = self.state();
@@ -43,7 +40,7 @@ impl ServiceAccess for AppHandle {
 }
 
 pub async fn init_state(app: AppHandle) -> Result<(), AppError> {
-    let client = init_db().await?;
+    let client = init_db().await;
     let app_state = AppState::new(client);
     app.manage(app_state);
     Ok(())
