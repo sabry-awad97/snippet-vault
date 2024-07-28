@@ -13,19 +13,20 @@ import { useState } from 'react';
 
 export function Header() {
   const user = true;
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="bg-white shadow-md dark:bg-gray-800">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-2xl font-bold text-purple-600 dark:text-purple-400"
-          >
-            Snippet Vault
-          </Link>
+          <div className="flex items-center space-x-4">
+            <Link
+              href="/"
+              className="text-2xl font-bold text-purple-600 dark:text-purple-400"
+            >
+              Snippet Vault
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden items-center space-x-4 md:flex">

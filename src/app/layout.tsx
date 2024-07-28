@@ -12,7 +12,7 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-  title: 'Snippet App',
+  title: 'Snippet Vault',
   description: 'Manage and share your code snippets',
 };
 
