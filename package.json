@@ -7,25 +7,44 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "prisma-ts-push": "cross-env PRISMA_CLIENT_PROVIDER=prisma-client-js PRISMA_OUTPUT=\"../node_modules/.prisma/client\" npx prisma db push",
+    "prisma-rs-push": "cd prisma && cross-env PRISMA_CLIENT_PROVIDER=\"cargo prisma\" cargo prisma db push",
+    "prisma:push": "npm run prisma-ts-push && npm run prisma-rs-push"
   },
   "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.0",
+    "@radix-ui/react-dropdown-menu": "^2.1.1",
+    "@radix-ui/react-slot": "^1.1.0",
     "@tanstack/react-query": "^5.51.15",
     "@tauri-apps/api": "^1.6.0",
     "babel-plugin-react-compiler": "^0.0.0-experimental-334f00b-20240725",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.3.19",
+    "lucide-react": "^0.416.0",
     "next": "15.0.0-rc.0",
+    "next-themes": "^0.3.0",
     "react": "19.0.0-rc-f994737d14-20240522",
-    "react-dom": "19.0.0-rc-f994737d14-20240522"
+    "react-dom": "19.0.0-rc-f994737d14-20240522",
+    "react-icons": "^5.2.1",
+    "tailwind-merge": "^2.4.0",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@prisma/client": "^5.17.0",
     "@tanstack/react-query-devtools": "^5.51.15",
     "@tauri-apps/cli": "^1.6.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "cross-env": "^7.0.3",
     "eslint": "^8",
     "eslint-config-next": "15.0.0-rc.0",
     "postcss": "^8",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.5",
+    "prisma": "^5.17.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api/tauri";
+import { useQuery } from '@tanstack/react-query';
+import { invoke } from '@tauri-apps/api/tauri';
 
 export default function Greet() {
   const {
@@ -9,8 +9,8 @@ export default function Greet() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["greet"],
-    queryFn: () => invoke<string>("greet", { name: "Next.js" }),
+    queryKey: ['greet'],
+    queryFn: () => invoke<string>('greet', { name: 'Next.js' }),
   });
 
   if (isLoading) return <div>Loading...</div>;
