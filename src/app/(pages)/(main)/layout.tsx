@@ -1,11 +1,12 @@
 'use client';
 
+import Footer from '@/components/Layout/Footer';
 import { Header } from '@/components/Layout/Header';
 import Sidebar from '@/components/Layout/Sidebar';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Code, Folder, Home, Moon, Settings, Sun } from 'lucide-react';
+import { Code, Folder, Home, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const pageTransition = {
@@ -42,7 +43,7 @@ export default function MainLayout({
     { href: '/settings', icon: Settings, label: 'Settings' },
   ];
 
-  const { theme, setTheme } = useCurrentTheme();
+  const { theme } = useCurrentTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -50,10 +51,6 @@ export default function MainLayout({
   }, []);
 
   const isDarkMode = theme === 'dark';
-
-  const toggleTheme = () => {
-    setTheme(isDarkMode ? 'light' : 'dark');
-  };
 
   if (!mounted) return null;
 
@@ -102,37 +99,7 @@ export default function MainLayout({
               </AnimatePresence>
             </motion.div>
 
-            <motion.footer
-              variants={itemVariants}
-              className="mt-8 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400"
-            >
-              <p>
-                &copy; {new Date().getFullYear()} Your Company. All rights
-                reserved.
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={toggleTheme}
-                className="rounded-full p-2 transition-colors duration-200 hover:bg-purple-100 dark:hover:bg-purple-900"
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={isDarkMode ? 'moon' : 'sun'}
-                    initial={{ rotate: -180, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 180, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {isDarkMode ? (
-                      <Sun className="h-5 w-5 text-yellow-400" />
-                    ) : (
-                      <Moon className="h-5 w-5 text-indigo-600" />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </motion.button>
-            </motion.footer>
+            <Footer />
           </motion.div>
         </main>
       </div>
