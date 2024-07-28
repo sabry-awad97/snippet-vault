@@ -1,5 +1,6 @@
 'use client';
 
+import { ModeToggle } from '@/components/Common/ModeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,9 +10,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { User } from '@/lib/schemas/user';
-import { LogOut, Moon, Sun } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -43,7 +43,7 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden items-center space-x-6 md:flex">
-            <ThemeToggle />
+            <ModeToggle />
             {auth.user ? (
               <UserMenu onLogout={handleLogout} user={auth.user} />
             ) : (
@@ -60,21 +60,6 @@ export function Header() {
         </div>
       </div>
     </header>
-  );
-}
-
-function ThemeToggle() {
-  const { theme, setTheme } = useCurrentTheme();
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="transition-colors duration-200 hover:bg-purple-100 dark:hover:bg-purple-900"
-    >
-      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-    </Button>
   );
 }
 
