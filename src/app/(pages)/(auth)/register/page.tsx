@@ -15,7 +15,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -57,17 +56,7 @@ const fadeIn = {
   visible: { opacity: 1, y: 0 },
 };
 
-const staggerChildren = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-export default function RegisterPage() {
+const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verificationSent, setVerificationSent] = useState(false);
@@ -102,7 +91,6 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       console.table(data);
-      // Implement your registration logic here
       await new Promise(resolve => setTimeout(resolve, 1000));
       setVerificationSent(true);
     } catch (error) {
@@ -144,28 +132,38 @@ export default function RegisterPage() {
         animate="visible"
         variants={fadeIn}
         transition={{ duration: 0.5 }}
+        className="w-full max-w-4xl"
       >
-        <Card className="w-full max-w-md overflow-hidden shadow-lg">
-          <motion.div variants={staggerChildren}>
-            <CardHeader className="space-y-1 bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white">
-              <motion.div variants={fadeIn}>
-                <CardTitle className="text-center text-3xl font-bold">
+        <Card className="overflow-hidden shadow-lg">
+          <div className="flex flex-col md:flex-row">
+            <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white md:w-1/3">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-3xl font-bold">
                   Create your account
                 </CardTitle>
-              </motion.div>
-              <motion.div variants={fadeIn}>
-                <CardDescription className="text-center text-purple-100">
+                <CardDescription className="text-purple-100">
                   Enter your details to sign up
                 </CardDescription>
-              </motion.div>
-            </CardHeader>
-            <CardContent className="p-6">
+              </CardHeader>
+              <div className="mt-6">
+                <p className="text-sm">
+                  Already have an account?{' '}
+                  <Link
+                    href="/login"
+                    className="font-medium text-white hover:underline"
+                  >
+                    Sign in
+                  </Link>
+                </p>
+              </div>
+            </div>
+            <CardContent className="p-6 md:w-2/3">
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4"
                 >
-                  <motion.div variants={fadeIn}>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="name"
@@ -186,8 +184,6 @@ export default function RegisterPage() {
                         </FormItem>
                       )}
                     />
-                  </motion.div>
-                  <motion.div variants={fadeIn}>
                     <FormField
                       control={form.control}
                       name="email"
@@ -208,8 +204,8 @@ export default function RegisterPage() {
                         </FormItem>
                       )}
                     />
-                  </motion.div>
-                  <motion.div variants={fadeIn}>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="password"
@@ -251,8 +247,6 @@ export default function RegisterPage() {
                         </FormItem>
                       )}
                     />
-                  </motion.div>
-                  <motion.div variants={fadeIn}>
                     <FormField
                       control={form.control}
                       name="confirmPassword"
@@ -274,45 +268,29 @@ export default function RegisterPage() {
                         </FormItem>
                       )}
                     />
-                  </motion.div>
+                  </div>
                   {error && (
-                    <motion.div variants={fadeIn}>
-                      <Alert variant="destructive">
-                        <AlertDescription>{error}</AlertDescription>
-                      </Alert>
-                    </motion.div>
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
                   )}
-                  <motion.div variants={fadeIn}>
-                    <Button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
-                      disabled={form.formState.isSubmitting}
-                    >
-                      {form.formState.isSubmitting
-                        ? 'Creating account...'
-                        : 'Create account'}
-                    </Button>
-                  </motion.div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
+                    disabled={form.formState.isSubmitting}
+                  >
+                    {form.formState.isSubmitting
+                      ? 'Creating account...'
+                      : 'Create account'}
+                  </Button>
                 </form>
               </Form>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4 bg-gray-50 p-6 dark:bg-gray-800/50">
-              <motion.p
-                variants={fadeIn}
-                className="text-center text-sm text-gray-600 dark:text-gray-400"
-              >
-                Already have an account?{' '}
-                <Link
-                  href="/login"
-                  className="font-medium text-purple-600 hover:text-purple-500"
-                >
-                  Sign in
-                </Link>
-              </motion.p>
-            </CardFooter>
-          </motion.div>
+          </div>
         </Card>
       </motion.div>
     </div>
   );
-}
+};
+
+export default RegisterPage;
