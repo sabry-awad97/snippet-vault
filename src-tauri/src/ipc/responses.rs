@@ -16,14 +16,15 @@ where
     pub data: D,
 }
 
-/// Represents an IPC response, which may contain either an error or a simple result.
+/// Represents the status of an IPC response, which may contain either an error or a simple result.
 #[derive(Serialize)]
-pub struct IpcResponse<D>
+#[serde(untagged)]
+pub enum IpcResponse<D>
 where
     D: Serialize,
 {
-    pub error: Option<IpcError>,
-    pub result: Option<IpcSimpleResult<D>>,
+    Success { result: IpcSimpleResult<D> },
+    Error { error: IpcError },
 }
 
 impl<D> From<AppResult<D>> for IpcResponse<D>
@@ -36,10 +37,14 @@ where
     /// If the result is `Err`, constructs an `IpcResponse` with `error` containing the error message.
     fn from(res: AppResult<D>) -> Self {
         match res {
-            Ok(data) => Self::from_ok(data),
-            Err(err) => Self::from_error(IpcError {
-                message: format!("{}", err),
-            }),
+            Ok(data) => IpcResponse::Success {
+                result: IpcSimpleResult { data },
+            },
+            Err(err) => IpcResponse::Error {
+                error: IpcError {
+                    message: format!("{}", err),
+                },
+            },
         }
     }
 }
@@ -54,8 +59,10 @@ where
     /// If the result is `Err`, constructs an `IpcResponse` with `error` containing the error message.
     fn from(res: Result<D, IpcError>) -> Self {
         match res {
-            Ok(data) => Self::from_ok(data),
-            Err(err) => Self::from_error(err),
+            Ok(data) => IpcResponse::Success {
+                result: IpcSimpleResult { data },
+            },
+            Err(err) => IpcResponse::Error { error: err },
         }
     }
 }
@@ -65,33 +72,11 @@ where
     D: Serialize,
 {
     /// Converts the `IpcResponse<D>` into a `Result<D, IpcError>`.
+    #[allow(dead_code)]
     fn into_result(self) -> Result<D, IpcError> {
         match self {
-            Self {
-                error: None,
-                result: Some(IpcSimpleResult { data }),
-            } => Ok(data),
-            Self {
-                error: Some(err),
-                result: None,
-            } => Err(err),
-            _ => panic!("IpcResponse is in an invalid state"),
-        }
-    }
-
-    /// Constructs an `IpcResponse` from an error.
-    fn from_error(error: IpcError) -> Self {
-        Self {
-            error: Some(error),
-            result: None,
-        }
-    }
-
-    /// Constructs an `IpcResponse` from a successful result.
-    fn from_ok(data: D) -> Self {
-        Self {
-            error: None,
-            result: Some(IpcSimpleResult { data }),
+            IpcResponse::Success { result } => Ok(result.data),
+            IpcResponse::Error { error } => Err(error),
         }
     }
 }

@@ -9,19 +9,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { LoginFormData, loginSchema } from '@/lib/schemas/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Lock, LogIn, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
