@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -25,10 +26,20 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white shadow-lg transition-all duration-300 dark:bg-gray-800 dark:shadow-indigo-500/20">
+    <motion.header
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="sticky top-0 z-10 bg-white shadow-lg transition-all duration-300 dark:bg-gray-800 dark:shadow-indigo-500/20"
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex flex-1 items-center justify-center px-4">
-          <div className="relative w-full max-w-lg">
+        <div className="flex flex-1 items-center justify-center px-4 md:px-8">
+          <motion.div
+            initial={false}
+            animate={{ width: isSearchFocused ? '100%' : '80%' }}
+            transition={{ duration: 0.2 }}
+            className="relative w-full max-w-lg"
+          >
             <input
               type="text"
               placeholder="Search..."
@@ -43,32 +54,42 @@ export function Header() {
               onBlur={() => setIsSearchFocused(false)}
             />
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-          </div>
+          </motion.div>
         </div>
 
         <div className="flex items-center justify-between">
-          <button className="relative mr-4 rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative mr-4 rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
             <Bell className="h-6 w-6" />
             <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
-          </button>
+          </motion.button>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden items-center space-x-6 md:flex">
+          <AnimatePresence>
             {auth.user ? (
               <UserMenu onLogout={handleLogout} />
             ) : (
-              <Link href="/login">
-                <Button
-                  variant="outline"
-                  className="transition-colors duration-200 hover:bg-purple-100 dark:hover:bg-purple-900"
-                >
-                  Login
-                </Button>
-              </Link>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link href="/login">
+                  <Button
+                    variant="outline"
+                    className="transition-colors duration-200 hover:bg-purple-100 dark:hover:bg-purple-900"
+                  >
+                    Login
+                  </Button>
+                </Link>
+              </motion.div>
             )}
-          </nav>
+          </AnimatePresence>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
