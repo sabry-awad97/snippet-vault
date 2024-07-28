@@ -9,34 +9,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { RegisterFormData, registerSchema } from '@/lib/schemas/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { PasswordStrength } from './PasswordStrength';
-
-const registerSchema = z
-  .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
-      ),
-    confirmPassword: z
-      .string()
-      .min(8, 'Password must be at least 8 characters'),
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
-
-type RegisterFormData = z.infer<typeof registerSchema>;
 
 interface RegisterFormProps {
   onSubmit: (data: RegisterFormData) => Promise<void>;
@@ -56,17 +34,28 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
     },
   });
 
-  const handleSubmit = async (data: RegisterFormData) => {
+  const onValid: SubmitHandler<RegisterFormData> = async (
+    data: RegisterFormData,
+  ) => {
     try {
       await onSubmit(data);
     } catch (error) {
-      setError('An unexpected error occurred');
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
+  const onInValid: SubmitErrorHandler<RegisterFormData> = errors => {};
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onValid, onInValid)}
+        className="space-y-4"
+      >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
@@ -120,15 +109,15 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
-                      className="pl-10"
+                      className="appearance-none pl-10"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       {...field}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowPassword(prev => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-white px-1 py-1 text-gray-400 hover:text-gray-600"
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />

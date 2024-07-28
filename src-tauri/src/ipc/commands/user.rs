@@ -51,7 +51,10 @@ pub async fn update_user(app: AppHandle, params: PutParams<UserForm>) -> IpcResp
             .user()
             .update(
                 prisma::user::id::equals(params.id),
-                vec![prisma::user::email::set(params.data.email)],
+                vec![
+                    prisma::user::name::set(params.data.name),
+                    prisma::user::email::set(params.data.email),
+                ],
             )
             .exec()
             .await?;

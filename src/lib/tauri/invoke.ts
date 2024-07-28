@@ -1,7 +1,7 @@
-import { invoke, InvokeArgs } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/tauri';
 import { IpcResponse } from './types';
 
-export async function invokeCommand<T extends InvokeArgs, R>(
+export async function invokeCommand<T, R>(
   command: string,
   params: T,
 ): Promise<R> {

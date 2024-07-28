@@ -5,6 +5,7 @@ pub type User = prisma::user::Data;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserForm {
+    pub name: String,
     pub email: String,
     pub password: String,
 }
@@ -22,8 +23,9 @@ pub struct UserFilter {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AuthPayload {
-    pub token: String,
+    pub access_token: String,
     pub refresh_token: String,
     pub user: User,
 }

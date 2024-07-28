@@ -1,3 +1,4 @@
+import { RegisterFormData } from '../schemas/user';
 import { invokeCommand } from './invoke';
 import { PostParams } from './types';
 
@@ -20,26 +21,17 @@ type AuthPayload = {
 export async function login(
   params: PostParams<Credentials>,
 ): Promise<AuthPayload> {
-  return await invokeCommand<PostParams<Credentials>, AuthPayload>(
-    'login',
-    params,
-  );
+  return await invokeCommand('login', params);
 }
 
 export async function register(
-  params: PostParams<UserForm>,
+  params: PostParams<RegisterFormData>,
 ): Promise<AuthPayload> {
-  return await invokeCommand<PostParams<UserForm>, AuthPayload>(
-    'register',
-    params,
-  );
+  return await invokeCommand('register', params);
 }
 
 export async function refreshToken(
   params: PostParams<string>,
 ): Promise<AuthPayload> {
-  return await invokeCommand<PostParams<string>, AuthPayload>(
-    'refresh_token',
-    params,
-  );
+  return await invokeCommand('refresh_token', params);
 }

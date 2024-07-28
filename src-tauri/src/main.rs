@@ -19,6 +19,12 @@ use state::init_state;
 use tauri::Manager;
 
 fn main() -> AppResult<()> {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
+        .format_timestamp(None)
+        .init();
+
+    log::info!("Starting application...");
+
     tauri::Builder::default()
         .setup(|app| {
             #[cfg(debug_assertions)]

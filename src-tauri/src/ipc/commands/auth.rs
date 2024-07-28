@@ -60,11 +60,11 @@ pub async fn login(app: AppHandle, params: PostParams<Credentials>) -> IpcRespon
                 return Err("Invalid password".into());
             }
 
-            let token = create_token(&user.email, ACCESS_TOKEN_EXPIRATION_HOURS)?;
+            let access_token = create_token(&user.email, ACCESS_TOKEN_EXPIRATION_HOURS)?;
             let refresh_token = create_token(&user.email, REFRESH_TOKEN_EXPIRATION_HOURS)?;
 
             return Ok(AuthPayload {
-                token,
+                access_token,
                 refresh_token,
                 user,
             });
@@ -82,7 +82,7 @@ pub async fn register(app: AppHandle, params: PostParams<UserForm>) -> IpcRespon
 
         let new_user = client
             .user()
-            .create(params.data.email, hashed_password, vec![])
+            .create(params.data.name, params.data.email, hashed_password, vec![])
             .exec()
             .await?;
 
@@ -90,7 +90,7 @@ pub async fn register(app: AppHandle, params: PostParams<UserForm>) -> IpcRespon
         let refresh_token = create_token(&new_user.email, REFRESH_TOKEN_EXPIRATION_HOURS)?;
 
         Ok(AuthPayload {
-            token: access_token,
+            access_token,
             refresh_token,
             user: new_user,
         })
@@ -117,7 +117,7 @@ pub async fn refresh_token(app: AppHandle, params: PostParams<String>) -> IpcRes
             let refresh_token = create_token(&user.email, REFRESH_TOKEN_EXPIRATION_HOURS)?;
 
             return Ok(AuthPayload {
-                token: access_token,
+                access_token,
                 refresh_token,
                 user,
             });

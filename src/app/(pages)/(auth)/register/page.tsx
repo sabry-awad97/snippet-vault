@@ -7,8 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
+import { RegisterFormData } from '@/lib/schemas/user';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { RegisterForm } from './_components/RegisterForm';
 import { VerificationSent } from './_components/VerificationSent';
@@ -20,11 +23,22 @@ const fadeIn = {
 
 const RegisterPage = () => {
   const [verificationSent, setVerificationSent] = useState(false);
+  const router = useRouter();
+  const { register } = useAuth();
 
-  const onSubmit = async (data: any) => {
-    console.table(data);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setVerificationSent(true);
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      await register(data);
+
+      // TODO: Send verification email
+      setVerificationSent(true);
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      router.push('/login');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

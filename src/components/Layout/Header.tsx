@@ -1,3 +1,6 @@
+'use client';
+
+import avatarPlaceholder from '@/assets/images/avatar.jpg';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -6,14 +9,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
+import { User } from '@/lib/schemas/user';
 import { LogOut, Menu, Moon, Sun, X } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export function Header() {
-  const user = true;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const auth = useAuth();
+  const router = useRouter();
+
+  if (!auth) {
+    throw new Error('AuthContext must be used within an AuthProvider');
+  }
+
+  const handleLogout = async () => {
+    try {
+      await auth.logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <header className="bg-white shadow-md dark:bg-gray-800">
@@ -32,8 +52,8 @@ export function Header() {
           <nav className="hidden items-center space-x-4 md:flex">
             <NavLinks />
             <ThemeToggle />
-            {user ? (
-              <UserMenu />
+            {auth.user ? (
+              <UserMenu onLogout={handleLogout} user={auth.user} />
             ) : (
               <Link href="/login">
                 <Button variant="outline">Login</Button>
@@ -56,8 +76,8 @@ export function Header() {
             <div className="flex flex-col space-y-2">
               <NavLinks />
               <ThemeToggle />
-              {user ? (
-                <Button variant="outline" onClick={() => {}}>
+              {auth.user ? (
+                <Button variant="outline" onClick={handleLogout}>
                   Logout
                 </Button>
               ) : (
@@ -76,6 +96,13 @@ export function Header() {
 }
 
 function NavLinks() {
+  const auth = useAuth();
+
+  if (!auth?.user) {
+    // Don't show nav links if user is not authenticated
+    return null;
+  }
+
   return (
     <>
       <Link
@@ -114,17 +141,14 @@ function ThemeToggle() {
   );
 }
 
-function UserMenu() {
+function UserMenu({ onLogout, user }: { onLogout: () => void; user: User }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar>
-            <AvatarImage
-              alt="User avatar"
-              src="https://github.com/shadcn.png"
-            />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarImage alt="User avatar" src={avatarPlaceholder.src} />
+            <AvatarFallback>{user.initials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -139,7 +163,7 @@ function UserMenu() {
             Settings
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => {}}>
+        <DropdownMenuItem onClick={onLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

@@ -16,15 +16,33 @@ where
     pub data: D,
 }
 
-/// Represents the status of an IPC response, which may contain either an error or a simple result.
+/// Represents the status of an IPC response.
+#[derive(Serialize)]
+pub enum IpcStatus {
+    Success,
+    Error,
+}
+
+/// Represents an IPC response, which may contain either an error or a simple result.
 #[derive(Serialize)]
 #[serde(untagged)]
-pub enum IpcResponse<D>
+pub enum Response<D>
 where
     D: Serialize,
 {
     Success { result: IpcSimpleResult<D> },
     Error { error: IpcError },
+}
+
+/// Represents an IPC response, which contains a status and a response.
+#[derive(Serialize)]
+pub struct IpcResponse<D>
+where
+    D: Serialize,
+{
+    pub status: IpcStatus,
+    #[serde(flatten)]
+    pub response: Response<D>,
 }
 
 impl<D> From<AppResult<D>> for IpcResponse<D>
@@ -33,16 +51,22 @@ where
 {
     /// Converts an `AppResult<D>` into an `IpcResponse<D>`.
     ///
-    /// If the result is `Ok`, constructs an `IpcResponse` with `result` containing the data.
-    /// If the result is `Err`, constructs an `IpcResponse` with `error` containing the error message.
+    /// If the result is `Ok`, constructs an `IpcResponse` with `status` "Success" and `result` containing the data.
+    /// If the result is `Err`, constructs an `IpcResponse` with `status` "Error" and `error` containing the error message.
     fn from(res: AppResult<D>) -> Self {
         match res {
-            Ok(data) => IpcResponse::Success {
-                result: IpcSimpleResult { data },
+            Ok(data) => IpcResponse {
+                status: IpcStatus::Success,
+                response: Response::Success {
+                    result: IpcSimpleResult { data },
+                },
             },
-            Err(err) => IpcResponse::Error {
-                error: IpcError {
-                    message: format!("{}", err),
+            Err(err) => IpcResponse {
+                status: IpcStatus::Error,
+                response: Response::Error {
+                    error: IpcError {
+                        message: format!("{}", err),
+                    },
                 },
             },
         }
@@ -55,28 +79,20 @@ where
 {
     /// Converts a `Result<D, IpcError>` into an `IpcResponse<D>`.
     ///
-    /// If the result is `Ok`, constructs an `IpcResponse` with `result` containing the data.
-    /// If the result is `Err`, constructs an `IpcResponse` with `error` containing the error message.
+    /// If the result is `Ok`, constructs an `IpcResponse` with `status` "Success" and `result` containing the data.
+    /// If the result is `Err`, constructs an `IpcResponse` with `status` "Error" and `error` containing the error message.
     fn from(res: Result<D, IpcError>) -> Self {
         match res {
-            Ok(data) => IpcResponse::Success {
-                result: IpcSimpleResult { data },
+            Ok(data) => IpcResponse {
+                status: IpcStatus::Success,
+                response: Response::Success {
+                    result: IpcSimpleResult { data },
+                },
             },
-            Err(err) => IpcResponse::Error { error: err },
-        }
-    }
-}
-
-impl<D> IpcResponse<D>
-where
-    D: Serialize,
-{
-    /// Converts the `IpcResponse<D>` into a `Result<D, IpcError>`.
-    #[allow(dead_code)]
-    fn into_result(self) -> Result<D, IpcError> {
-        match self {
-            IpcResponse::Success { result } => Ok(result.data),
-            IpcResponse::Error { error } => Err(error),
+            Err(err) => IpcResponse {
+                status: IpcStatus::Error,
+                response: Response::Error { error: err },
+            },
         }
     }
 }
