@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
 import {
   QueryClient,
   QueryClientConfig,
   QueryClientProvider,
-} from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { PropsWithChildren, useState } from "react";
+} from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { PropsWithChildren, useState } from 'react';
 
 export const queryClientConfig: QueryClientConfig = {
   defaultOptions: {
@@ -15,8 +15,8 @@ export const queryClientConfig: QueryClientConfig = {
       staleTime: 1000 * 60 * 5, // 5 minutes,
     },
     mutations: {
-      onError: (error) => {
-        console.error("An error occurred: " + error.message);
+      onError: error => {
+        console.error('An error occurred: ' + error.message);
       },
     },
   },
