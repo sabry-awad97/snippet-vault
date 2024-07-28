@@ -1,23 +1,19 @@
 'use client';
 
-import { ModeToggle } from '@/components/Common/ModeToggle';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import { User } from '@/lib/schemas/user';
-import { LogOut } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Bell, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import UserMenu from './_components/UserMenu';
 
 export function Header() {
   const auth = useAuth();
   const router = useRouter();
+
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -29,23 +25,37 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white shadow-lg transition-all duration-300 dark:bg-gray-800">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/"
-              className="text-2xl font-bold text-purple-600 transition-colors duration-200 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
-            >
-              Snippet Vault
-            </Link>
+    <header className="bg-white shadow-lg transition-all duration-300 dark:bg-gray-800 dark:shadow-indigo-500/20">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex flex-1 items-center justify-center px-4">
+          <div className="relative w-full max-w-lg">
+            <input
+              type="text"
+              placeholder="Search..."
+              className={cn(
+                `w-full rounded-full border border-gray-300 bg-gray-100 py-2 pl-10 pr-4 text-gray-800 transition-all duration-300 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white`,
+                {
+                  'ring-2 ring-indigo-500 dark:ring-indigo-400':
+                    isSearchFocused,
+                },
+              )}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+            />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
           </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <button className="relative mr-4 rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700">
+            <Bell className="h-6 w-6" />
+            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
+          </button>
 
           {/* Desktop Navigation */}
           <nav className="hidden items-center space-x-6 md:flex">
-            <ModeToggle />
             {auth.user ? (
-              <UserMenu onLogout={handleLogout} user={auth.user} />
+              <UserMenu onLogout={handleLogout} />
             ) : (
               <Link href="/login">
                 <Button
@@ -60,49 +70,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  );
-}
-
-function UserMenu({ onLogout, user }: { onLogout: () => void; user: User }) {
-  const initials = user.initials || '';
-  const charCodeSum = initials
-    .split('')
-    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  const avatarIndex = charCodeSum % 70;
-  const avatarUrl = `https://i.pravatar.cc/300?img=${avatarIndex}`;
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="relative h-10 w-10 overflow-hidden rounded-full transition-all duration-200 hover:ring-2 hover:ring-purple-400"
-        >
-          <Avatar>
-            <AvatarImage alt="User avatar" src={avatarUrl} />
-            <AvatarFallback>{user.initials}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem>
-          <Link href="/profile" className="flex w-full items-center">
-            <span className="mr-2">👤</span> Profile
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Link href="/settings" className="flex w-full items-center">
-            <span className="mr-2">⚙️</span> Settings
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={onLogout}
-          className="text-red-500 transition-colors duration-200 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
