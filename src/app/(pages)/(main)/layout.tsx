@@ -8,6 +8,28 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Code, Folder, Home, Moon, Settings, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+const pageTransition = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export default function MainLayout({
   children,
 }: Readonly<{
@@ -55,21 +77,35 @@ export default function MainLayout({
       </AnimatePresence>
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-
         <main className="flex flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-          <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col">
+          <motion.div
+            className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants}>
+              <Header />
+            </motion.div>
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              variants={itemVariants}
               className="flex-1 rounded-lg bg-white p-6 shadow-lg transition-all duration-300 ease-in-out dark:bg-gray-800 dark:shadow-indigo-500/20"
             >
-              {children}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={children?.toString()}
+                  {...pageTransition}
+                  transition={{ duration: 0.3 }}
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
             </motion.div>
 
-            <footer className="mt-8 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+            <motion.footer
+              variants={itemVariants}
+              className="mt-8 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400"
+            >
               <p>
                 &copy; {new Date().getFullYear()} Your Company. All rights
                 reserved.
@@ -83,10 +119,10 @@ export default function MainLayout({
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={isDarkMode ? 'moon' : 'sun'}
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 20, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    initial={{ rotate: -180, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 180, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
                     {isDarkMode ? (
                       <Sun className="h-5 w-5 text-yellow-400" />
@@ -96,8 +132,8 @@ export default function MainLayout({
                   </motion.div>
                 </AnimatePresence>
               </motion.button>
-            </footer>
-          </div>
+            </motion.footer>
+          </motion.div>
         </main>
       </div>
     </motion.div>
