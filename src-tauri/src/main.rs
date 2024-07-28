@@ -7,11 +7,13 @@
     windows_subsystem = "windows"
 )]
 
-mod commands;
 mod database;
 mod error;
+mod ipc;
+mod prelude;
 mod state;
 
+use ipc::commands;
 use state::init_state;
 use tauri::Manager;
 
@@ -36,7 +38,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet, commands::user::get_user])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            commands::user::create_user,
+            commands::user::get_user,
+            commands::user::list_users,
+            commands::user::update_user,
+            commands::user::delete_user,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

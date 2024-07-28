@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use prisma::PrismaClient;
-use std::sync::Arc;
+use std::{future::Future, sync::Arc};
 use tauri::{AppHandle, Manager};
 
 use crate::{
@@ -23,7 +23,7 @@ pub trait ServiceAccess {
     async fn db<F, Fut, TResult>(&self, operation: F) -> Result<TResult, DbError>
     where
         F: FnOnce(Arc<prisma::PrismaClient>) -> Fut + Send + Sync + 'static,
-        Fut: std::future::Future<Output = Result<TResult, DbError>> + Send + 'static,
+        Fut: Future<Output = Result<TResult, DbError>> + Send + 'static,
         TResult: Send + 'static;
 }
 
@@ -32,7 +32,7 @@ impl ServiceAccess for AppHandle {
     async fn db<F, Fut, TResult>(&self, operation: F) -> Result<TResult, DbError>
     where
         F: FnOnce(Arc<prisma::PrismaClient>) -> Fut + Send + Sync + 'static,
-        Fut: std::future::Future<Output = Result<TResult, DbError>> + Send + 'static,
+        Fut: Future<Output = Result<TResult, DbError>> + Send + 'static,
         TResult: Send + 'static,
     {
         let app_state: tauri::State<AppState> = self.state();
