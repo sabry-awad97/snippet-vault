@@ -1,20 +1,19 @@
-import Providers from "@/providers";
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
+import Providers from '@/providers';
+import localFont from 'next/font/local';
+import './globals.css';
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
+  src: './fonts/GeistVF.woff',
+  variable: '--font-geist-sans',
 });
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
+  src: './fonts/GeistMonoVF.woff',
+  variable: '--font-geist-mono',
 });
 
-export const metadata: Metadata = {
-  title: "",
-  description: "",
+export const metadata = {
+  title: 'Snippet App',
+  description: 'Manage and share your code snippets',
 };
 
 export default function RootLayout({
