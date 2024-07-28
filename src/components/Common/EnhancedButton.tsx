@@ -1,9 +1,9 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import React from 'react';
 
-const buttonVariants = cva(
+export const enhancedButtonVariants = cva(
   'px-8 py-4 text-lg font-semibold rounded-full shadow-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-opacity-50 transform hover:-translate-y-1',
   {
     variants: {
@@ -27,8 +27,17 @@ const buttonVariants = cva(
   },
 );
 
-interface EnhancedButtonProps extends VariantProps<typeof buttonVariants> {
-  href: string;
+interface EnhancedButtonProps
+  extends VariantProps<typeof enhancedButtonVariants>,
+    Omit<
+      React.ButtonHTMLAttributes<HTMLButtonElement>,
+      | 'variant'
+      | 'size'
+      | 'onAnimationStart'
+      | 'onDragStart'
+      | 'onDragEnd'
+      | 'onDrag'
+    > {
   children: React.ReactNode;
   className?: string;
   showArrow?: boolean;
@@ -39,22 +48,28 @@ const motionVariants = {
   tap: { scale: 0.95 },
 };
 
-export function EnhancedButton({
-  href,
+const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   children,
   variant,
   size,
   className,
   showArrow = false,
-}: EnhancedButtonProps) {
+  onClick,
+  ...props
+}) => {
   return (
-    <motion.div variants={motionVariants} whileHover="hover" whileTap="tap">
-      <Link href={href} className="inline-block">
-        <button className={buttonVariants({ variant, size, className })}>
-          {children}
-          {showArrow && <ArrowRight className="ml-2 inline-block h-5 w-5" />}
-        </button>
-      </Link>
-    </motion.div>
+    <motion.button
+      variants={motionVariants}
+      whileHover="hover"
+      whileTap="tap"
+      className={enhancedButtonVariants({ variant, size, className })}
+      onClick={onClick}
+      {...props}
+    >
+      {children}
+      {showArrow && <ArrowRight className="ml-2 inline-block h-5 w-5" />}
+    </motion.button>
   );
-}
+};
+
+export default EnhancedButton;

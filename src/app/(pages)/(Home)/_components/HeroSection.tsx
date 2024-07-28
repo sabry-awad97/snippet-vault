@@ -1,6 +1,6 @@
 'use client';
 
-import { EnhancedButton } from '@/components/Common/EnhancedButton';
+import EnhancedLink from '@/components/Common/EnhancedLink';
 import { motion } from 'framer-motion';
 
 const HeroSection = () => (
@@ -17,12 +17,12 @@ const HeroSection = () => (
       Organize, share, and collaborate on your code snippets with ease.
     </p>
     <div className="flex justify-center space-x-4">
-      <EnhancedButton href="/register" variant="primary" size="lg" showArrow>
+      <EnhancedLink href="/register" variant="primary" size="lg" showArrow>
         Get Started
-      </EnhancedButton>
-      <EnhancedButton href="/login" variant="secondary" size="lg">
+      </EnhancedLink>
+      <EnhancedLink href="/login" variant="secondary" size="lg">
         Login
-      </EnhancedButton>
+      </EnhancedLink>
     </div>
   </motion.div>
 );

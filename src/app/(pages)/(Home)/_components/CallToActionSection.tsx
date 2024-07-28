@@ -1,6 +1,6 @@
 'use client';
 
-import { EnhancedButton } from '@/components/Common/EnhancedButton';
+import EnhancedLink from '@/components/Common/EnhancedLink';
 import { motion } from 'framer-motion';
 
 const CallToActionSection = () => (
@@ -13,9 +13,9 @@ const CallToActionSection = () => (
     <h2 className="mb-4 text-3xl font-bold text-gray-800 dark:text-gray-200">
       Ready to streamline your coding workflow?
     </h2>
-    <EnhancedButton href="/register" variant="tertiary" size="lg" showArrow>
+    <EnhancedLink href="/register" variant="tertiary" size="lg" showArrow>
       Join Snippet Vault Today
-    </EnhancedButton>
+    </EnhancedLink>
   </motion.div>
 );
 
