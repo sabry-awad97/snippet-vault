@@ -21,12 +21,22 @@ const navItemVariants = {
   }),
 };
 
+const hoverAnimation = {
+  whileHover: { x: 5, transition: { type: 'spring', stiffness: 300 } },
+  whileTap: { scale: 0.95, transition: { type: 'spring', stiffness: 300 } },
+};
+
 export const NavItem: React.FC<{
   item: NavItem;
   index: number;
   pathname: string;
 }> = ({ item, index, pathname }) => (
-  <motion.li variants={navItemVariants} custom={index}>
+  <motion.li
+    variants={navItemVariants}
+    custom={index}
+    initial="hidden"
+    animate="visible"
+  >
     <Link href={item.href}>
       <motion.div
         className={cn(
@@ -36,8 +46,7 @@ export const NavItem: React.FC<{
           pathname === item.href &&
             'bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-200',
         )}
-        whileHover={{ x: 5 }}
-        whileTap={{ scale: 0.95 }}
+        {...hoverAnimation}
       >
         <item.icon className="h-5 w-5" />
         <span>{item.label}</span>
