@@ -1,85 +1,21 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import useSnippets from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { useImmerReducer } from 'use-immer';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
-
-// Define the state interface
-interface State {
-  snippets: Snippet[];
-  isNewSnippetDialogOpen: boolean;
-  isEditMode: boolean;
-  editingSnippet: Snippet | null;
-}
-
-// Define action types
-type Action =
-  | { type: 'SET_SNIPPETS'; payload: Snippet[] }
-  | { type: 'ADD_SNIPPET'; payload: Snippet }
-  | { type: 'UPDATE_SNIPPET'; payload: Snippet }
-  | { type: 'DELETE_SNIPPET'; payload: string }
-  | { type: 'TOGGLE_FAVORITE'; payload: string }
-  | { type: 'SET_NEW_SNIPPET_DIALOG'; payload: boolean }
-  | { type: 'SET_EDIT_MODE'; payload: boolean }
-  | { type: 'SET_EDITING_SNIPPET'; payload: Snippet | null };
-
-// Define the reducer function
-const reducer = (draft: State, action: Action) => {
-  switch (action.type) {
-    case 'SET_SNIPPETS':
-      draft.snippets = action.payload;
-      break;
-    case 'ADD_SNIPPET':
-      draft.snippets.push(action.payload);
-      break;
-    case 'UPDATE_SNIPPET':
-      const index = draft.snippets.findIndex(s => s.id === action.payload.id);
-      if (index !== -1) {
-        draft.snippets[index] = action.payload;
-      }
-      break;
-    case 'DELETE_SNIPPET':
-      draft.snippets = draft.snippets.filter(s => s.id !== action.payload);
-      break;
-    case 'TOGGLE_FAVORITE':
-      const snippetIndex = draft.snippets.findIndex(
-        s => s.id === action.payload,
-      );
-      if (snippetIndex !== -1) {
-        draft.snippets[snippetIndex].isFavorite =
-          !draft.snippets[snippetIndex].isFavorite;
-      }
-      break;
-    case 'SET_NEW_SNIPPET_DIALOG':
-      draft.isNewSnippetDialogOpen = action.payload;
-      break;
-    case 'SET_EDIT_MODE':
-      draft.isEditMode = action.payload;
-      break;
-    case 'SET_EDITING_SNIPPET':
-      draft.editingSnippet = action.payload;
-      break;
-  }
-};
+import SnippetsHeader from './_components/SnippetsHeader';
 
 export default function SnippetsPage() {
-  const [state, dispatch] = useImmerReducer(reducer, {
-    snippets: [] as Snippet[],
-    isNewSnippetDialogOpen: false,
-    isEditMode: false,
-    editingSnippet: null,
-  });
-
   const auth = useAuth();
   const router = useRouter();
+
+  const { state, dispatch } = useSnippets();
 
   useEffect(() => {
     if (!auth?.user) {
@@ -115,6 +51,10 @@ export default function SnippetsPage() {
       fetchSnippets();
     }
   }, [auth, dispatch, router]);
+
+  useEffect(() => {
+    dispatch({ type: 'APPLY_FILTERS' });
+  }, [state.snippets, state.searchTerm, state.filterLanguage, dispatch]);
 
   const handleCreateSnippet = async (newSnippet: Snippet) => {
     // Replace with actual API call
@@ -163,64 +103,59 @@ export default function SnippetsPage() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="container mx-auto px-4 py-8"
-    >
-      <div className="mb-6 flex items-center justify-between">
-        <Button
-          onClick={() =>
-            dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true })
-          }
-          className="bg-purple-600 text-white transition-all duration-200 hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-        >
-          <Plus className="mr-2 h-4 w-4" /> <span>New Snippet</span>
-        </Button>
-      </div>
+    <div className="bg-gray-100 dark:bg-gray-900">
       <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="mx-auto px-4 py-8"
       >
-        <AnimatePresence>
-          {state.snippets.map(snippet => (
-            <motion.div
-              key={snippet.id}
-              layout
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            >
-              <SnippetCard
-                snippet={snippet}
-                onDelete={() => handleDeleteSnippet(snippet.id)}
-                onCopy={() => handleCopySnippet(snippet.code)}
-                onEdit={() => {
-                  dispatch({ type: 'SET_EDIT_MODE', payload: true });
-                  dispatch({ type: 'SET_EDITING_SNIPPET', payload: snippet });
-                  dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
-                }}
-                onFavorite={() => handleFavoriteSnippet(snippet.id)}
-              />
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        <SnippetsHeader />
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
+          <AnimatePresence>
+            {state.filteredSnippets.map(snippet => (
+              <motion.div
+                key={snippet.id}
+                layout
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              >
+                <SnippetCard
+                  snippet={snippet}
+                  onDelete={() => handleDeleteSnippet(snippet.id)}
+                  onCopy={() => handleCopySnippet(snippet.code)}
+                  onEdit={() => {
+                    dispatch({ type: 'SET_EDIT_MODE', payload: true });
+                    dispatch({ type: 'SET_EDITING_SNIPPET', payload: snippet });
+                    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
+                  }}
+                  onFavorite={() => handleFavoriteSnippet(snippet.id)}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+        <SnippetDialog
+          isOpen={state.isNewSnippetDialogOpen}
+          onClose={() => {
+            dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: false });
+            dispatch({ type: 'SET_EDIT_MODE', payload: false });
+            dispatch({ type: 'SET_EDITING_SNIPPET', payload: null });
+          }}
+          onSubmit={
+            state.isEditMode ? handleUpdateSnippet : handleCreateSnippet
+          }
+          initialData={state.editingSnippet}
+          isEditMode={state.isEditMode}
+        />
       </motion.div>
-      <SnippetDialog
-        isOpen={state.isNewSnippetDialogOpen}
-        onClose={() => {
-          dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: false });
-          dispatch({ type: 'SET_EDIT_MODE', payload: false });
-          dispatch({ type: 'SET_EDITING_SNIPPET', payload: null });
-        }}
-        onSubmit={state.isEditMode ? handleUpdateSnippet : handleCreateSnippet}
-        initialData={state.editingSnippet}
-        isEditMode={state.isEditMode}
-      />
-    </motion.div>
+    </div>
   );
 }
