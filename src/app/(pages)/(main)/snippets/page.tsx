@@ -5,7 +5,6 @@ import useSnippets from '@/hooks/useSnippets';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
 import SnippetsHeader from './_components/SnippetsHeader';
@@ -21,9 +20,7 @@ export default function SnippetsPage() {
     isNewSnippetDialogOpen,
     createSnippet,
     updateSnippet,
-    deleteSnippet,
-    toggleFavorite,
-    dispatch,
+    resetSnippetDialog,
   } = useSnippets();
 
   useEffect(() => {
@@ -31,13 +28,6 @@ export default function SnippetsPage() {
       router.push('/login');
     }
   }, [auth, router]);
-
-  const handleCopySnippet = (code: string) => {
-    navigator.clipboard.writeText(code);
-    toast('Copied to Clipboard', {
-      description: 'The snippet code has been copied to your clipboard.',
-    });
-  };
 
   return (
     <div className="bg-gray-100 dark:bg-gray-900">
@@ -64,28 +54,14 @@ export default function SnippetsPage() {
                 exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               >
-                <SnippetCard
-                  snippet={snippet}
-                  onDelete={() => deleteSnippet(snippet.id)}
-                  onCopy={() => handleCopySnippet(snippet.code)}
-                  onEdit={() => {
-                    dispatch({ type: 'SET_EDIT_MODE', payload: true });
-                    dispatch({ type: 'SET_EDITING_SNIPPET', payload: snippet });
-                    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
-                  }}
-                  onFavorite={() => toggleFavorite(snippet.id)}
-                />
+                <SnippetCard snippet={snippet} />
               </motion.div>
             ))}
           </AnimatePresence>
         </motion.div>
         <SnippetDialog
           isOpen={isNewSnippetDialogOpen}
-          onClose={() => {
-            dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: false });
-            dispatch({ type: 'SET_EDIT_MODE', payload: false });
-            dispatch({ type: 'SET_EDITING_SNIPPET', payload: null });
-          }}
+          onClose={resetSnippetDialog}
           onSubmit={isEditMode ? updateSnippet : createSnippet}
           initialData={editingSnippet}
           isEditMode={isEditMode}

@@ -2,12 +2,12 @@
 
 import { Snippet, snippetSchema } from '@/lib/schemas/snippet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createContext } from 'react';
+import { createContext, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useImmerReducer } from 'use-immer';
 
 // Define the state interface
-interface State {
+interface SnippetState {
   isNewSnippetDialogOpen: boolean;
   isEditMode: boolean;
   editingSnippet: Snippet | null;
@@ -15,14 +15,14 @@ interface State {
   filterLanguage: string;
 }
 
-type Action =
+type SnippetAction =
   | { type: 'SET_NEW_SNIPPET_DIALOG'; payload: boolean }
   | { type: 'SET_EDIT_MODE'; payload: boolean }
   | { type: 'SET_EDITING_SNIPPET'; payload: Snippet | null }
   | { type: 'SET_SEARCH_TERM'; payload: string }
   | { type: 'SET_FILTER_LANGUAGE'; payload: string };
 
-const reducer = (draft: State, action: Action) => {
+const snippetReducer = (draft: SnippetState, action: SnippetAction) => {
   switch (action.type) {
     case 'SET_NEW_SNIPPET_DIALOG':
       draft.isNewSnippetDialogOpen = action.payload;
@@ -39,9 +39,12 @@ const reducer = (draft: State, action: Action) => {
     case 'SET_FILTER_LANGUAGE':
       draft.filterLanguage = action.payload;
       break;
+    default:
+      break;
   }
 };
 
+// Define the context interface
 interface SnippetContextValue {
   snippets: Snippet[];
   filteredSnippets: Snippet[];
@@ -52,9 +55,10 @@ interface SnippetContextValue {
   filterLanguage: string;
   createSnippet: (newSnippet: Snippet) => Promise<void>;
   updateSnippet: (updatedSnippet: Snippet) => Promise<void>;
-  deleteSnippet: (id: string) => void;
-  toggleFavorite: (id: string) => void;
-  dispatch: React.Dispatch<Action>;
+  deleteSnippet: (id: string) => Promise<void>;
+  toggleFavorite: (id: string) => Promise<void>;
+  resetSnippetDialog: () => void;
+  dispatch: React.Dispatch<SnippetAction>;
 }
 
 const SnippetContext = createContext<SnippetContextValue | undefined>(
@@ -62,7 +66,8 @@ const SnippetContext = createContext<SnippetContextValue | undefined>(
 );
 SnippetContext.displayName = 'SnippetContext';
 
-const initialState: State = {
+// Define the initial state
+const initialState: SnippetState = {
   isNewSnippetDialogOpen: false,
   isEditMode: false,
   editingSnippet: null,
@@ -70,6 +75,7 @@ const initialState: State = {
   filterLanguage: '',
 };
 
+// Mock initial snippets (replace with actual data fetching in production)
 const initialSnippets = snippetSchema.array().parse([
   {
     id: '1',
@@ -93,11 +99,20 @@ const initialSnippets = snippetSchema.array().parse([
   },
 ]);
 
-const SnippetProvider = ({ children }: { children: React.ReactNode }) => {
-  const [state, dispatch] = useImmerReducer(reducer, initialState);
+const SnippetProvider = ({ children }: { children: ReactNode }) => {
+  const [
+    {
+      editingSnippet,
+      filterLanguage,
+      isEditMode,
+      isNewSnippetDialogOpen,
+      searchTerm,
+    },
+    dispatch,
+  ] = useImmerReducer(snippetReducer, initialState);
   const queryClient = useQueryClient();
 
-  const { data: snippets = [] } = useQuery({
+  const { data: snippets = [] } = useQuery<Snippet[]>({
     queryKey: ['snippets'],
     queryFn: () => initialSnippets,
   });
@@ -108,12 +123,18 @@ const SnippetProvider = ({ children }: { children: React.ReactNode }) => {
       return newSnippet;
     },
     onSuccess: () => {
-      dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: false });
+      resetSnippetDialog();
 
-      toast('Snippet Created', {
-        description: 'Your new snippet has been successfully created.',
+      toast.success('Snippet Created', {
+        description: 'Your snippet has been successfully created.',
       });
       queryClient.invalidateQueries({ queryKey: ['snippets'] });
+    },
+    onError: error => {
+      toast.error('Error', {
+        description: 'Failed to create snippet.',
+      });
+      console.error('Create Snippet Error:', error);
     },
   });
 
@@ -121,18 +142,23 @@ const SnippetProvider = ({ children }: { children: React.ReactNode }) => {
     mutationFn: async (updatedSnippet: Snippet) => {
       const index = initialSnippets.findIndex(s => s.id === updatedSnippet.id);
       if (index !== -1) {
-        snippets[index] = updatedSnippet;
+        initialSnippets[index] = updatedSnippet;
       }
-
       return updatedSnippet;
     },
     onSuccess: () => {
-      dispatch({ type: 'SET_EDIT_MODE', payload: false });
-      dispatch({ type: 'SET_EDITING_SNIPPET', payload: null });
-      toast('Snippet Updated', {
+      resetSnippetDialog();
+
+      toast.success('Snippet Updated', {
         description: 'Your snippet has been successfully updated.',
       });
       queryClient.invalidateQueries({ queryKey: ['snippets'] });
+    },
+    onError: error => {
+      toast.error('Error', {
+        description: 'Failed to update snippet.',
+      });
+      console.error('Update Snippet Error:', error);
     },
   });
 
@@ -142,14 +168,19 @@ const SnippetProvider = ({ children }: { children: React.ReactNode }) => {
       if (index !== -1) {
         initialSnippets.splice(index, 1);
       }
-
       return id;
     },
     onSuccess: () => {
-      toast('Snippet Deleted', {
+      toast.success('Snippet Deleted', {
         description: 'Your snippet has been successfully deleted.',
       });
       queryClient.invalidateQueries({ queryKey: ['snippets'] });
+    },
+    onError: error => {
+      toast.error('Error', {
+        description: 'Failed to delete snippet.',
+      });
+      console.error('Delete Snippet Error:', error);
     },
   });
 
@@ -161,41 +192,68 @@ const SnippetProvider = ({ children }: { children: React.ReactNode }) => {
       }
       return id;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['snippets'] });
+    },
+    onError: error => {
+      toast.error('Error', {
+        description: 'Failed to toggle favorite.',
+      });
+      console.error('Toggle Favorite Error:', error);
+    },
   });
+
+  const resetSnippetDialog = () => {
+    dispatchMultipleActions(dispatch, [
+      { type: 'SET_NEW_SNIPPET_DIALOG', payload: false },
+      { type: 'SET_EDIT_MODE', payload: false },
+      { type: 'SET_EDITING_SNIPPET', payload: null },
+    ]);
+  };
 
   const filteredSnippets = snippets.filter(snippet => {
     const matchesSearch =
-      snippet.title.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-      snippet.code.toLowerCase().includes(state.searchTerm.toLowerCase());
+      snippet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      snippet.code.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLanguage =
-      state.filterLanguage === '' || snippet.language === state.filterLanguage;
+      filterLanguage === '' || snippet.language === filterLanguage;
     return matchesSearch && matchesLanguage;
   });
 
+  const value: SnippetContextValue = {
+    editingSnippet,
+    filterLanguage,
+    isEditMode,
+    isNewSnippetDialogOpen,
+    searchTerm,
+    snippets,
+    filteredSnippets,
+    createSnippet: async (newSnippet: Snippet) => {
+      await createMutation.mutateAsync(newSnippet);
+    },
+    updateSnippet: async (updatedSnippet: Snippet) => {
+      await updateMutation.mutateAsync(updatedSnippet);
+    },
+    deleteSnippet: async (id: string) => {
+      await deleteMutation.mutateAsync(id);
+    },
+    toggleFavorite: async (id: string) => {
+      await toggleFavoriteMutation.mutateAsync(id);
+    },
+    resetSnippetDialog,
+    dispatch,
+  };
+
   return (
-    <SnippetContext.Provider
-      value={{
-        ...state,
-        snippets,
-        filteredSnippets,
-        createSnippet: async (newSnippet: Snippet) => {
-          await createMutation.mutateAsync(newSnippet);
-        },
-        updateSnippet: async (updatedSnippet: Snippet) => {
-          await updateMutation.mutateAsync(updatedSnippet);
-        },
-        deleteSnippet: async (id: string) => {
-          await deleteMutation.mutateAsync(id);
-        },
-        toggleFavorite: async (id: string) => {
-          await toggleFavoriteMutation.mutateAsync(id);
-        },
-        dispatch,
-      }}
-    >
-      {children}
-    </SnippetContext.Provider>
+    <SnippetContext.Provider value={value}>{children}</SnippetContext.Provider>
   );
 };
 
 export { SnippetContext, SnippetProvider };
+
+const dispatchMultipleActions = (
+  dispatch: React.Dispatch<SnippetAction>,
+  actions: SnippetAction[],
+) => {
+  actions.forEach(action => dispatch(action));
+};
