@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { PropsWithChildren } from 'react';
 import ReactQueryProvider from './ReactQueryProvider';
@@ -13,6 +14,7 @@ const Providers = ({ children }: Required<PropsWithChildren>) => (
         disableTransitionOnChange
       >
         {children}
+        <Toaster />
       </ThemeProvider>
     </AuthProvider>
   </ReactQueryProvider>
