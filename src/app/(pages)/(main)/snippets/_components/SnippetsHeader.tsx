@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { DualRangeSlider } from '@/components/ui/dual-range-slider';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
@@ -31,8 +31,7 @@ const languages = [
 ];
 
 const SnippetsHeader: React.FC = () => {
-  const { setFilter, removeFilter, clearFilters, dispatch } = useSnippets();
-  const [dateRange, setDateRange] = useState<[number, number]>([0, 100]);
+  const { setFilter, clearFilters } = useSnippets();
   const [activeFilters, setActiveFilters] = useState<{
     [key in FilterType]?: any;
   }>({});
@@ -64,35 +63,18 @@ const SnippetsHeader: React.FC = () => {
   );
 
   const handleDateRangeChange = useCallback(
-    (value: number[]) => {
-      setDateRange(value as [number, number]);
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - value[1]);
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() - value[0]);
+    (range: { from: Date; to: Date }) => {
       handleFilterChange({
         type: FilterType.DATE_RANGE,
-        value: [startDate, endDate],
+        value: [range.from, range.to],
       });
     },
     [handleFilterChange],
   );
 
-  const handleTagChange = useCallback(
-    (tag: string, checked: boolean) => {
-      const currentTags = activeFilters[FilterType.TAGS] || [];
-      const newTags = checked
-        ? [...currentTags, tag]
-        : currentTags.filter((t: string) => t !== tag);
-      handleFilterChange({ type: FilterType.TAGS, value: newTags });
-    },
-    [handleFilterChange, activeFilters],
-  );
-
   const handleClearFilters = useCallback(() => {
     clearFilters();
     setActiveFilters({});
-    setDateRange([0, 100]);
   }, [clearFilters]);
 
   return (
@@ -104,57 +86,73 @@ const SnippetsHeader: React.FC = () => {
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-1 items-center gap-4">
-          <Select onValueChange={handleLanguageChange} defaultValue="all">
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Select a language" />
-            </SelectTrigger>
-            <SelectContent>
-              {languages.map(lang => (
-                <SelectItem key={lang.value} value={lang.value}>
-                  {lang.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="ml-auto flex items-center justify-center gap-5">
+            <DateRangePicker
+              onUpdate={values => {
+                console.log(values);
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-10 p-0">
-                <SlidersHorizontal className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="grid gap-4">
-                <div className="space-y-2">
-                  <h4 className="font-medium leading-none">Advanced Filters</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Customize your snippet with advanced filters.
-                  </p>
-                </div>
-                <div className="grid gap-2">
-                  <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="date-range">Date Range</Label>
-                    <DualRangeSlider
-                      id="date-range"
-                      value={dateRange}
-                      onValueChange={handleDateRangeChange}
-                      min={0}
-                      max={100}
-                      step={1}
-                      className="col-span-2 h-4"
-                    />
+                if (values.range.from && values.range.to) {
+                  handleDateRangeChange({
+                    from: values.range.from,
+                    to: values.range.to,
+                  });
+                }
+              }}
+              initialDateFrom={
+                new Date(Date.now() - 30 * 24 * 60 * 60 * 1000 /* 30 days ago*/)
+              }
+              initialDateTo={new Date()}
+              align="start"
+              locale="en-GB"
+              showCompare={false}
+            />
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-10 p-0">
+                  <SlidersHorizontal className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72" align="end">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">
+                      Advanced Filters
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Customize your snippet with advanced filters.
+                    </p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="show-favorites"
-                      onCheckedChange={handleFavoriteToggle}
-                    />
-                    <Label htmlFor="show-favorites">Show Favorites Only</Label>
+                  <div className="grid gap-2">
+                    <Select
+                      onValueChange={handleLanguageChange}
+                      defaultValue="all"
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Select a language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {languages.map(lang => (
+                          <SelectItem key={lang.value} value={lang.value}>
+                            {lang.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="show-favorites"
+                        onCheckedChange={handleFavoriteToggle}
+                      />
+                      <Label htmlFor="show-favorites">
+                        Show Favorites Only
+                      </Label>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
     </motion.div>
