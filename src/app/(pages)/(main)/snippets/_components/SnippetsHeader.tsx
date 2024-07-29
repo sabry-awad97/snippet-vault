@@ -11,7 +11,7 @@ import useSnippets from '@/hooks/useSnippets';
 import { Plus, Search } from 'lucide-react';
 
 const SnippetsHeader = () => {
-  const { state, dispatch } = useSnippets();
+  const { searchTerm, filterLanguage, dispatch } = useSnippets();
 
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -29,7 +29,7 @@ const SnippetsHeader = () => {
             type="text"
             placeholder="Search snippets..."
             className="pl-10 pr-4"
-            value={state.searchTerm}
+            value={searchTerm}
             onChange={e =>
               dispatch({ type: 'SET_SEARCH_TERM', payload: e.target.value })
             }
@@ -44,7 +44,7 @@ const SnippetsHeader = () => {
               payload: value,
             })
           }
-          defaultValue={state.filterLanguage}
+          defaultValue={filterLanguage}
         >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Select a language" />

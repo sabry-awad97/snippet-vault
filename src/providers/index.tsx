@@ -6,8 +6,8 @@ import ReactQueryProvider from './ReactQueryProvider';
 import { ThemeProvider } from './ThemeProvider';
 
 const Providers = ({ children }: Required<PropsWithChildren>) => (
-  <SnippetProvider>
-    <ReactQueryProvider>
+  <ReactQueryProvider>
+    <SnippetProvider>
       <AuthProvider>
         <ThemeProvider
           attribute="class"
@@ -19,8 +19,8 @@ const Providers = ({ children }: Required<PropsWithChildren>) => (
           <Toaster />
         </ThemeProvider>
       </AuthProvider>
-    </ReactQueryProvider>
-  </SnippetProvider>
+    </SnippetProvider>
+  </ReactQueryProvider>
 );
 
 export default Providers;
