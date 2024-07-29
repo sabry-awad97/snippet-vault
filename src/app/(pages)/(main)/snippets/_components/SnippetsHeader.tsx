@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { DualRangeSlider } from '@/components/ui/dual-range-slider';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
@@ -12,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Filter, FilterType } from '@/contexts/SnippetContext';
 import useSnippets from '@/hooks/useSnippets';
@@ -134,12 +134,13 @@ const SnippetsHeader: React.FC = () => {
                 <div className="grid gap-2">
                   <div className="grid grid-cols-3 items-center gap-4">
                     <Label htmlFor="date-range">Date Range</Label>
-                    <Slider
+                    <DualRangeSlider
                       id="date-range"
-                      max={100}
-                      step={1}
                       value={dateRange}
                       onValueChange={handleDateRangeChange}
+                      min={0}
+                      max={100}
+                      step={1}
                       className="col-span-2 h-4"
                     />
                   </div>
