@@ -1,47 +1,74 @@
 import { Tooltip } from '@/components/Common/Tooltip';
 import { Button } from '@/components/ui/button';
-import { cva } from 'class-variance-authority';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { motion } from 'framer-motion';
+import React from 'react';
 
-// Define the variant schema for buttons
+// Define the button variant schema
 const buttonVariants = cva(
-  'focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
+  'transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2',
   {
     variants: {
       color: {
-        dark: 'border-purple-600 hover:bg-purple-800 hover:text-purple-200',
-        light: 'border-purple-300 hover:bg-purple-100 hover:text-purple-800',
+        dark: 'bg-purple-700 text-white border-purple-600 hover:bg-purple-800 focus:ring-purple-500',
+        light:
+          'bg-purple-100 text-purple-800 border-purple-300 hover:bg-purple-200 focus:ring-purple-400',
         destructive:
-          'bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2',
+          'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500',
+      },
+      size: {
+        sm: 'px-2 py-1 text-sm',
+        md: 'px-4 py-2',
+        lg: 'px-6 py-3 text-lg',
       },
     },
     defaultVariants: {
       color: 'light',
+      size: 'md',
     },
   },
 );
 
-const ActionButton: React.FC<{
+// Define props interface
+interface ActionButtonProps extends VariantProps<typeof buttonVariants> {
   onClick: () => void;
   icon: React.ReactNode;
   tooltip: string;
   isDestructive?: boolean;
   isDarkMode: boolean;
-}> = ({ onClick, icon, tooltip, isDestructive, isDarkMode }) => (
-  <Tooltip content={tooltip}>
-    <Button
-      variant={isDestructive ? 'destructive' : 'outline'}
-      size="sm"
-      onClick={onClick}
-      className={buttonVariants({
-        color: isDestructive ? 'destructive' : isDarkMode ? 'dark' : 'light',
-      })}
-    >
-      <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
-        {icon}
-      </motion.div>
-    </Button>
-  </Tooltip>
-);
+}
+
+const ActionButton: React.FC<ActionButtonProps> = ({
+  onClick,
+  icon,
+  tooltip,
+  isDestructive = false,
+  isDarkMode,
+  size,
+}) => {
+  const buttonColor = isDestructive
+    ? 'destructive'
+    : isDarkMode
+      ? 'dark'
+      : 'light';
+
+  return (
+    <Tooltip content={tooltip}>
+      <Button
+        variant="outline"
+        onClick={onClick}
+        className={buttonVariants({ color: buttonColor, size })}
+      >
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+        >
+          {icon}
+        </motion.div>
+      </Button>
+    </Tooltip>
+  );
+};
 
 export default ActionButton;

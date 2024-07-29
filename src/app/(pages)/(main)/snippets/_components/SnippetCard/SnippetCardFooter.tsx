@@ -18,21 +18,11 @@ const SnippetCardFooter = ({
   isDarkMode,
   toggleDarkMode,
 }: SnippetCardFooterProps) => {
-  const [isFavorite, setIsFavorite] = useState(snippet.isFavorite || false);
+  const [isFavorite, setIsFavorite] = useState(snippet.isFavorite);
 
   const snippetsContext = useSnippets();
 
-  const {
-    editingSnippet,
-    filteredSnippets,
-    isEditMode,
-    isNewSnippetDialogOpen,
-    createSnippet,
-    updateSnippet,
-    deleteSnippet,
-    toggleFavorite,
-    dispatch,
-  } = snippetsContext;
+  const { deleteSnippet, toggleFavorite, dispatch } = snippetsContext;
 
   const handleCopySnippet = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -66,7 +56,10 @@ const SnippetCardFooter = ({
         icon={
           <Star className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
         }
-        onClick={() => toggleFavorite(snippet.id)}
+        onClick={() => {
+          setIsFavorite(!isFavorite);
+          toggleFavorite(snippet.id);
+        }}
         isDarkMode={isDarkMode}
       />
 
