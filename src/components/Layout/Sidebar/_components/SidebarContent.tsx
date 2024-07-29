@@ -20,7 +20,7 @@ const SidebarContent: React.FC<{
     exit="closed"
     variants={sidebarVariants}
     transition={{ duration: 0.3, ease: 'easeInOut' }}
-    className="fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto bg-white p-6 shadow-lg dark:bg-gray-800 md:relative"
+    className="fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto bg-gradient-to-b from-white to-gray-100 p-6 shadow-lg dark:from-gray-800 dark:to-gray-900 md:relative"
   >
     <SidebarHeader logo={logo} toggleSidebar={toggleSidebar} />
     <SidebarNav navItems={navItems} pathname={pathname} />
