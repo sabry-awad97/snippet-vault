@@ -7,6 +7,7 @@ export const snippetSchema = z.object({
   language: z.string().min(1, 'Language is required'),
   code: z.string().min(1, 'Code is required'),
   tags: z.array(z.string().min(1, 'Tag is required')).default([]),
+  isFavorite: z.boolean().default(false),
 });
 
 export const snippetFormSchema = snippetSchema.omit({

@@ -6,16 +6,78 @@ import { Snippet } from '@/lib/schemas/snippet';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { useImmerReducer } from 'use-immer';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
 
+// Define the state interface
+interface State {
+  snippets: Snippet[];
+  isNewSnippetDialogOpen: boolean;
+  isEditMode: boolean;
+  editingSnippet: Snippet | null;
+}
+
+// Define action types
+type Action =
+  | { type: 'SET_SNIPPETS'; payload: Snippet[] }
+  | { type: 'ADD_SNIPPET'; payload: Snippet }
+  | { type: 'UPDATE_SNIPPET'; payload: Snippet }
+  | { type: 'DELETE_SNIPPET'; payload: string }
+  | { type: 'TOGGLE_FAVORITE'; payload: string }
+  | { type: 'SET_NEW_SNIPPET_DIALOG'; payload: boolean }
+  | { type: 'SET_EDIT_MODE'; payload: boolean }
+  | { type: 'SET_EDITING_SNIPPET'; payload: Snippet | null };
+
+// Define the reducer function
+const reducer = (draft: State, action: Action) => {
+  switch (action.type) {
+    case 'SET_SNIPPETS':
+      draft.snippets = action.payload;
+      break;
+    case 'ADD_SNIPPET':
+      draft.snippets.push(action.payload);
+      break;
+    case 'UPDATE_SNIPPET':
+      const index = draft.snippets.findIndex(s => s.id === action.payload.id);
+      if (index !== -1) {
+        draft.snippets[index] = action.payload;
+      }
+      break;
+    case 'DELETE_SNIPPET':
+      draft.snippets = draft.snippets.filter(s => s.id !== action.payload);
+      break;
+    case 'TOGGLE_FAVORITE':
+      const snippetIndex = draft.snippets.findIndex(
+        s => s.id === action.payload,
+      );
+      if (snippetIndex !== -1) {
+        draft.snippets[snippetIndex].isFavorite =
+          !draft.snippets[snippetIndex].isFavorite;
+      }
+      break;
+    case 'SET_NEW_SNIPPET_DIALOG':
+      draft.isNewSnippetDialogOpen = action.payload;
+      break;
+    case 'SET_EDIT_MODE':
+      draft.isEditMode = action.payload;
+      break;
+    case 'SET_EDITING_SNIPPET':
+      draft.editingSnippet = action.payload;
+      break;
+  }
+};
+
 export default function SnippetsPage() {
-  const [snippets, setSnippets] = useState<Snippet[]>([]);
-  const [isNewSnippetDialogOpen, setIsNewSnippetDialogOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null);
+  const [state, dispatch] = useImmerReducer(reducer, {
+    snippets: [] as Snippet[],
+    isNewSnippetDialogOpen: false,
+    isEditMode: false,
+    editingSnippet: null,
+  });
+
   const auth = useAuth();
   const router = useRouter();
 
@@ -23,34 +85,36 @@ export default function SnippetsPage() {
     if (!auth?.user) {
       router.push('/login');
     } else {
+      const fetchSnippets = async () => {
+        // Replace with actual API call
+        const mockSnippets: Snippet[] = [
+          {
+            id: '1',
+            title: 'Hello World',
+            code: 'console.log("Hello World!");',
+            language: 'javascript',
+            tags: ['hello', 'world'],
+            isFavorite: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: '2',
+            title: 'Fizz Buzz',
+            code: 'for (let i = 1; i <= 100; i++) {\n  if (i % 15 === 0) console.log("FizzBuzz");\n  else if (i % 3 === 0) console.log("Fizz");\n  else if (i % 5 === 0) console.log("Buzz");\n  else console.log(i);\n}',
+            language: 'javascript',
+            tags: [],
+            isFavorite: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
+        dispatch({ type: 'SET_SNIPPETS', payload: mockSnippets });
+      };
+
       fetchSnippets();
     }
-  }, [auth, router]);
-
-  const fetchSnippets = async () => {
-    // Replace with actual API call
-    const mockSnippets: Snippet[] = [
-      {
-        id: '1',
-        title: 'Hello World',
-        code: 'console.log("Hello World!");',
-        language: 'javascript',
-        tags: ['hello', 'world'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: '2',
-        title: 'Fizz Buzz',
-        code: 'for (let i = 1; i <= 100; i++) {\n  if (i % 15 === 0) console.log("FizzBuzz");\n  else if (i % 3 === 0) console.log("Fizz");\n  else if (i % 5 === 0) console.log("Buzz");\n  else console.log(i);\n}',
-        language: 'javascript',
-        tags: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-    setSnippets(mockSnippets);
-  };
+  }, [auth, dispatch, router]);
 
   const handleCreateSnippet = async (newSnippet: Snippet) => {
     // Replace with actual API call
@@ -61,8 +125,8 @@ export default function SnippetsPage() {
       updatedAt: new Date(),
     };
 
-    setSnippets(prevSnippets => [...prevSnippets, newSnippetWithId]);
-    setIsNewSnippetDialogOpen(false);
+    dispatch({ type: 'ADD_SNIPPET', payload: newSnippetWithId });
+    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: false });
     toast('Snippet Created', {
       description: 'Your new snippet has been successfully created.',
     });
@@ -70,13 +134,9 @@ export default function SnippetsPage() {
 
   const handleUpdateSnippet = async (updatedSnippet: Snippet) => {
     // Replace with actual API call
-    setSnippets(prevSnippets =>
-      prevSnippets.map(snippet =>
-        snippet.id === updatedSnippet.id ? updatedSnippet : snippet,
-      ),
-    );
-    setIsEditMode(false);
-    setEditingSnippet(null);
+    dispatch({ type: 'UPDATE_SNIPPET', payload: updatedSnippet });
+    dispatch({ type: 'SET_EDIT_MODE', payload: false });
+    dispatch({ type: 'SET_EDITING_SNIPPET', payload: null });
     toast('Snippet Updated', {
       description: 'Your snippet has been successfully updated.',
     });
@@ -84,9 +144,7 @@ export default function SnippetsPage() {
 
   const handleDeleteSnippet = async (id: string) => {
     // Replace with actual API call
-    setSnippets(prevSnippets =>
-      prevSnippets.filter(snippet => snippet.id !== id),
-    );
+    dispatch({ type: 'DELETE_SNIPPET', payload: id });
     toast('Snippet Deleted', {
       description: 'Your snippet has been successfully deleted.',
     });
@@ -99,6 +157,11 @@ export default function SnippetsPage() {
     });
   };
 
+  const handleFavoriteSnippet = (id: string) => {
+    // Replace with actual API call
+    dispatch({ type: 'TOGGLE_FAVORITE', payload: id });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -108,7 +171,9 @@ export default function SnippetsPage() {
     >
       <div className="mb-6 flex items-center justify-between">
         <Button
-          onClick={() => setIsNewSnippetDialogOpen(true)}
+          onClick={() =>
+            dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true })
+          }
           className="bg-purple-600 text-white transition-all duration-200 hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
         >
           <Plus className="mr-2 h-4 w-4" /> <span>New Snippet</span>
@@ -121,7 +186,7 @@ export default function SnippetsPage() {
         className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
       >
         <AnimatePresence>
-          {snippets.map(snippet => (
+          {state.snippets.map(snippet => (
             <motion.div
               key={snippet.id}
               layout
@@ -135,25 +200,26 @@ export default function SnippetsPage() {
                 onDelete={() => handleDeleteSnippet(snippet.id)}
                 onCopy={() => handleCopySnippet(snippet.code)}
                 onEdit={() => {
-                  setIsEditMode(true);
-                  setEditingSnippet(snippet);
-                  setIsNewSnippetDialogOpen(true);
+                  dispatch({ type: 'SET_EDIT_MODE', payload: true });
+                  dispatch({ type: 'SET_EDITING_SNIPPET', payload: snippet });
+                  dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
                 }}
+                onFavorite={() => handleFavoriteSnippet(snippet.id)}
               />
             </motion.div>
           ))}
         </AnimatePresence>
       </motion.div>
       <SnippetDialog
-        isOpen={isNewSnippetDialogOpen}
+        isOpen={state.isNewSnippetDialogOpen}
         onClose={() => {
-          setIsNewSnippetDialogOpen(false);
-          setIsEditMode(false);
-          setEditingSnippet(null);
+          dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: false });
+          dispatch({ type: 'SET_EDIT_MODE', payload: false });
+          dispatch({ type: 'SET_EDITING_SNIPPET', payload: null });
         }}
-        onSubmit={isEditMode ? handleUpdateSnippet : handleCreateSnippet}
-        initialData={editingSnippet}
-        isEditMode={isEditMode}
+        onSubmit={state.isEditMode ? handleUpdateSnippet : handleCreateSnippet}
+        initialData={state.editingSnippet}
+        isEditMode={state.isEditMode}
       />
     </motion.div>
   );
