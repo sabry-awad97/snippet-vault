@@ -1,7 +1,6 @@
 'use client';
 
 import { AnimatePresence } from 'framer-motion';
-import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { NavItem } from './_components/NavItem';
 import SidebarContent from './_components/SidebarContent';
@@ -19,7 +18,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   navItems,
 }) => {
   const [isOpen, setIsOpen] = useState(initialIsOpen);
-  const pathname = usePathname();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -31,7 +29,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             logo={logo}
             navItems={navItems}
             toggleSidebar={toggleSidebar}
-            pathname={pathname}
           />
         )}
       </AnimatePresence>

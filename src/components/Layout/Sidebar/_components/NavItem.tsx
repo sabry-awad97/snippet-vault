@@ -22,7 +22,7 @@ const navItemVariants = {
 };
 
 const hoverAnimation = {
-  whileHover: { x: 5, transition: { type: 'spring', stiffness: 300 } },
+  whileHover: { scale: 1.05, transition: { type: 'spring', stiffness: 300 } },
   whileTap: { scale: 0.95, transition: { type: 'spring', stiffness: 300 } },
 };
 
@@ -40,11 +40,11 @@ export const NavItem: React.FC<{
     <Link href={item.href}>
       <motion.div
         className={cn(
-          'flex items-center space-x-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200',
-          'text-gray-600 hover:bg-purple-50 hover:text-purple-700',
-          'dark:text-gray-300 dark:hover:bg-purple-900 dark:hover:text-purple-300',
+          'flex items-center space-x-3 rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
+          'text-gray-700 hover:bg-purple-100 hover:text-purple-900',
+          'dark:text-gray-200 dark:hover:bg-purple-800 dark:hover:text-purple-400',
           pathname === item.href &&
-            'bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-200',
+            'bg-purple-200 text-purple-900 dark:bg-purple-700 dark:text-purple-300',
         )}
         {...hoverAnimation}
       >

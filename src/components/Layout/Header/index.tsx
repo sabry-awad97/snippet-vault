@@ -2,19 +2,35 @@
 
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import NotificationButton from './_components/NotificationButton';
+import SearchBar from './_components/SearchBar';
+import Title from './_components/Title';
 import UserMenu from './_components/UserMenu';
+
+const getTitleFromPathname = (pathname: string) => {
+  switch (pathname) {
+    case '/dashboard':
+      return 'Dashboard';
+    case '/snippets':
+      return 'Snippets';
+    case '/collections':
+      return 'Collections';
+    case '/settings':
+      return 'Settings';
+    default:
+      return 'Snippet Vault';
+  }
+};
 
 export function Header() {
   const auth = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const pageTitle = getTitleFromPathname(pathname);
 
   const handleLogout = async () => {
     try {
@@ -33,39 +49,16 @@ export function Header() {
       className="sticky top-0 z-10 rounded-lg bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-gray-800 dark:shadow-indigo-500/20"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between">
+          <Title text={pageTitle} />
+        </div>
+
         <div className="flex flex-1 items-center justify-center px-4 md:px-8">
-          <motion.div
-            initial={false}
-            animate={{ width: isSearchFocused ? '100%' : '80%' }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full max-w-lg"
-          >
-            <input
-              type="text"
-              placeholder="Search..."
-              className={cn(
-                `w-full rounded-full border border-gray-300 bg-gray-100 py-2 pl-10 pr-4 text-gray-800 transition-all duration-300 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white`,
-                {
-                  'ring-2 ring-indigo-500 dark:ring-indigo-400':
-                    isSearchFocused,
-                },
-              )}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-            />
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-          </motion.div>
+          <SearchBar />
         </div>
 
         <div className="flex items-center justify-between">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative mr-4 rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
-          >
-            <Bell className="h-6 w-6" />
-            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
-          </motion.button>
+          <NotificationButton />
 
           <AnimatePresence>
             {auth.user ? (
