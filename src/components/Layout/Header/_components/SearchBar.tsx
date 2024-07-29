@@ -1,31 +1,79 @@
+import { Tooltip } from '@/components/Common/Tooltip';
+import { Button } from '@/components/ui/button';
+import useSnippets from '@/hooks/useSnippets';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 
 const SearchBar = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { setFilter, dispatch } = useSnippets();
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilter({ type: 'search', value: e.target.value });
+  };
+
+  const handleNewSnippet = () => {
+    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
+  };
 
   return (
     <motion.div
       initial={false}
-      animate={{ width: isSearchFocused ? '100%' : '80%' }}
-      transition={{ duration: 0.2 }}
-      className="relative w-full max-w-lg"
+      animate={{ width: isSearchFocused ? '100%' : '85%' }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="relative w-full max-w-3xl"
     >
-      <input
-        type="text"
-        placeholder="Search..."
-        className={cn(
-          `w-full rounded-full border border-gray-300 bg-gray-100 py-2 pl-10 pr-4 text-gray-800 transition-all duration-300 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white`,
-          {
-            'ring-2 ring-indigo-500 dark:ring-indigo-400': isSearchFocused,
-          },
-        )}
-        onFocus={() => setIsSearchFocused(true)}
-        onBlur={() => setIsSearchFocused(false)}
-      />
-      <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+      <div className="relative flex items-center">
+        <motion.input
+          type="text"
+          placeholder="Find your code snippets..."
+          className={cn(
+            `w-full rounded-full border py-3 pl-12 pr-36 text-sm transition-all duration-300 focus:outline-none`,
+            `border-gray-300 bg-white text-gray-800 placeholder-gray-400`,
+            `dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400`,
+            {
+              'ring-2 ring-purple-500 dark:ring-purple-400': isSearchFocused,
+            },
+          )}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
+          onChange={handleSearchChange}
+          animate={{ paddingRight: isSearchFocused ? '8rem' : '9rem' }}
+          transition={{ duration: 0.2 }}
+        />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 hover:text-purple-500 dark:text-gray-500" />
+        <AnimatePresence>
+          <motion.div
+            key="new-snippet-button"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="absolute right-2 flex items-center justify-center"
+          >
+            <Button
+              onClick={handleNewSnippet}
+              size="sm"
+              className={cn(
+                `rounded-full text-sm font-medium transition-all duration-200`,
+                `bg-gradient-to-r from-purple-600 to-indigo-600 text-white`,
+                `hover:from-purple-700 hover:to-indigo-700`,
+                `dark:from-purple-500 dark:to-indigo-500`,
+                `dark:hover:from-purple-600 dark:hover:to-indigo-600`,
+                `focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800`,
+                `shadow-md hover:shadow-lg`,
+                `px-4 py-2`,
+              )}
+            >
+              <Tooltip content="New Snippet">
+                <Plus className="h-4 w-4" />
+              </Tooltip>
+            </Button>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 };

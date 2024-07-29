@@ -29,7 +29,6 @@ export function Header() {
   const auth = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-
   const pageTitle = getTitleFromPathname(pathname);
 
   const handleLogout = async () => {
@@ -49,7 +48,7 @@ export function Header() {
       className="sticky top-0 z-10 rounded-lg bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-gray-800 dark:shadow-indigo-500/20"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
           <Title text={pageTitle} />
         </div>
 
@@ -57,7 +56,7 @@ export function Header() {
           <SearchBar />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
           <NotificationButton />
 
           <AnimatePresence>

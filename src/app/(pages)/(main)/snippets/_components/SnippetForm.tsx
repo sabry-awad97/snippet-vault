@@ -17,11 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Snippet,
-  SnippetFormData,
-  snippetFormSchema,
-} from '@/lib/schemas/snippet';
+import { Snippet, snippetSchema } from '@/lib/schemas/snippet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
@@ -37,26 +33,21 @@ interface SnippetFormProps {
 const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
   const [tags, setTags] = useState<string[]>(snippet?.tags || []);
 
-  const form = useForm<SnippetFormData>({
-    resolver: zodResolver(snippetFormSchema),
+  const form = useForm<Snippet>({
+    resolver: zodResolver(snippetSchema),
     defaultValues: snippet || {
       title: '',
       language: '',
       code: '',
       tags: [],
+      id: Date.now().toString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   });
 
-  const handleSubmit = async (values: SnippetFormData) => {
-    const newSnippet: Snippet = {
-      ...values,
-      tags,
-      id: snippet?.id || Date.now().toString(),
-      createdAt: snippet?.createdAt || new Date(),
-      updatedAt: new Date(),
-    };
-
-    await onSubmit(newSnippet);
+  const handleSubmit = async (values: Snippet) => {
+    await onSubmit({ ...values, tags });
   };
 
   return (

@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
@@ -17,7 +16,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import useSnippets from '@/hooks/useSnippets';
 import { motion } from 'framer-motion';
-import { Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 
 const languages = [
@@ -33,17 +32,6 @@ const languages = [
 const SnippetsHeader: React.FC = () => {
   const { setFilter, removeFilter, clearFilters, dispatch } = useSnippets();
   const [dateRange, setDateRange] = useState<[number, number]>([0, 100]);
-
-  const handleNewSnippet = useCallback(() => {
-    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
-  }, [dispatch]);
-
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFilter({ type: 'search', value: e.target.value });
-    },
-    [setFilter],
-  );
 
   const handleLanguageChange = useCallback(
     (language: string) => {
@@ -88,23 +76,7 @@ const SnippetsHeader: React.FC = () => {
       className="mb-6 space-y-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <Button
-          onClick={handleNewSnippet}
-          className="bg-purple-600 text-white transition-all duration-200 hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-        >
-          <Plus className="mr-2 h-4 w-4" /> <span>New Snippet</span>
-        </Button>
         <div className="flex flex-1 items-center gap-4">
-          <div className="relative flex-1">
-            <Input
-              type="text"
-              placeholder="Search snippets..."
-              className="pl-10 pr-4"
-              onChange={handleSearchChange}
-            />
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-          </div>
-
           <Select onValueChange={handleLanguageChange} defaultValue="all">
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Select a language" />

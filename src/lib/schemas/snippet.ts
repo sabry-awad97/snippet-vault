@@ -14,13 +14,5 @@ const baseSnippetSchema = z.object({
 // Brand the base schema
 export const snippetSchema = baseSnippetSchema.brand<'Snippet'>();
 
-// Define the form schema by omitting certain fields before branding
-export const snippetFormSchema = baseSnippetSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 // TypeScript types inferred from schemas
 export type Snippet = z.infer<typeof snippetSchema>;
-export type SnippetFormData = z.infer<typeof snippetFormSchema>;
