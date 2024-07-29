@@ -2,32 +2,37 @@
 
 import { Snippet, snippetSchema } from '@/lib/schemas/snippet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createContext, ReactNode } from 'react';
+import { createContext, ReactNode, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useImmerReducer } from 'use-immer';
 
-enum FilterType {
+export enum FilterType {
   SEARCH = 'search',
   LANGUAGE = 'language',
+  TAGS = 'tags',
   FAVORITE = 'favorite',
   DATE_RANGE = 'dateRange',
 }
 
-type Filter =
+export type Filter =
   | {
-      type: `${FilterType.SEARCH}`;
-      value: String;
+      type: FilterType.SEARCH;
+      value: string;
     }
   | {
-      type: `${FilterType.LANGUAGE}`;
-      value: String;
+      type: FilterType.LANGUAGE;
+      value: string[];
     }
   | {
-      type: `${FilterType.FAVORITE}`;
+      type: FilterType.TAGS;
+      value: string[];
+    }
+  | {
+      type: FilterType.FAVORITE;
       value: boolean;
     }
   | {
-      type: `${FilterType.DATE_RANGE}`;
+      type: FilterType.DATE_RANGE;
       value: [Date, Date];
     };
 
@@ -253,28 +258,42 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'CLEAR_FILTERS' });
   };
 
-  const filteredSnippets = snippets.filter(snippet => {
-    return filters.every(filter => {
-      switch (filter.type) {
-        case 'search':
-          return (
-            snippet.title.toLowerCase().includes(filter.value.toLowerCase()) ||
-            snippet.code.toLowerCase().includes(filter.value.toLowerCase())
-          );
-        case 'language':
-          return filter.value === '' || snippet.language === filter.value;
-        case 'favorite':
-          return filter.value ? snippet.isFavorite : true;
-        case 'dateRange':
-          const snippetDate = snippet.createdAt;
-          return (
-            snippetDate >= filter.value[0] && snippetDate <= filter.value[1]
-          );
-        default:
-          return true;
-      }
-    });
-  });
+  const applyFilter = (snippet: Snippet, filter: Filter): boolean => {
+    switch (filter.type) {
+      case FilterType.SEARCH:
+        const searchTerm = filter.value.toLowerCase();
+        return (
+          snippet.title.toLowerCase().includes(searchTerm) ||
+          snippet.code.toLowerCase().includes(searchTerm) ||
+          snippet.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+        );
+      case FilterType.LANGUAGE:
+        return (
+          filter.value.length === 0 || filter.value.includes(snippet.language)
+        );
+      case FilterType.TAGS:
+        return (
+          filter.value.length === 0 ||
+          filter.value.some(tag => snippet.tags.includes(tag))
+        );
+      case FilterType.FAVORITE:
+        return filter.value ? snippet.isFavorite : true;
+      case FilterType.DATE_RANGE:
+        const snippetDate = new Date(snippet.createdAt);
+        return (
+          snippetDate >= new Date(filter.value[0]) &&
+          snippetDate <= new Date(filter.value[1])
+        );
+      default:
+        return true;
+    }
+  };
+
+  const filteredSnippets = useMemo(() => {
+    return snippets.filter(snippet =>
+      filters.every(filter => applyFilter(snippet, filter)),
+    );
+  }, [snippets, filters]);
 
   const value: SnippetContextValue = {
     editingSnippet,

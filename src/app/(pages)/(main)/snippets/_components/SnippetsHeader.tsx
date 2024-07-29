@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { Filter, FilterType } from '@/contexts/SnippetContext';
 import useSnippets from '@/hooks/useSnippets';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
@@ -32,41 +33,67 @@ const languages = [
 const SnippetsHeader: React.FC = () => {
   const { setFilter, removeFilter, clearFilters, dispatch } = useSnippets();
   const [dateRange, setDateRange] = useState<[number, number]>([0, 100]);
+  const [activeFilters, setActiveFilters] = useState<{
+    [key in FilterType]?: any;
+  }>({});
+
+  const handleFilterChange = useCallback(
+    (filter: Filter) => {
+      setFilter(filter);
+      setActiveFilters(prev => ({ ...prev, [filter.type]: filter.value }));
+    },
+    [setFilter],
+  );
 
   const handleLanguageChange = useCallback(
-    (language: string) => {
-      if (language === 'all') {
-        removeFilter('language');
-      } else {
-        setFilter({ type: 'language', value: language });
-      }
+    (value: string) => {
+      const newLanguages =
+        value === 'all'
+          ? []
+          : [...(activeFilters[FilterType.LANGUAGE] || []), value];
+      handleFilterChange({ type: FilterType.LANGUAGE, value: newLanguages });
     },
-    [setFilter, removeFilter],
+    [handleFilterChange, activeFilters],
   );
 
   const handleFavoriteToggle = useCallback(
     (checked: boolean) => {
-      if (checked) {
-        setFilter({ type: 'favorite', value: true });
-      } else {
-        removeFilter('favorite');
-      }
+      handleFilterChange({ type: FilterType.FAVORITE, value: checked });
     },
-    [setFilter, removeFilter],
+    [handleFilterChange],
   );
 
   const handleDateRangeChange = useCallback(
     (value: number[]) => {
       setDateRange(value as [number, number]);
-      // Convert slider values to actual dates
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - value[1]);
       const endDate = new Date();
       endDate.setDate(endDate.getDate() - value[0]);
-      setFilter({ type: 'dateRange', value: [startDate, endDate] });
+      handleFilterChange({
+        type: FilterType.DATE_RANGE,
+        value: [startDate, endDate],
+      });
     },
-    [setFilter],
+    [handleFilterChange],
   );
+
+  const handleTagChange = useCallback(
+    (tag: string, checked: boolean) => {
+      const currentTags = activeFilters[FilterType.TAGS] || [];
+      const newTags = checked
+        ? [...currentTags, tag]
+        : currentTags.filter((t: string) => t !== tag);
+      handleFilterChange({ type: FilterType.TAGS, value: newTags });
+    },
+    [handleFilterChange, activeFilters],
+  );
+
+  const handleClearFilters = useCallback(() => {
+    clearFilters();
+    setActiveFilters({});
+    setDateRange([0, 100]);
+  }, [clearFilters]);
 
   return (
     <motion.div
@@ -101,7 +128,7 @@ const SnippetsHeader: React.FC = () => {
                 <div className="space-y-2">
                   <h4 className="font-medium leading-none">Advanced Filters</h4>
                   <p className="text-sm text-muted-foreground">
-                    Customize your snippet search with advanced filters.
+                    Customize your snippet with advanced filters.
                   </p>
                 </div>
                 <div className="grid gap-2">
