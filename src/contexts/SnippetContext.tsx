@@ -6,21 +6,46 @@ import { createContext, ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useImmerReducer } from 'use-immer';
 
+enum FilterType {
+  SEARCH = 'search',
+  LANGUAGE = 'language',
+  FAVORITE = 'favorite',
+  DATE_RANGE = 'dateRange',
+}
+
+type Filter =
+  | {
+      type: `${FilterType.SEARCH}`;
+      value: String;
+    }
+  | {
+      type: `${FilterType.LANGUAGE}`;
+      value: String;
+    }
+  | {
+      type: `${FilterType.FAVORITE}`;
+      value: boolean;
+    }
+  | {
+      type: `${FilterType.DATE_RANGE}`;
+      value: [Date, Date];
+    };
+
 // Define the state interface
 interface SnippetState {
   isNewSnippetDialogOpen: boolean;
   isEditMode: boolean;
   editingSnippet: Snippet | null;
-  searchTerm: string;
-  filterLanguage: string;
+  filters: Filter[];
 }
 
 type SnippetAction =
   | { type: 'SET_NEW_SNIPPET_DIALOG'; payload: boolean }
   | { type: 'SET_EDIT_MODE'; payload: boolean }
   | { type: 'SET_EDITING_SNIPPET'; payload: Snippet | null }
-  | { type: 'SET_SEARCH_TERM'; payload: string }
-  | { type: 'SET_FILTER_LANGUAGE'; payload: string };
+  | { type: 'SET_FILTER'; payload: Filter }
+  | { type: 'REMOVE_FILTER'; payload: `${FilterType}` }
+  | { type: 'CLEAR_FILTERS' };
 
 const snippetReducer = (draft: SnippetState, action: SnippetAction) => {
   switch (action.type) {
@@ -33,11 +58,21 @@ const snippetReducer = (draft: SnippetState, action: SnippetAction) => {
     case 'SET_EDITING_SNIPPET':
       draft.editingSnippet = action.payload;
       break;
-    case 'SET_SEARCH_TERM':
-      draft.searchTerm = action.payload;
+    case 'SET_FILTER':
+      const existingFilterIndex = draft.filters.findIndex(
+        f => f.type === action.payload.type,
+      );
+      if (existingFilterIndex !== -1) {
+        draft.filters[existingFilterIndex] = action.payload;
+      } else {
+        draft.filters.push(action.payload);
+      }
       break;
-    case 'SET_FILTER_LANGUAGE':
-      draft.filterLanguage = action.payload;
+    case 'REMOVE_FILTER':
+      draft.filters = draft.filters.filter(f => f.type !== action.payload);
+      break;
+    case 'CLEAR_FILTERS':
+      draft.filters = [];
       break;
     default:
       break;
@@ -51,13 +86,15 @@ interface SnippetContextValue {
   isNewSnippetDialogOpen: boolean;
   isEditMode: boolean;
   editingSnippet: Snippet | null;
-  searchTerm: string;
-  filterLanguage: string;
+  filters: Filter[];
   createSnippet: (newSnippet: Snippet) => Promise<void>;
   updateSnippet: (updatedSnippet: Snippet) => Promise<void>;
   deleteSnippet: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
   resetSnippetDialog: () => void;
+  setFilter: (filter: Filter) => void;
+  removeFilter: (filterType: `${FilterType}`) => void;
+  clearFilters: () => void;
   dispatch: React.Dispatch<SnippetAction>;
 }
 
@@ -71,8 +108,7 @@ const initialState: SnippetState = {
   isNewSnippetDialogOpen: false,
   isEditMode: false,
   editingSnippet: null,
-  searchTerm: '',
-  filterLanguage: '',
+  filters: [],
 };
 
 // Mock initial snippets (replace with actual data fetching in production)
@@ -101,13 +137,7 @@ const initialSnippets = snippetSchema.array().parse([
 
 const SnippetProvider = ({ children }: { children: ReactNode }) => {
   const [
-    {
-      editingSnippet,
-      filterLanguage,
-      isEditMode,
-      isNewSnippetDialogOpen,
-      searchTerm,
-    },
+    { editingSnippet, isEditMode, isNewSnippetDialogOpen, filters },
     dispatch,
   ] = useImmerReducer(snippetReducer, initialState);
   const queryClient = useQueryClient();
@@ -211,21 +241,46 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
     ]);
   };
 
+  const setFilter = (filter: Filter) => {
+    dispatch({ type: 'SET_FILTER', payload: filter });
+  };
+
+  const removeFilter = (filterType: `${FilterType}`) => {
+    dispatch({ type: 'REMOVE_FILTER', payload: filterType });
+  };
+
+  const clearFilters = () => {
+    dispatch({ type: 'CLEAR_FILTERS' });
+  };
+
   const filteredSnippets = snippets.filter(snippet => {
-    const matchesSearch =
-      snippet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      snippet.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLanguage =
-      filterLanguage === '' || snippet.language === filterLanguage;
-    return matchesSearch && matchesLanguage;
+    return filters.every(filter => {
+      switch (filter.type) {
+        case 'search':
+          return (
+            snippet.title.toLowerCase().includes(filter.value.toLowerCase()) ||
+            snippet.code.toLowerCase().includes(filter.value.toLowerCase())
+          );
+        case 'language':
+          return filter.value === '' || snippet.language === filter.value;
+        case 'favorite':
+          return filter.value ? snippet.isFavorite : true;
+        case 'dateRange':
+          const snippetDate = snippet.createdAt;
+          return (
+            snippetDate >= filter.value[0] && snippetDate <= filter.value[1]
+          );
+        default:
+          return true;
+      }
+    });
   });
 
   const value: SnippetContextValue = {
     editingSnippet,
-    filterLanguage,
     isEditMode,
     isNewSnippetDialogOpen,
-    searchTerm,
+    filters,
     snippets,
     filteredSnippets,
     createSnippet: async (newSnippet: Snippet) => {
@@ -241,6 +296,9 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
       await toggleFavoriteMutation.mutateAsync(id);
     },
     resetSnippetDialog,
+    setFilter,
+    removeFilter,
+    clearFilters,
     dispatch,
   };
 
