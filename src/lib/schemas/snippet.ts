@@ -17,7 +17,7 @@ const baseSnippetSchema = z.object({
 });
 
 // Brand the base schema
-export const snippetSchema = baseSnippetSchema.brand<'Snippet'>();
+export const SnippetSchema = baseSnippetSchema.brand<'Snippet'>();
 
 // TypeScript types inferred from schemas
-export type Snippet = z.infer<typeof snippetSchema>;
+export type Snippet = z.infer<typeof SnippetSchema>;

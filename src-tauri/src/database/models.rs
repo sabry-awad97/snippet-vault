@@ -43,7 +43,15 @@ pub struct SnippetForm {
     pub state: SnippetState,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SnippetFilter {
     pub title: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnippetStateUpdate {
+    pub is_favorite: Option<bool>,
+    pub is_dark: Option<bool>,
 }

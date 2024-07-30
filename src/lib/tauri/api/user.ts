@@ -1,13 +1,8 @@
-import { RegisterFormData } from '../schemas/user';
-import { invokeCommand } from './invoke';
-import { PostParams } from './types';
+import { RegisterFormData, User } from '@/lib/schemas/user';
+import { invokeCommand } from '@/lib/tauri/invoke';
+import { PostParams } from '@/lib/tauri/types';
 
 type Credentials = {
-  email: string;
-  password: string;
-};
-
-type UserForm = {
   email: string;
   password: string;
 };
@@ -15,7 +10,7 @@ type UserForm = {
 type AuthPayload = {
   token: string;
   refresh_token: string;
-  user: any;
+  user: User;
 };
 
 export async function login(

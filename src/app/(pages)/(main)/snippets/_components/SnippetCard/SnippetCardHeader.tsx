@@ -15,7 +15,7 @@ interface SnippetCardHeaderProps {
 }
 
 const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
-  const { toggleFavorite } = useSnippets();
+  const { updateSnippetState } = useSnippets();
 
   const { isFavorite, isDark } = snippet.state;
 
@@ -60,7 +60,14 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <Heart
-                onClick={async () => await toggleFavorite(snippet.id)}
+                onClick={() =>
+                  updateSnippetState({
+                    id: snippet.id,
+                    data: {
+                      isFavorite: !isFavorite,
+                    },
+                  })
+                }
                 className={cn(
                   'h-4 w-4 cursor-pointer text-slate-400 hover:text-purple-600',
                   {

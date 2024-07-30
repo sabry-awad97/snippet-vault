@@ -18,7 +18,7 @@ interface SnippetCardFooterProps {
 const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
   const { isDark } = snippet.state;
   const [isCopied, setIsCopied] = useState(false);
-  const { deleteSnippet, toggleDarkMode } = useSnippets();
+  const { deleteSnippet, updateSnippetState } = useSnippets();
   const { setSnippetDialog } = useSnippetsContext();
 
   const handleCopySnippet = useCallback(() => {
@@ -84,7 +84,13 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
             ) : (
               <Moon className="h-4 w-4" />
             ),
-            onClick: async () => await toggleDarkMode(snippet.id),
+            onClick: () =>
+              updateSnippetState({
+                id: snippet.id,
+                data: {
+                  isDark: !isDark,
+                },
+              }),
           },
           {
             tooltip: isCopied ? 'Copied!' : 'Copy',

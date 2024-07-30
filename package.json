@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "tauri": "tauri",
+    "seed": "tsx scripts/seed.ts",
     "prisma-ts-push": "cross-env PRISMA_CLIENT_PROVIDER=prisma-client-js PRISMA_OUTPUT=\"../node_modules/.prisma/client\" npx prisma db push",
     "prisma-rs-push": "cd prisma && cross-env PRISMA_CLIENT_PROVIDER=\"cargo prisma\" cargo prisma db push",
     "prisma:push": "npm run prisma-ts-push && npm run prisma-rs-push"

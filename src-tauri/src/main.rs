@@ -53,7 +53,8 @@ fn main() -> AppResult<()> {
             commands::snippet::get_snippet,
             commands::snippet::list_snippets,
             commands::snippet::update_snippet,
-            commands::snippet::delete_snippet
+            commands::snippet::delete_snippet,
+            commands::snippet::update_snippet_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

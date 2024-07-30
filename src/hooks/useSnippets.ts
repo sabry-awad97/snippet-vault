@@ -1,26 +1,20 @@
-import notes from '@/initialData/notes';
-import { Snippet, snippetSchema } from '@/lib/schemas/snippet';
+import { Snippet } from '@/lib/schemas/snippet';
+import * as snippetsApi from '@/lib/tauri/api/snippet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 const useSnippets = () => {
   const queryClient = useQueryClient();
-  const [initialSnippets, setInitialSnippets] = useState(
-    snippetSchema.array().parse(notes),
-  );
 
   const { data: snippets = [] } = useQuery<Snippet[]>({
     queryKey: ['snippets'],
-    queryFn: () => initialSnippets,
+    queryFn: () => snippetsApi.listSnippets({ filter: {} }),
   });
 
   const createMutation = useMutation({
     mutationKey: ['createSnippet'],
-    mutationFn: async (newSnippet: Snippet) => {
-      setInitialSnippets([...initialSnippets, newSnippet]);
-      return newSnippet;
-    },
+    mutationFn: (newSnippet: Snippet) =>
+      snippetsApi.createSnippet({ data: newSnippet }),
     onSuccess: () => {
       toast.success('Snippet Created', {
         description: 'Your snippet has been successfully created.',
@@ -37,17 +31,11 @@ const useSnippets = () => {
 
   const updateMutation = useMutation({
     mutationKey: ['updateSnippet'],
-    mutationFn: async (updatedSnippet: Snippet) => {
-      const index = initialSnippets.findIndex(s => s.id === updatedSnippet.id);
-      if (index !== -1) {
-        setInitialSnippets([
-          ...initialSnippets.slice(0, index),
-          updatedSnippet,
-          ...initialSnippets.slice(index + 1),
-        ]);
-      }
-      return updatedSnippet;
-    },
+    mutationFn: async (updatedSnippet: Snippet) =>
+      snippetsApi.updateSnippet({
+        id: updatedSnippet.id,
+        data: updatedSnippet,
+      }),
     onSuccess: () => {
       toast.success('Snippet Updated', {
         description: 'Your snippet has been successfully updated.',
@@ -64,17 +52,7 @@ const useSnippets = () => {
 
   const deleteMutation = useMutation({
     mutationKey: ['deleteSnippet'],
-    mutationFn: async (id: string) => {
-      const index = initialSnippets.findIndex(s => s.id === id);
-      if (index !== -1) {
-        setInitialSnippets([
-          ...initialSnippets.slice(0, index),
-          ...initialSnippets.slice(index + 1),
-        ]);
-      }
-
-      return id;
-    },
+    mutationFn: async (id: string) => snippetsApi.deleteSnippet({ id }),
     onSuccess: () => {
       toast.success('Snippet Deleted', {
         description: 'Your snippet has been successfully deleted.',
@@ -89,51 +67,20 @@ const useSnippets = () => {
     },
   });
 
-  const toggleFavoriteMutation = useMutation({
-    mutationKey: ['toggleFavorite'],
-    mutationFn: async (id: string) => {
-      const index = initialSnippets.findIndex(s => s.id === id);
-      if (index !== -1) {
-        setInitialSnippets([
-          ...initialSnippets.slice(0, index),
-          {
-            ...initialSnippets[index],
-            state: {
-              ...initialSnippets[index].state,
-              isFavorite: !initialSnippets[index].state.isFavorite,
-            },
-          },
-          ...initialSnippets.slice(index + 1),
-        ]);
-      }
-      return id;
+  const updateSnippetStateMutation = useMutation({
+    mutationKey: ['updateSnippetState'],
+    mutationFn: async (params: {
+      id: string;
+      data: Partial<Snippet['state']>;
+    }) => snippetsApi.updateSnippetState(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['snippets'] });
     },
     onError: error => {
       toast.error('Error', {
-        description: 'Failed to toggle favorite.',
+        description: 'Failed to update snippet state.',
       });
-      console.error('Toggle Favorite Error:', error);
-    },
-  });
-
-  const toggleDarkModeMutation = useMutation({
-    mutationKey: ['toggleDarkMode'],
-    mutationFn: async (id: string) => {
-      const index = initialSnippets.findIndex(s => s.id === id);
-      if (index !== -1) {
-        setInitialSnippets([
-          ...initialSnippets.slice(0, index),
-          {
-            ...initialSnippets[index],
-            state: {
-              ...initialSnippets[index].state,
-              isDark: !initialSnippets[index].state.isDark,
-            },
-          },
-          ...initialSnippets.slice(index + 1),
-        ]);
-      }
-      return id;
+      console.error('Update Snippet State Error:', error);
     },
   });
 
@@ -142,8 +89,7 @@ const useSnippets = () => {
     createSnippet: createMutation.mutateAsync,
     updateSnippet: updateMutation.mutateAsync,
     deleteSnippet: deleteMutation.mutateAsync,
-    toggleFavorite: toggleFavoriteMutation.mutateAsync,
-    toggleDarkMode: toggleDarkModeMutation.mutateAsync,
+    updateSnippetState: updateSnippetStateMutation.mutateAsync,
   };
 };
 

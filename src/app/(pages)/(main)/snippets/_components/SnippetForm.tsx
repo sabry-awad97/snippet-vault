@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { useMonacoThemeManager } from '@/hooks/useMonacoThemeManager';
-import { Snippet, snippetSchema } from '@/lib/schemas/snippet';
+import { Snippet, SnippetSchema } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { TagInput } from './TagInput';
 
@@ -72,7 +72,7 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
   const [tags, setTags] = useState<string[]>(snippet?.tags || []);
 
   const form = useForm<Snippet>({
-    resolver: zodResolver(snippetSchema),
+    resolver: zodResolver(SnippetSchema),
     defaultValues: snippet || {
       title: '',
       language: '',

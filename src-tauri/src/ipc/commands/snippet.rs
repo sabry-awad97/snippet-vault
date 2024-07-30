@@ -3,10 +3,10 @@ use tauri::AppHandle;
 use crate::{
     database::{
         handle_db_operation,
-        models::{Snippet, SnippetFilter, SnippetForm},
+        models::{Snippet, SnippetFilter, SnippetForm, SnippetStateUpdate},
     },
     ipc::{
-        params::{GetParams, ListParams, PutParams},
+        params::{DeleteParams, GetParams, ListParams, PutParams},
         responses::IpcResponse,
     },
 };
@@ -97,11 +97,40 @@ pub async fn update_snippet(
 }
 
 #[tauri::command]
-pub async fn delete_snippet(app: AppHandle, snippet_id: String) -> IpcResponse<Snippet> {
+pub async fn delete_snippet(app: AppHandle, params: DeleteParams) -> IpcResponse<Snippet> {
     handle_db_operation(app, |client| async move {
         let snippet = client
             .snippet()
-            .delete(prisma::snippet::id::equals(snippet_id))
+            .delete(prisma::snippet::id::equals(params.id))
+            .exec()
+            .await?;
+        Ok(snippet)
+    })
+    .await
+}
+
+#[tauri::command]
+pub async fn update_snippet_state(
+    app: AppHandle,
+    params: PutParams<SnippetStateUpdate>,
+) -> IpcResponse<Snippet> {
+    let mut updated_params = vec![];
+
+    if let Some(is_dark) = params.data.is_dark {
+        updated_params.push(prisma::snippet_state::is_dark::set(is_dark));
+    }
+
+    if let Some(is_favorite) = params.data.is_favorite {
+        updated_params.push(prisma::snippet_state::is_favorite::set(is_favorite));
+    }
+
+    handle_db_operation(app, move |client| async move {
+        let snippet = client
+            .snippet()
+            .update(
+                prisma::snippet::id::equals(params.id),
+                vec![prisma::snippet::state::update(updated_params)],
+            )
             .exec()
             .await?;
         Ok(snippet)

@@ -1,7 +1,7 @@
 'use client';
 
 import { RegisterFormData, userSchema } from '@/lib/schemas/user';
-import { login, refreshToken, register } from '@/lib/tauri/commands';
+import { login, refreshToken, register } from '@/lib/tauri/api/user';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, {
   createContext,
