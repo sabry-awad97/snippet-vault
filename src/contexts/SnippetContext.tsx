@@ -96,11 +96,11 @@ interface SnippetContextValue {
   updateSnippet: (updatedSnippet: Snippet) => Promise<void>;
   deleteSnippet: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
+  setSnippetDialog: (snippet: Snippet | null) => void;
   resetSnippetDialog: () => void;
   setFilter: (filter: Filter) => void;
   removeFilter: (filterType: `${FilterType}`) => void;
   clearFilters: () => void;
-  dispatch: React.Dispatch<SnippetAction>;
 }
 
 const SnippetContext = createContext<SnippetContextValue | undefined>(
@@ -238,6 +238,16 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
     },
   });
 
+  const setSnippetDialog = (snippet: Snippet | null) => {
+    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
+    if (snippet) {
+      dispatchMultipleActions(dispatch, [
+        { type: 'SET_EDIT_MODE', payload: true },
+        { type: 'SET_EDITING_SNIPPET', payload: snippet },
+      ]);
+    }
+  };
+
   const resetSnippetDialog = () => {
     dispatchMultipleActions(dispatch, [
       { type: 'SET_NEW_SNIPPET_DIALOG', payload: false },
@@ -314,11 +324,11 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
     toggleFavorite: async (id: string) => {
       await toggleFavoriteMutation.mutateAsync(id);
     },
+    setSnippetDialog,
     resetSnippetDialog,
     setFilter,
     removeFilter,
     clearFilters,
-    dispatch,
   };
 
   return (

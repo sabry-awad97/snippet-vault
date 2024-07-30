@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
-import SnippetsHeader from './_components/SnippetsHeader';
 
 export default function SnippetsPage() {
   const auth = useAuth();
@@ -30,19 +29,19 @@ export default function SnippetsPage() {
   }, [auth, router]);
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-1 bg-gray-100 dark:bg-gray-900">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="mx-auto px-4 py-8"
+        className="mx-auto flex flex-col px-4 py-4"
       >
-        <SnippetsHeader />
+        {/* <SnippetsHeader /> */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
         >
           <AnimatePresence>
             {filteredSnippets.map(snippet => (
@@ -53,6 +52,7 @@ export default function SnippetsPage() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="flex w-full flex-1"
               >
                 <SnippetCard snippet={snippet} />
               </motion.div>

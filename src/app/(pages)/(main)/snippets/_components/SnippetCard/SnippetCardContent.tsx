@@ -20,7 +20,7 @@ const SnippetCardContent = ({
 }: SnippetCardContentProps) => {
   return (
     <CardContent
-      className={cn('flex-grow overflow-hidden p-4', {
+      className={cn('flex-1 overflow-hidden p-4', {
         'text-gray-300': isDarkMode,
         'text-gray-800': !isDarkMode,
       })}

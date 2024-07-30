@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Snippet } from '@/lib/schemas/snippet';
+import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import SnippetCardContent from './SnippetCardContent';
@@ -15,12 +16,6 @@ const SnippetCard: React.FC<SnippetCardProps> = ({ snippet }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
-  const cardClasses = `flex h-[400px] flex-col overflow-hidden border-${
-    isDarkMode ? 'purple-700' : 'purple-200'
-  } ${
-    isDarkMode ? 'bg-gray-800' : 'bg-white'
-  } shadow-lg transition-all duration-300 hover:shadow-xl`;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,8 +25,17 @@ const SnippetCard: React.FC<SnippetCardProps> = ({ snippet }) => {
       whileHover={{ scale: 1.02 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
+      className="flex flex-1"
     >
-      <Card className={cardClasses}>
+      <Card
+        className={cn(
+          `flex flex-1 flex-col overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl`,
+          {
+            'border-purple-700 bg-gray-800': isDarkMode,
+            'border-purple-200 bg-white': !isDarkMode,
+          },
+        )}
+      >
         <SnippetCardHeader {...{ snippet, isDarkMode, isHovered }} />
         <SnippetCardContent {...{ snippet, isDarkMode }} />
         <SnippetCardFooter

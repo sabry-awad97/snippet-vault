@@ -1,5 +1,6 @@
 import { Tooltip } from '@/components/Common/Tooltip';
 import { Button } from '@/components/ui/button';
+import { FilterType } from '@/contexts/SnippetContext';
 import useSnippets from '@/hooks/useSnippets';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,14 +9,14 @@ import { useState } from 'react';
 
 const SearchBar = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const { setFilter, dispatch } = useSnippets();
+  const { setFilter, setSnippetDialog } = useSnippets();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilter({ type: 'search', value: e.target.value });
+    setFilter({ type: FilterType.SEARCH, value: e.target.value });
   };
 
   const handleNewSnippet = () => {
-    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
+    setSnippetDialog(null);
   };
 
   return (

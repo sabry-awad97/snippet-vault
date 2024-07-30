@@ -2,7 +2,7 @@ import { CardFooter } from '@/components/ui/card';
 import useSnippets from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
-import { Check, Copy, Edit, Moon, Star, Sun, Trash2 } from 'lucide-react';
+import { Check, Copy, Edit, Moon, Sun, Trash2 } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import ActionButton from './ActionButton';
@@ -18,9 +18,8 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
   isDarkMode,
   toggleDarkMode,
 }) => {
-  const [isFavorite, setIsFavorite] = useState(snippet.isFavorite);
   const [isCopied, setIsCopied] = useState(false);
-  const { deleteSnippet, toggleFavorite, dispatch } = useSnippets();
+  const { deleteSnippet, setSnippetDialog } = useSnippets();
 
   const handleCopySnippet = useCallback(() => {
     navigator.clipboard
@@ -39,16 +38,9 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
       });
   }, [snippet.code]);
 
-  const handleToggleFavorite = useCallback(() => {
-    setIsFavorite(prev => !prev);
-    toggleFavorite(snippet.id);
-  }, [snippet.id, toggleFavorite]);
-
   const handleEdit = useCallback(() => {
-    dispatch({ type: 'SET_EDIT_MODE', payload: true });
-    dispatch({ type: 'SET_EDITING_SNIPPET', payload: snippet });
-    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
-  }, [dispatch, snippet]);
+    setSnippetDialog(snippet);
+  }, [setSnippetDialog, snippet]);
 
   const handleDelete = useCallback(() => {
     deleteSnippet(snippet.id);
@@ -70,18 +62,6 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
             <Moon className="h-4 w-4" />
           ),
           onClick: toggleDarkMode,
-        },
-        {
-          tooltip: isFavorite ? 'Unfavorite' : 'Favorite',
-          icon: (
-            <Star
-              className={cn(
-                'h-4 w-4',
-                isFavorite && 'fill-current text-yellow-400',
-              )}
-            />
-          ),
-          onClick: handleToggleFavorite,
         },
         {
           tooltip: isCopied ? 'Copied!' : 'Copy',

@@ -85,8 +85,8 @@ const SnippetsHeader: React.FC = () => {
       className="mb-6 space-y-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-1 items-center gap-4">
-          <div className="ml-auto flex items-center justify-center gap-5">
+        <div className="relative flex flex-1 items-center gap-4">
+          <div className="absolute right-0 ml-auto flex items-center justify-center gap-5">
             <DateRangePicker
               onUpdate={values => {
                 console.log(values);
