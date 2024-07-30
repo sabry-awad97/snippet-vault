@@ -12,6 +12,7 @@ const notes = [
   `,
     state: {
       isFavorite: true,
+      isDark: false,
     },
     createdAt: new Date('2024-07-09'),
     updatedAt: new Date('2024-07-09'),
@@ -46,6 +47,7 @@ const notes = [
 
     state: {
       isFavorite: false,
+      isDark: false,
     },
     createdAt: new Date('2024-07-08'),
     updatedAt: new Date('2024-07-08'),
@@ -64,6 +66,7 @@ const notes = [
   `,
     state: {
       isFavorite: false,
+      isDark: false,
     },
     createdAt: new Date('2024-07-07'),
     updatedAt: new Date('2024-07-07'),
@@ -92,6 +95,7 @@ const notes = [
   `,
     state: {
       isFavorite: true,
+      isDark: false,
     },
     createdAt: new Date('2024-07-06'),
     updatedAt: new Date('2024-07-06'),
@@ -119,6 +123,7 @@ const notes = [
   `,
     state: {
       isFavorite: false,
+      isDark: false,
     },
     createdAt: new Date('2024-07-05'),
     updatedAt: new Date('2024-07-05'),

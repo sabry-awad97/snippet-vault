@@ -12,16 +12,13 @@ import { MdOutlineTitle } from 'react-icons/md';
 
 interface SnippetCardHeaderProps {
   isHovered: boolean;
-  isDarkMode: boolean;
   snippet: Snippet;
 }
 
-const SnippetCardHeader = ({
-  isDarkMode,
-  isHovered,
-  snippet,
-}: SnippetCardHeaderProps) => {
+const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
   const { toggleFavorite } = useSnippets();
+
+  const { isFavorite, isDark } = snippet.state;
 
   const handleToggleFavorite = useCallback(() => {
     toggleFavorite(snippet.id);
@@ -30,14 +27,14 @@ const SnippetCardHeader = ({
   return (
     <CardHeader
       className={cn('p-4', {
-        'bg-gray-700': isDarkMode,
-        'bg-purple-50': !isDarkMode,
+        'bg-gray-700': isDark,
+        'bg-purple-50': !isDark,
       })}
     >
       <CardTitle
         className={cn('flex items-center text-lg font-semibold', {
-          'text-purple-300': isDarkMode,
-          'text-purple-800': !isDarkMode,
+          'text-purple-300': isDark,
+          'text-purple-800': !isDark,
         })}
       >
         <motion.div
@@ -47,8 +44,8 @@ const SnippetCardHeader = ({
         >
           <MdOutlineTitle
             className={cn('h-5 w-5', {
-              'text-purple-400': isDarkMode,
-              'text-purple-600': !isDarkMode,
+              'text-purple-400': isDark,
+              'text-purple-600': !isDark,
             })}
           />
         </motion.div>
@@ -72,7 +69,7 @@ const SnippetCardHeader = ({
                 className={cn(
                   'h-4 w-4 cursor-pointer text-slate-400 hover:text-purple-600',
                   {
-                    'fill-current text-purple-600': snippet.state.isFavorite,
+                    'fill-current text-purple-600': isFavorite,
                   },
                 )}
               />

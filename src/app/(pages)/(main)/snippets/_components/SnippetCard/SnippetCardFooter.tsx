@@ -12,17 +12,12 @@ import ActionButton from './ActionButton';
 
 interface SnippetCardFooterProps {
   snippet: Snippet;
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
 }
 
-const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
-  snippet,
-  isDarkMode,
-  toggleDarkMode,
-}) => {
+const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
+  const { isDark } = snippet.state;
   const [isCopied, setIsCopied] = useState(false);
-  const { deleteSnippet, setSnippetDialog } = useSnippets();
+  const { deleteSnippet, setSnippetDialog, toggleDarkMode } = useSnippets();
 
   const handleCopySnippet = useCallback(() => {
     navigator.clipboard
@@ -53,7 +48,7 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
     <CardFooter
       className={cn(
         'flex items-center justify-between space-x-4 p-4 transition-colors duration-200',
-        isDarkMode ? 'bg-gray-800' : 'bg-purple-50',
+        isDark ? 'bg-gray-800' : 'bg-purple-50',
       )}
     >
       <motion.div
@@ -82,12 +77,12 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
         {[
           {
             tooltip: 'Toggle Dark Mode',
-            icon: isDarkMode ? (
+            icon: isDark ? (
               <Sun className="h-4 w-4" />
             ) : (
               <Moon className="h-4 w-4" />
             ),
-            onClick: toggleDarkMode,
+            onClick: () => toggleDarkMode(snippet.id),
           },
           {
             tooltip: isCopied ? 'Copied!' : 'Copy',
@@ -115,7 +110,7 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
             tooltip={action.tooltip}
             icon={action.icon}
             onClick={action.onClick}
-            isDarkMode={isDarkMode}
+            isDarkMode={isDark}
             isDestructive={action.isDestructive}
           />
         ))}

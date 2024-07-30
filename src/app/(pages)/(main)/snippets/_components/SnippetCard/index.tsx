@@ -13,8 +13,7 @@ interface SnippetCardProps {
 
 const SnippetCard: React.FC<SnippetCardProps> = ({ snippet }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+  const { isDark } = snippet.state;
 
   return (
     <motion.div
@@ -31,20 +30,14 @@ const SnippetCard: React.FC<SnippetCardProps> = ({ snippet }) => {
         className={cn(
           `flex flex-1 flex-col overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl`,
           {
-            'border-purple-700 bg-gray-800': isDarkMode,
-            'border-purple-200 bg-white': !isDarkMode,
+            'border-purple-700 bg-gray-800': isDark,
+            'border-purple-200 bg-white': !isDark,
           },
         )}
       >
-        <SnippetCardHeader {...{ snippet, isDarkMode, isHovered }} />
-        <SnippetCardContent {...{ snippet, isDarkMode }} />
-        <SnippetCardFooter
-          {...{
-            snippet,
-            isDarkMode,
-            toggleDarkMode,
-          }}
-        />
+        <SnippetCardHeader snippet={snippet} isHovered={isHovered} />
+        <SnippetCardContent snippet={snippet} />
+        <SnippetCardFooter snippet={snippet} />
       </Card>
     </motion.div>
   );

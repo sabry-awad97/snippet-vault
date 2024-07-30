@@ -97,6 +97,7 @@ interface SnippetContextValue {
   updateSnippet: (updatedSnippet: Snippet) => Promise<void>;
   deleteSnippet: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
+  toggleDarkMode: (id: string) => Promise<void>;
   setSnippetDialog: (snippet: Snippet | null) => void;
   resetSnippetDialog: () => void;
   setFilter: (filter: Filter) => void;
@@ -133,6 +134,7 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const createMutation = useMutation({
+    mutationKey: ['createSnippet'],
     mutationFn: async (newSnippet: Snippet) => {
       initialSnippets.push(newSnippet);
       return newSnippet;
@@ -154,6 +156,7 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const updateMutation = useMutation({
+    mutationKey: ['updateSnippet'],
     mutationFn: async (updatedSnippet: Snippet) => {
       const index = initialSnippets.findIndex(s => s.id === updatedSnippet.id);
       if (index !== -1) {
@@ -178,6 +181,7 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const deleteMutation = useMutation({
+    mutationKey: ['deleteSnippet'],
     mutationFn: async (id: string) => {
       const index = initialSnippets.findIndex(s => s.id === id);
       if (index !== -1) {
@@ -200,6 +204,7 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const toggleFavoriteMutation = useMutation({
+    mutationKey: ['toggleFavorite'],
     mutationFn: async (id: string) => {
       const index = initialSnippets.findIndex(s => s.id === id);
       if (index !== -1) {
@@ -216,6 +221,18 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
         description: 'Failed to toggle favorite.',
       });
       console.error('Toggle Favorite Error:', error);
+    },
+  });
+
+  const toggleDarkModeMutation = useMutation({
+    mutationKey: ['toggleDarkMode'],
+    mutationFn: async (id: string) => {
+      const index = initialSnippets.findIndex(s => s.id === id);
+      if (index !== -1) {
+        initialSnippets[index].state.isDark =
+          !initialSnippets[index].state.isDark;
+      }
+      return id;
     },
   });
 
@@ -304,6 +321,9 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
     },
     toggleFavorite: async (id: string) => {
       await toggleFavoriteMutation.mutateAsync(id);
+    },
+    toggleDarkMode: async (id: string) => {
+      await toggleDarkModeMutation.mutateAsync(id);
     },
     setSnippetDialog,
     resetSnippetDialog,

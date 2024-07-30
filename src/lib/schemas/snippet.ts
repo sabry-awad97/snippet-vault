@@ -3,6 +3,7 @@ import { commonSchema } from './common';
 
 const NoteStateSchema = z.object({
   isFavorite: z.boolean().default(false),
+  isDark: z.boolean().default(false),
 });
 
 // Define the snippet schema with common fields and additional validations

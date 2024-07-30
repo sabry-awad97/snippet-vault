@@ -10,18 +10,16 @@ import {
 
 interface SnippetCardContentProps {
   snippet: Snippet;
-  isDarkMode: boolean;
 }
 
-const SnippetCardContent = ({
-  snippet,
-  isDarkMode,
-}: SnippetCardContentProps) => {
+const SnippetCardContent = ({ snippet }: SnippetCardContentProps) => {
+  const { isDark } = snippet.state;
+
   return (
     <CardContent
       className={cn('h-full overflow-hidden p-4', {
-        'text-gray-300': isDarkMode,
-        'text-gray-800': !isDarkMode,
+        'text-gray-300': isDark,
+        'text-gray-800': !isDark,
       })}
     >
       <motion.div
@@ -32,7 +30,7 @@ const SnippetCardContent = ({
       >
         <SyntaxHighlighter
           language={snippet.language}
-          style={isDarkMode ? vscDarkPlus : vs}
+          style={isDark ? vscDarkPlus : vs}
           customStyle={{
             margin: 0,
             borderRadius: '0.375rem',

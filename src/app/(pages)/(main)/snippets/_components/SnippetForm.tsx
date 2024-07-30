@@ -50,6 +50,7 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
       code: '',
       tags: [],
       id: Date.now().toString(),
+      state: {},
       createdAt: new Date(),
       updatedAt: new Date(),
     },
