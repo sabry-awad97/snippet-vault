@@ -33,7 +33,7 @@ const languages = [
 const SnippetsHeader: React.FC = () => {
   const { setFilter, clearFilters } = useSnippets();
   const [activeFilters, setActiveFilters] = useState<{
-    [key in FilterType]?: any;
+    [K in FilterType]?: Extract<Filter, { type: K }>['value'];
   }>({});
 
   const handleFilterChange = useCallback(

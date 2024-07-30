@@ -4,7 +4,7 @@ import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import useSnippets from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
-import { human } from '@/lib/utils/humanReadableTimestamp';
+import { humanReadableTimestamp } from '@/lib/utils/humanReadableTimestamp';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, Tag } from 'lucide-react';
 import { useCallback } from 'react';
@@ -59,7 +59,7 @@ const SnippetCardHeader = ({
           </span>
 
           <Tooltip
-            content={snippet.isFavorite ? 'Unfavorite' : 'Favorite'}
+            content={snippet.state.isFavorite ? 'Unfavorite' : 'Favorite'}
             sideOffset={5}
           >
             <motion.div
@@ -72,7 +72,7 @@ const SnippetCardHeader = ({
                 className={cn(
                   'h-4 w-4 cursor-pointer text-slate-400 hover:text-purple-600',
                   {
-                    'fill-current text-purple-600': snippet.isFavorite,
+                    'fill-current text-purple-600': snippet.state.isFavorite,
                   },
                 )}
               />
@@ -92,7 +92,7 @@ const SnippetCardHeader = ({
               second: 'numeric',
             })}
           </time>
-          <span>{human(snippet.createdAt)}</span>
+          <span>{humanReadableTimestamp(snippet.createdAt)}</span>
         </div>
 
         <AnimatePresence>

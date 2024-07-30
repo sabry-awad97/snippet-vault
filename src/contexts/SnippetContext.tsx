@@ -129,7 +129,9 @@ const initialSnippets = snippetSchema.array().parse([
 const name = 'John';
 console.log(name); // Output: John
 `,
-    isFavorite: true,
+    state: {
+      isFavorite: true,
+    },
     createdAt: new Date('2024-07-09'),
     updatedAt: new Date('2024-07-09'),
   },
@@ -160,7 +162,10 @@ const Example = () => {
 
 export default Example;
 `,
-    isFavorite: false,
+
+    state: {
+      isFavorite: false,
+    },
     createdAt: new Date('2024-07-08'),
     updatedAt: new Date('2024-07-08'),
   },
@@ -176,7 +181,9 @@ export default function handler(req, res) {
   res.status(200).json({ message: 'Hello from Next.js API route' });
 }
 `,
-    isFavorite: false,
+    state: {
+      isFavorite: false,
+    },
     createdAt: new Date('2024-07-07'),
     updatedAt: new Date('2024-07-07'),
   },
@@ -202,7 +209,9 @@ const App = () => (
 
 export default App;
 `,
-    isFavorite: true,
+    state: {
+      isFavorite: true,
+    },
     createdAt: new Date('2024-07-06'),
     updatedAt: new Date('2024-07-06'),
   },
@@ -227,7 +236,9 @@ db.once('open', function() {
   console.log('Connected to the database');
 });
 `,
-    isFavorite: false,
+    state: {
+      isFavorite: false,
+    },
     createdAt: new Date('2024-07-05'),
     updatedAt: new Date('2024-07-05'),
   },
@@ -316,7 +327,8 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
     mutationFn: async (id: string) => {
       const index = initialSnippets.findIndex(s => s.id === id);
       if (index !== -1) {
-        initialSnippets[index].isFavorite = !initialSnippets[index].isFavorite;
+        initialSnippets[index].state.isFavorite =
+          !initialSnippets[index].state.isFavorite;
       }
       return id;
     },
@@ -380,7 +392,7 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
           filter.value.some(tag => snippet.tags.includes(tag))
         );
       case FilterType.FAVORITE:
-        return filter.value ? snippet.isFavorite : true;
+        return filter.value ? snippet.state.isFavorite : true;
       case FilterType.DATE_RANGE:
         const snippetDate = new Date(snippet.createdAt);
         return (
