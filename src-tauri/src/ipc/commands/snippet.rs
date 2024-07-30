@@ -6,25 +6,29 @@ use crate::{
         models::{Snippet, SnippetFilter, SnippetForm, SnippetStateUpdate},
     },
     ipc::{
-        params::{DeleteParams, GetParams, ListParams, PutParams},
+        params::{DeleteParams, GetParams, ListParams, PostParams, PutParams},
         responses::IpcResponse,
     },
 };
 
 #[tauri::command]
-pub async fn create_snippet(app: AppHandle, params: SnippetForm) -> IpcResponse<Snippet> {
+pub async fn create_snippet(
+    app: AppHandle,
+    params: PostParams<SnippetForm>,
+) -> IpcResponse<Snippet> {
     handle_db_operation(app, move |client| async move {
+        let data = params.data;
         let snippet = client
             .snippet()
             .create(
-                params.title,
-                params.language,
-                params.code,
+                data.title,
+                data.language,
+                data.code,
                 prisma::snippet_state::create(vec![
-                    prisma::snippet_state::is_dark::set(params.state.is_dark),
-                    prisma::snippet_state::is_favorite::set(params.state.is_favorite),
+                    prisma::snippet_state::is_dark::set(data.state.is_dark),
+                    prisma::snippet_state::is_favorite::set(data.state.is_favorite),
                 ]),
-                vec![prisma::snippet::tags::set(params.tags)],
+                vec![prisma::snippet::tags::set(data.tags)],
             )
             .exec()
             .await?;

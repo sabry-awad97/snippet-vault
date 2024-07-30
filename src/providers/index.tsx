@@ -16,7 +16,7 @@ const Providers = ({ children }: Required<PropsWithChildren>) => (
           disableTransitionOnChange
         >
           {children}
-          <Toaster />
+          <Toaster richColors expand />
         </ThemeProvider>
       </AuthProvider>
     </SnippetProvider>

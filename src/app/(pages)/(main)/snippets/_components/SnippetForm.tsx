@@ -1,10 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import Editor from '@monaco-editor/react';
-import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { FiPlus, FiSave } from 'react-icons/fi';
-
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -12,7 +5,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
@@ -26,6 +18,13 @@ import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { useMonacoThemeManager } from '@/hooks/useMonacoThemeManager';
 import { Snippet, SnippetSchema } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Editor from '@monaco-editor/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { SubmitErrorHandler, useFieldArray, useForm } from 'react-hook-form';
+import { FiPlus, FiSave } from 'react-icons/fi';
+import { toast } from 'sonner';
 import { TagInput } from './TagInput';
 
 interface SnippetFormProps {
@@ -69,8 +68,6 @@ const useDarkMode = ({
 };
 
 const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
-  const [tags, setTags] = useState<string[]>(snippet?.tags || []);
-
   const form = useForm<Snippet>({
     resolver: zodResolver(SnippetSchema),
     defaultValues: snippet || {
@@ -78,21 +75,31 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
       language: '',
       code: '',
       tags: [],
-      id: Date.now().toString(),
       state: {},
+      id: Date.now().toString(),
       createdAt: new Date(),
       updatedAt: new Date(),
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'tags',
+  });
+
   const { handleEditorDidMount } = useMonacoThemeManager();
-
   const { theme } = useCurrentTheme();
-
   const isDarkMode = useDarkMode({ snippet, theme });
 
   const handleSubmit = async (values: Snippet) => {
-    await onSubmit({ ...values, tags });
+    await onSubmit(values);
+  };
+
+  const onInvalid: SubmitErrorHandler<Snippet> = errors => {
+    Object.values(errors).forEach(error => {
+      toast.error(error?.message?.toString());
+    });
+    setTimeout(() => form.clearErrors(), 3000);
   };
 
   return (
@@ -102,28 +109,31 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.3 }}
-        className={`rounded-lg p-8 shadow-lg ${
+        className={cn(
+          'rounded-lg p-8 shadow-lg',
           isDarkMode
             ? 'bg-gradient-to-br from-gray-800 to-gray-900'
-            : 'bg-gradient-to-br from-purple-50 to-indigo-50'
-        }`}
+            : 'bg-gradient-to-br from-purple-50 to-indigo-50',
+        )}
       >
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit)}
+            onSubmit={form.handleSubmit(handleSubmit, onInvalid)}
             className="space-y-6"
           >
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-6">
+                {/* Title Field */}
                 <FormField
                   control={form.control}
                   name="title"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel
-                        className={`font-semibold ${
-                          isDarkMode ? 'text-purple-300' : 'text-purple-700'
-                        }`}
+                        className={cn(
+                          'font-semibold',
+                          isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                        )}
                       >
                         Title
                       </FormLabel>
@@ -134,31 +144,31 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                         >
                           <Input
                             {...field}
-                            className={`w-full rounded-md border-2 px-4 py-2 transition-all duration-200 ${
+                            className={cn(
+                              'w-full rounded-md border-2 px-4 py-2 transition-all duration-200',
                               isDarkMode
                                 ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
-                                : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300'
-                            } focus:outline-none focus:ring-2`}
+                                : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
+                              'focus:outline-none focus:ring-2',
+                            )}
                           />
                         </motion.div>
                       </FormControl>
-                      <FormMessage
-                        className={
-                          isDarkMode ? 'text-red-400' : 'text-purple-600'
-                        }
-                      />
                     </FormItem>
                   )}
                 />
+
+                {/* Language Field */}
                 <FormField
                   control={form.control}
                   name="language"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel
-                        className={`font-semibold ${
-                          isDarkMode ? 'text-purple-300' : 'text-purple-700'
-                        }`}
+                        className={cn(
+                          'font-semibold',
+                          isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                        )}
                       >
                         Language
                       </FormLabel>
@@ -172,11 +182,13 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                             whileTap={{ scale: 0.98 }}
                           >
                             <SelectTrigger
-                              className={`w-full rounded-md border-2 px-4 py-2 transition-all duration-200 ${
+                              className={cn(
+                                'w-full rounded-md border-2 px-4 py-2 transition-all duration-200',
                                 isDarkMode
                                   ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
-                                  : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300'
-                              } focus:outline-none focus:ring-2`}
+                                  : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
+                                'focus:outline-none focus:ring-2',
+                              )}
                             >
                               <SelectValue placeholder="Select a language" />
                             </SelectTrigger>
@@ -190,19 +202,17 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormMessage
-                        className={
-                          isDarkMode ? 'text-red-400' : 'text-purple-600'
-                        }
-                      />
                     </FormItem>
                   )}
                 />
+
+                {/* Tags Field */}
                 <FormItem>
                   <FormLabel
-                    className={`font-semibold ${
-                      isDarkMode ? 'text-purple-300' : 'text-purple-700'
-                    }`}
+                    className={cn(
+                      'font-semibold',
+                      isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                    )}
                   >
                     Tags
                   </FormLabel>
@@ -210,18 +220,11 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <TagInput
-                      tags={tags}
-                      setTags={setTags}
-                      placeholder="Add tags..."
-                      className={`w-full rounded-md border-2 px-4 py-2 transition-all duration-200 ${
-                        isDarkMode
-                          ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
-                          : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300'
-                      } focus:outline-none focus:ring-2`}
-                    />
+                    <TagInput />
                   </motion.div>
                 </FormItem>
+
+                {/* Submit Button */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -229,13 +232,10 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                   <Button
                     type="submit"
                     className={cn(
-                      `w-full rounded-md py-2 font-semibold text-white shadow-md transition-all duration-200 focus:ring-2 focus:ring-offset-2`,
-                      {
-                        'bg-purple-700 hover:bg-purple-600 focus:ring-purple-400':
-                          isDarkMode,
-                        'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500':
-                          !isDarkMode,
-                      },
+                      'w-full rounded-md py-2 font-semibold text-white shadow-md transition-all duration-200 focus:ring-2 focus:ring-offset-2',
+                      isDarkMode
+                        ? 'bg-purple-700 hover:bg-purple-600 focus:ring-purple-400'
+                        : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
                     )}
                   >
                     {snippet ? (
@@ -252,6 +252,8 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                   </Button>
                 </motion.div>
               </div>
+
+              {/* Code Editor Field */}
               <div className="space-y-2">
                 <FormField
                   control={form.control}
@@ -259,9 +261,10 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                   render={({ field }) => (
                     <FormItem className="h-full">
                       <FormLabel
-                        className={`font-semibold ${
-                          isDarkMode ? 'text-purple-300' : 'text-purple-700'
-                        }`}
+                        className={cn(
+                          'font-semibold',
+                          isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                        )}
                       >
                         Code
                       </FormLabel>
@@ -290,19 +293,16 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                               automaticLayout: true,
                             }}
                             theme={isDarkMode ? 'vs-dark' : 'vs'}
-                            className={`overflow-hidden rounded-md border-2 transition-all duration-200 ${
+                            className={cn(
+                              'overflow-hidden rounded-md border-2 transition-all duration-200',
                               isDarkMode
                                 ? 'border-purple-700 focus-within:border-purple-400 focus-within:ring-purple-400 hover:border-purple-500'
-                                : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-300 hover:border-purple-400'
-                            } focus-within:ring-2`}
+                                : 'border-purple-200 focus-within:border-purple-500 focus-within:ring-purple-300 hover:border-purple-400',
+                              'focus-within:ring-2',
+                            )}
                           />
                         </motion.div>
                       </FormControl>
-                      <FormMessage
-                        className={
-                          isDarkMode ? 'text-red-400' : 'text-purple-600'
-                        }
-                      />
                     </FormItem>
                   )}
                 />
