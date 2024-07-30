@@ -4,7 +4,7 @@ import { CardHeader, CardTitle } from '@/components/ui/card';
 import useSnippets from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
-import { humanReadableTimestamp } from '@/lib/utils/humanReadableTimestamp';
+import { humanReadableTimestamp } from '@blaze/human-readable-timestamp';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, Tag } from 'lucide-react';
 import { useCallback } from 'react';
