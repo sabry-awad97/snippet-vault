@@ -26,8 +26,8 @@ model Snippet {
     title          String
     language       String
     code           String
-    tagIDs         String[]     @db.ObjectId
-    tags           Tag[]        @relation("SnippetTags", fields: [tagIDs], references: [id])
+    tagIds         String[]     @db.ObjectId
+    tags           Tag[]        @relation("SnippetTags", fields: [tagIds], references: [id])
     snippetStateId String       @unique @db.ObjectId
     state          SnippetState @relation(fields: [snippetStateId], references: [id])
 
@@ -47,8 +47,8 @@ model Tag {
     id         String    @id @default(auto()) @map("_id") @db.ObjectId
     name       String
     color      String?
-    snippetIDs String[]  @db.ObjectId
-    snippets   Snippet[] @relation("SnippetTags", fields: [snippetIDs], references: [id])
+    snippetIds String[]  @db.ObjectId
+    snippets   Snippet[] @relation("SnippetTags", fields: [snippetIds], references: [id])
 
     @@map("tags")
 }

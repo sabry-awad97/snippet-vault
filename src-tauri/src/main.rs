@@ -54,7 +54,12 @@ fn main() -> AppResult<()> {
             commands::snippet::list_snippets,
             commands::snippet::update_snippet,
             commands::snippet::delete_snippet,
-            commands::snippet::update_snippet_state,
+            commands::snippet_state::update_snippet_state,
+            commands::tag::create_tag,
+            commands::tag::get_tag,
+            commands::tag::list_tags,
+            commands::tag::update_tag,
+            commands::tag::delete_tag
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

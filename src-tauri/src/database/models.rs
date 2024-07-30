@@ -32,6 +32,7 @@ pub struct AuthPayload {
 
 pub type SnippetState = prisma::snippet_state::Data;
 pub type Snippet = prisma::snippet::Data;
+pub type Tag = prisma::tag::Data;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -39,8 +40,8 @@ pub struct SnippetForm {
     pub title: String,
     pub language: String,
     pub code: String,
-    pub tags: Vec<String>,
-    pub state: SnippetState,
+    pub tag_ids: Vec<String>,
+    pub snippet_state_id: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,4 +55,18 @@ pub struct SnippetFilter {
 pub struct SnippetStateUpdate {
     pub is_favorite: Option<bool>,
     pub is_dark: Option<bool>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TagForm {
+    pub name: String,
+    pub color: Option<String>,
+    pub snippet_ids: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TagFilter {
+    pub name: Option<String>,
 }
