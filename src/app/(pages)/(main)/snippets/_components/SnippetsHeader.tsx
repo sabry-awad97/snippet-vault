@@ -45,7 +45,6 @@ const SnippetsHeader: React.FC = () => {
           <div className="ml-auto flex items-center justify-center gap-5">
             <DateRangePicker
               onUpdate={values => {
-                console.log(values);
 
                 if (values.range.from && values.range.to) {
                   handleDateRangeChange({

@@ -22,8 +22,6 @@ export const useMonacoThemeManager = () => {
 
   const theme = currentTheme === 'dark' ? 'Dracula' : 'Monokai';
 
-  console.log(theme);
-
   const handleEditorDidMount: OnMount = (_, monaco) => {
     for (const theme of themes) {
       monaco.editor.defineTheme(theme.label, theme.value);

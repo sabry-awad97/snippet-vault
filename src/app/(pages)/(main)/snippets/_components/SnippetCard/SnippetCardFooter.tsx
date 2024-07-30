@@ -84,7 +84,7 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
             ) : (
               <Moon className="h-4 w-4" />
             ),
-            onClick: () => toggleDarkMode(snippet.id),
+            onClick: async () => await toggleDarkMode(snippet.id),
           },
           {
             tooltip: isCopied ? 'Copied!' : 'Copy',

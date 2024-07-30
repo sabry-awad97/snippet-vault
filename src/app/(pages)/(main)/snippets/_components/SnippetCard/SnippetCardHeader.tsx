@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import { humanReadableTimestamp } from '@blaze/human-readable-timestamp';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, Tag } from 'lucide-react';
-import { useCallback } from 'react';
 import { MdOutlineTitle } from 'react-icons/md';
 
 interface SnippetCardHeaderProps {
@@ -19,10 +18,6 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
   const { toggleFavorite } = useSnippets();
 
   const { isFavorite, isDark } = snippet.state;
-
-  const handleToggleFavorite = useCallback(() => {
-    toggleFavorite(snippet.id);
-  }, [snippet.id, toggleFavorite]);
 
   return (
     <CardHeader
@@ -65,7 +60,7 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <Heart
-                onClick={handleToggleFavorite}
+                onClick={async () => await toggleFavorite(snippet.id)}
                 className={cn(
                   'h-4 w-4 cursor-pointer text-slate-400 hover:text-purple-600',
                   {

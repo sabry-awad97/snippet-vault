@@ -1,11 +1,14 @@
 import notes from '@/initialData/notes';
 import { Snippet, snippetSchema } from '@/lib/schemas/snippet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 const useSnippets = () => {
   const queryClient = useQueryClient();
-  const initialSnippets = snippetSchema.array().parse(notes);
+  const [initialSnippets, setInitialSnippets] = useState(
+    snippetSchema.array().parse(notes),
+  );
 
   const { data: snippets = [] } = useQuery<Snippet[]>({
     queryKey: ['snippets'],
@@ -15,7 +18,7 @@ const useSnippets = () => {
   const createMutation = useMutation({
     mutationKey: ['createSnippet'],
     mutationFn: async (newSnippet: Snippet) => {
-      initialSnippets.push(newSnippet);
+      setInitialSnippets([...initialSnippets, newSnippet]);
       return newSnippet;
     },
     onSuccess: () => {
@@ -37,7 +40,11 @@ const useSnippets = () => {
     mutationFn: async (updatedSnippet: Snippet) => {
       const index = initialSnippets.findIndex(s => s.id === updatedSnippet.id);
       if (index !== -1) {
-        initialSnippets[index] = updatedSnippet;
+        setInitialSnippets([
+          ...initialSnippets.slice(0, index),
+          updatedSnippet,
+          ...initialSnippets.slice(index + 1),
+        ]);
       }
       return updatedSnippet;
     },
@@ -60,8 +67,12 @@ const useSnippets = () => {
     mutationFn: async (id: string) => {
       const index = initialSnippets.findIndex(s => s.id === id);
       if (index !== -1) {
-        initialSnippets.splice(index, 1);
+        setInitialSnippets([
+          ...initialSnippets.slice(0, index),
+          ...initialSnippets.slice(index + 1),
+        ]);
       }
+
       return id;
     },
     onSuccess: () => {
@@ -83,8 +94,17 @@ const useSnippets = () => {
     mutationFn: async (id: string) => {
       const index = initialSnippets.findIndex(s => s.id === id);
       if (index !== -1) {
-        initialSnippets[index].state.isFavorite =
-          !initialSnippets[index].state.isFavorite;
+        setInitialSnippets([
+          ...initialSnippets.slice(0, index),
+          {
+            ...initialSnippets[index],
+            state: {
+              ...initialSnippets[index].state,
+              isFavorite: !initialSnippets[index].state.isFavorite,
+            },
+          },
+          ...initialSnippets.slice(index + 1),
+        ]);
       }
       return id;
     },
@@ -101,8 +121,17 @@ const useSnippets = () => {
     mutationFn: async (id: string) => {
       const index = initialSnippets.findIndex(s => s.id === id);
       if (index !== -1) {
-        initialSnippets[index].state.isDark =
-          !initialSnippets[index].state.isDark;
+        setInitialSnippets([
+          ...initialSnippets.slice(0, index),
+          {
+            ...initialSnippets[index],
+            state: {
+              ...initialSnippets[index].state,
+              isDark: !initialSnippets[index].state.isDark,
+            },
+          },
+          ...initialSnippets.slice(index + 1),
+        ]);
       }
       return id;
     },
