@@ -11,19 +11,15 @@ import SearchBar from './_components/SearchBar';
 import Title from './_components/Title';
 import UserMenu from './_components/UserMenu';
 
+const titles: { [key: string]: string } = {
+  '/dashboard': 'Dashboard',
+  '/snippets': 'Snippets',
+  '/collections': 'Collections',
+  '/settings': 'Settings',
+};
+
 const getTitleFromPathname = (pathname: string) => {
-  switch (pathname) {
-    case '/dashboard':
-      return 'Dashboard';
-    case '/snippets':
-      return 'Snippets';
-    case '/collections':
-      return 'Collections';
-    case '/settings':
-      return 'Settings';
-    default:
-      return 'Snippet Vault';
-  }
+  return titles[pathname] || 'Snippet Vault';
 };
 
 export function Header() {

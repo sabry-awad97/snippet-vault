@@ -14,11 +14,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Filter, FilterType } from '@/contexts/SnippetContext';
-import useSnippets from '@/hooks/useSnippets';
+import useSnippets from '@/hooks/useSnippetsContext';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 
 const languages = [
   { value: 'all', label: 'All Languages' },
@@ -31,51 +30,8 @@ const languages = [
 ];
 
 const SnippetsHeader: React.FC = () => {
-  const { setFilter, clearFilters } = useSnippets();
-  const [activeFilters, setActiveFilters] = useState<{
-    [K in FilterType]?: Extract<Filter, { type: K }>['value'];
-  }>({});
-
-  const handleFilterChange = useCallback(
-    (filter: Filter) => {
-      setFilter(filter);
-      setActiveFilters(prev => ({ ...prev, [filter.type]: filter.value }));
-    },
-    [setFilter],
-  );
-
-  const handleLanguageChange = useCallback(
-    (value: string) => {
-      const newLanguages =
-        value === 'all'
-          ? []
-          : [...(activeFilters[FilterType.LANGUAGE] || []), value];
-      handleFilterChange({ type: FilterType.LANGUAGE, value: newLanguages });
-    },
-    [handleFilterChange, activeFilters],
-  );
-
-  const handleFavoriteToggle = useCallback(
-    (checked: boolean) => {
-      handleFilterChange({ type: FilterType.FAVORITE, value: checked });
-    },
-    [handleFilterChange],
-  );
-
-  const handleDateRangeChange = useCallback(
-    (range: { from: Date; to: Date }) => {
-      handleFilterChange({
-        type: FilterType.DATE_RANGE,
-        value: [range.from, range.to],
-      });
-    },
-    [handleFilterChange],
-  );
-
-  const handleClearFilters = useCallback(() => {
-    clearFilters();
-    setActiveFilters({});
-  }, [clearFilters]);
+  const { handleLanguageChange, handleDateRangeChange, handleFavoriteToggle } =
+    useSnippets();
 
   return (
     <motion.div
@@ -85,8 +41,8 @@ const SnippetsHeader: React.FC = () => {
       className="mb-6 space-y-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="relative flex flex-1 items-center gap-4">
-          <div className="absolute right-0 ml-auto flex items-center justify-center gap-5">
+        <div className="flex flex-1 items-center gap-4">
+          <div className="ml-auto flex items-center justify-center gap-5">
             <DateRangePicker
               onUpdate={values => {
                 console.log(values);

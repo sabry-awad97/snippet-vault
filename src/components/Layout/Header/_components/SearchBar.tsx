@@ -1,7 +1,6 @@
 import { Tooltip } from '@/components/Common/Tooltip';
 import { Button } from '@/components/ui/button';
-import { FilterType } from '@/contexts/SnippetContext';
-import useSnippets from '@/hooks/useSnippets';
+import useSnippets from '@/hooks/useSnippetsContext';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Search } from 'lucide-react';
@@ -9,11 +8,7 @@ import { useState } from 'react';
 
 const SearchBar = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const { setFilter, setSnippetDialog } = useSnippets();
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilter({ type: FilterType.SEARCH, value: e.target.value });
-  };
+  const { setSnippetDialog, handleSearchChange } = useSnippets();
 
   const handleNewSnippet = () => {
     setSnippetDialog(null);
@@ -40,7 +35,7 @@ const SearchBar = () => {
           )}
           onFocus={() => setIsSearchFocused(true)}
           onBlur={() => setIsSearchFocused(false)}
-          onChange={handleSearchChange}
+          onChange={e => handleSearchChange(e.target.value)}
           animate={{ paddingRight: isSearchFocused ? '8rem' : '9rem' }}
           transition={{ duration: 0.2 }}
         />

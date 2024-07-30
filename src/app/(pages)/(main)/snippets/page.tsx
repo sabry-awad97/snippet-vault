@@ -2,25 +2,27 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import useSnippets from '@/hooks/useSnippets';
+import useSnippetsContext from '@/hooks/useSnippetsContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
+import SnippetsHeader from './_components/SnippetsHeader';
 
 export default function SnippetsPage() {
   const auth = useAuth();
   const router = useRouter();
+
+  const { createSnippet, updateSnippet } = useSnippets();
 
   const {
     editingSnippet,
     filteredSnippets,
     isEditMode,
     isSnippetDialogOpen,
-    createSnippet,
-    updateSnippet,
     resetSnippetDialog,
-  } = useSnippets();
+  } = useSnippetsContext();
 
   useEffect(() => {
     if (!auth?.user) {
@@ -36,7 +38,9 @@ export default function SnippetsPage() {
         exit={{ opacity: 0 }}
         className="mx-auto flex flex-col p-4"
       >
-        {/* <SnippetsHeader /> */}
+        {/* <div className="sticky top-0"> */}
+        <SnippetsHeader />
+        {/* </div> */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -62,7 +66,11 @@ export default function SnippetsPage() {
         <SnippetDialog
           isOpen={isSnippetDialogOpen}
           onClose={resetSnippetDialog}
-          onSubmit={isEditMode ? updateSnippet : createSnippet}
+          onSubmit={async snippet => {
+            await (isEditMode
+              ? updateSnippet(snippet)
+              : createSnippet(snippet));
+          }}
           initialData={editingSnippet}
           isEditMode={isEditMode}
         />
