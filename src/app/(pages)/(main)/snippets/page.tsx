@@ -16,7 +16,7 @@ export default function SnippetsPage() {
     editingSnippet,
     filteredSnippets,
     isEditMode,
-    isNewSnippetDialogOpen,
+    isSnippetDialogOpen,
     createSnippet,
     updateSnippet,
     resetSnippetDialog,
@@ -60,7 +60,7 @@ export default function SnippetsPage() {
           </AnimatePresence>
         </motion.div>
         <SnippetDialog
-          isOpen={isNewSnippetDialogOpen}
+          isOpen={isSnippetDialogOpen}
           onClose={resetSnippetDialog}
           onSubmit={isEditMode ? updateSnippet : createSnippet}
           initialData={editingSnippet}

@@ -1,5 +1,6 @@
 'use client';
 
+import notes from '@/initialData/notes';
 import { Snippet, snippetSchema } from '@/lib/schemas/snippet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, ReactNode, useMemo } from 'react';
@@ -38,14 +39,14 @@ export type Filter =
 
 // Define the state interface
 interface SnippetState {
-  isNewSnippetDialogOpen: boolean;
+  isSnippetDialogOpen: boolean;
   isEditMode: boolean;
   editingSnippet: Snippet | null;
   filters: Filter[];
 }
 
 type SnippetAction =
-  | { type: 'SET_NEW_SNIPPET_DIALOG'; payload: boolean }
+  | { type: 'SET_SNIPPET_DIALOG'; payload: boolean }
   | { type: 'SET_EDIT_MODE'; payload: boolean }
   | { type: 'SET_EDITING_SNIPPET'; payload: Snippet | null }
   | { type: 'SET_FILTER'; payload: Filter }
@@ -54,8 +55,8 @@ type SnippetAction =
 
 const snippetReducer = (draft: SnippetState, action: SnippetAction) => {
   switch (action.type) {
-    case 'SET_NEW_SNIPPET_DIALOG':
-      draft.isNewSnippetDialogOpen = action.payload;
+    case 'SET_SNIPPET_DIALOG':
+      draft.isSnippetDialogOpen = action.payload;
       break;
     case 'SET_EDIT_MODE':
       draft.isEditMode = action.payload;
@@ -88,7 +89,7 @@ const snippetReducer = (draft: SnippetState, action: SnippetAction) => {
 interface SnippetContextValue {
   snippets: Snippet[];
   filteredSnippets: Snippet[];
-  isNewSnippetDialogOpen: boolean;
+  isSnippetDialogOpen: boolean;
   isEditMode: boolean;
   editingSnippet: Snippet | null;
   filters: Filter[];
@@ -110,143 +111,18 @@ SnippetContext.displayName = 'SnippetContext';
 
 // Define the initial state
 const initialState: SnippetState = {
-  isNewSnippetDialogOpen: false,
+  isSnippetDialogOpen: false,
   isEditMode: false,
   editingSnippet: null,
   filters: [],
 };
 
 // Mock initial snippets (replace with actual data fetching in production)
-const initialSnippets = snippetSchema.array().parse([
-  {
-    id: '1',
-    title: 'JavaScript Basics',
-    tags: ['JavaScript', 'Beginner'],
-    description:
-      'This note covers the basics of JavaScript, including variables, data types, and basic syntax.',
-    language: 'javascript',
-    code: `// JavaScript Basics
-const name = 'John';
-console.log(name); // Output: John
-`,
-    state: {
-      isFavorite: true,
-    },
-    createdAt: new Date('2024-07-09'),
-    updatedAt: new Date('2024-07-09'),
-  },
-  {
-    id: '2',
-    title: 'React Hooks Overview',
-    tags: ['JavaScript', 'React', 'Hooks'],
-    description:
-      'An overview of React hooks, including useState, useEffect, and custom hooks.',
-    language: 'javascript',
-    code: `// React Hooks Overview
-import React, { useState, useEffect } from 'react';
-
-const Example = () => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    document.title = \`You clicked \${count} times\`;
-  }, [count]);
-
-  return (
-    <div>
-      <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>Click me</button>
-    </div>
-  );
-};
-
-export default Example;
-`,
-
-    state: {
-      isFavorite: false,
-    },
-    createdAt: new Date('2024-07-08'),
-    updatedAt: new Date('2024-07-08'),
-  },
-  {
-    id: '3',
-    title: 'Next.js API Routes',
-    tags: ['JavaScript', 'React', 'Next.js', 'API'],
-    description:
-      'This note demonstrates how to create API routes in a Next.js application.',
-    language: 'javascript',
-    code: `// Next.js API Routes
-export default function handler(req, res) {
-  res.status(200).json({ message: 'Hello from Next.js API route' });
-}
-`,
-    state: {
-      isFavorite: false,
-    },
-    createdAt: new Date('2024-07-07'),
-    updatedAt: new Date('2024-07-07'),
-  },
-  {
-    id: '4',
-    title: 'Styled Components with Tailwind CSS',
-    tags: ['CSS', 'React', 'Tailwind'],
-    description:
-      'How to use styled components with Tailwind CSS in a React application.',
-    language: 'javascript',
-    code: `// Styled Components with Tailwind CSS
-import styled from 'styled-components';
-
-const Button = styled.button\`
-  @apply bg-blue-500 text-white font-bold py-2 px-4 rounded;
-\`;
-
-const App = () => (
-  <div>
-    <Button>Click Me</Button>
-  </div>
-);
-
-export default App;
-`,
-    state: {
-      isFavorite: true,
-    },
-    createdAt: new Date('2024-07-06'),
-    updatedAt: new Date('2024-07-06'),
-  },
-  {
-    id: '5',
-    title: 'Connecting to MongoDB with Mongoose',
-    tags: ['JavaScript', 'Node.js', 'MongoDB', 'Backend'],
-    description:
-      'This note explains how to connect to a MongoDB database using Mongoose in a Node.js application.',
-    language: 'javascript',
-    code: `// Connecting to MongoDB with Mongoose
-const mongoose = require('mongoose');
-
-mongoose.connect('mongodb://localhost:27017/mydatabase', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
-  console.log('Connected to the database');
-});
-`,
-    state: {
-      isFavorite: false,
-    },
-    createdAt: new Date('2024-07-05'),
-    updatedAt: new Date('2024-07-05'),
-  },
-]);
+const initialSnippets = snippetSchema.array().parse(notes);
 
 const SnippetProvider = ({ children }: { children: ReactNode }) => {
   const [
-    { editingSnippet, isEditMode, isNewSnippetDialogOpen, filters },
+    { editingSnippet, isEditMode, isSnippetDialogOpen, filters },
     dispatch,
   ] = useImmerReducer(snippetReducer, initialState);
   const queryClient = useQueryClient();
@@ -344,7 +220,7 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const setSnippetDialog = (snippet: Snippet | null) => {
-    dispatch({ type: 'SET_NEW_SNIPPET_DIALOG', payload: true });
+    dispatch({ type: 'SET_SNIPPET_DIALOG', payload: true });
     if (snippet) {
       dispatchMultipleActions(dispatch, [
         { type: 'SET_EDIT_MODE', payload: true },
@@ -355,7 +231,7 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
 
   const resetSnippetDialog = () => {
     dispatchMultipleActions(dispatch, [
-      { type: 'SET_NEW_SNIPPET_DIALOG', payload: false },
+      { type: 'SET_SNIPPET_DIALOG', payload: false },
       { type: 'SET_EDIT_MODE', payload: false },
       { type: 'SET_EDITING_SNIPPET', payload: null },
     ]);
@@ -413,7 +289,7 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
   const value: SnippetContextValue = {
     editingSnippet,
     isEditMode,
-    isNewSnippetDialogOpen,
+    isSnippetDialogOpen,
     filters,
     snippets,
     filteredSnippets,
