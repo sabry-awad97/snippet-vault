@@ -1,6 +1,6 @@
 import { Tooltip } from '@/components/Common/Tooltip';
 import { Badge } from '@/components/ui/badge';
-import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHeader, CardTitle } from '@/components/ui/card';
 import useSnippets from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
@@ -77,8 +77,8 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
           </Tooltip>
         </div>
       </CardTitle>
-      <CardDescription>
-        <div className="flex justify-between text-xs font-light">
+      <div className="text-muted-foreground">
+        <div className="flex justify-between text-xs font-medium">
           <time dateTime={snippet.createdAt.toISOString()}>
             {snippet.createdAt.toLocaleDateString('en-US', {
               year: 'numeric',
@@ -115,7 +115,7 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
             </motion.div>
           )}
         </AnimatePresence>
-      </CardDescription>
+      </div>
     </CardHeader>
   );
 };
