@@ -62,7 +62,14 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
         transition={{ delay: 0.2 }}
         className="flex items-center gap-2 text-slate-400"
       >
-        <SiJavascript className="h-4 w-4" />
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+        >
+          <SiJavascript className="h-4 w-4" />
+        </motion.div>
+
         <span className="font-semibold">{titleCase(snippet.language)}</span>
       </motion.div>
 

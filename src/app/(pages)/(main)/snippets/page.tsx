@@ -41,7 +41,7 @@ export default function SnippetsPage() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-2"
         >
           <AnimatePresence>
             {filteredSnippets.map(snippet => (
