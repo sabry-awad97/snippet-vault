@@ -1,11 +1,12 @@
 import { Tooltip } from '@/components/Common/Tooltip';
+import { Badge } from '@/components/ui/badge';
 import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import useSnippets from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { human } from '@/lib/utils/humanReadableTimestamp';
-import { motion } from 'framer-motion';
-import { Heart } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Heart, Tag } from 'lucide-react';
 import { useCallback } from 'react';
 import { MdOutlineTitle } from 'react-icons/md';
 
@@ -93,6 +94,30 @@ const SnippetCardHeader = ({
           </time>
           <span>{human(snippet.createdAt)}</span>
         </div>
+
+        <AnimatePresence>
+          {snippet.tags && snippet.tags.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ delay: 0.6 }}
+              className="mt-2 flex flex-wrap items-center gap-1"
+            >
+              <Tag className="h-4 w-4" />
+              {snippet.tags.map((tag, index) => (
+                <motion.span
+                  key={tag}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 * index }}
+                >
+                  <Badge>{tag}</Badge>
+                </motion.span>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </CardDescription>
     </CardHeader>
   );
