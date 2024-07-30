@@ -1,5 +1,5 @@
 #[allow(warnings, unused)]
-mod db;
+mod prisma;
 
-pub use db::*;
+pub use prisma::*;
 pub use prisma_client_rust::{NewClientError, QueryError};

@@ -29,3 +29,21 @@ pub struct AuthPayload {
     pub refresh_token: String,
     pub user: User,
 }
+
+pub type SnippetState = prisma::snippet_state::Data;
+pub type Snippet = prisma::snippet::Data;
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnippetForm {
+    pub title: String,
+    pub language: String,
+    pub code: String,
+    pub tags: Vec<String>,
+    pub state: SnippetState,
+}
+
+#[derive(Deserialize)]
+pub struct SnippetFilter {
+    pub title: Option<String>,
+}

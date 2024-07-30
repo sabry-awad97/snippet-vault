@@ -49,6 +49,11 @@ fn main() -> AppResult<()> {
             commands::user::list_users,
             commands::user::update_user,
             commands::user::delete_user,
+            commands::snippet::create_snippet,
+            commands::snippet::get_snippet,
+            commands::snippet::list_snippets,
+            commands::snippet::update_snippet,
+            commands::snippet::delete_snippet
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
