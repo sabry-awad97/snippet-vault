@@ -1,6 +1,5 @@
 'use client';
 
-import Footer from '@/components/Layout/Footer';
 import { Header } from '@/components/Layout/Header';
 import Sidebar from '@/components/Layout/Sidebar';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
@@ -99,8 +98,6 @@ export default function MainLayout({
                 </motion.div>
               </AnimatePresence>
             </motion.div>
-
-            <Footer />
           </motion.div>
         </main>
       </div>

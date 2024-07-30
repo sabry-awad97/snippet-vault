@@ -1,5 +1,6 @@
 'use client';
 
+import ThemeSwitch from '@/components/Common/ThemeSwitch';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -58,6 +59,7 @@ export function Header() {
 
         <div className="flex items-center space-x-4">
           <NotificationButton />
+          <ThemeSwitch />
 
           <AnimatePresence>
             {auth.user ? (
