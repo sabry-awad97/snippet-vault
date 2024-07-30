@@ -24,7 +24,8 @@ model Snippet {
     title     String
     language  String
     code      String
-    tags      String[]     @default([])
+    tagIDs    String[]     @db.ObjectId
+    tags      Tag[]        @relation("SnippetTags", fields: [tagIDs], references: [id])
     state     SnippetState
     createdAt DateTime     @default(now())
     updatedAt DateTime     @updatedAt
@@ -35,4 +36,14 @@ model Snippet {
 type SnippetState {
     isFavorite Boolean @default(false)
     isDark     Boolean @default(false)
+}
+
+model Tag {
+    id         String    @id @default(auto()) @map("_id") @db.ObjectId
+    name       String
+    color      String?
+    snippetIDs String[]  @db.ObjectId
+    snippets   Snippet[] @relation("SnippetTags", fields: [snippetIDs], references: [id])
+
+    @@map("tags")
 }

@@ -1,20 +1,59 @@
-import notes from '@/initialData/notes';
-import { SnippetSchema } from '@/lib/schemas/snippet';
+import initialNotes from '@/initialData/notes';
+import initialTags from '@/initialData/tags';
 import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
-const snippets = SnippetSchema.array().parse(notes);
-
 async function main() {
-  console.log('Seeding...');
+  // Clear existing data
+  await prisma.snippet.deleteMany();
+  await prisma.tag.deleteMany();
+  await prisma.user.deleteMany();
 
-  for (const { id, ...snippet } of snippets) {
-    await prisma.snippet.create({
-      data: snippet,
-    });
-  }
+  // Create tags
+  const tags = await Promise.all(
+    initialTags.map(tag => prisma.tag.create({ data: tag })),
+  );
 
-  console.log('Seeding completed.');
+  console.log(
+    'Created tags:',
+    tags.map(tag => tag.id),
+  );
+
+  // Create snippets
+  const snippets = await Promise.all(
+    initialNotes.map(({ description, tagIDs: snippetTags, ...note }) =>
+      prisma.snippet.create({
+        data: {
+          ...note,
+          tagIDs: tags
+            .filter(tag => snippetTags.includes(tag.name))
+            .map(tag => tag.id),
+        },
+      }),
+    ),
+  );
+
+  console.log(
+    'Created snippets:',
+    snippets.map(snippet => snippet.id),
+  );
+
+  // Update tags with snippet IDs
+  await Promise.all(
+    tags.map(tag =>
+      prisma.tag.update({
+        where: { id: tag.id },
+        data: {
+          snippetIDs: snippets
+            .filter(snippet => snippet.tagIDs.includes(tag.id))
+            .map(snippet => snippet.id),
+        },
+      }),
+    ),
+  );
+
+  console.log('Updated tags with snippet IDs');
 }
 
 main()
