@@ -7,6 +7,7 @@ async function main() {
   await prisma.snippet.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.snippetState.deleteMany();
 
   // Create tags
   const tags = await Promise.all([
@@ -21,16 +22,40 @@ async function main() {
     tags.map(tag => tag.id),
   );
 
+  // Create snippet states
+  const snippetState1 = await prisma.snippetState.create({
+    data: {
+      isFavorite: true,
+      isDark: false,
+    },
+  });
+
+  const snippetState2 = await prisma.snippetState.create({
+    data: {
+      isFavorite: false,
+      isDark: true,
+    },
+  });
+
+  const snippetState3 = await prisma.snippetState.create({
+    data: {
+      isFavorite: true,
+      isDark: true,
+    },
+  });
+
   // Create snippets
   const snippet1 = await prisma.snippet.create({
     data: {
       title: 'Hello World in JavaScript',
       language: 'javascript',
       code: 'console.log("Hello, World!");',
-      tagIDs: [tags[0].id, tags[3].id], // JavaScript and Node.js
-      state: {
-        isFavorite: true,
-        isDark: false,
+      snippetStateId: snippetState1.id,
+      tags: {
+        connect: [
+          { id: tags[0].id }, // JavaScript
+          { id: tags[3].id }, // Node.js
+        ],
       },
     },
   });
@@ -48,10 +73,12 @@ const HelloWorld = () => {
 
 export default HelloWorld;
       `.trim(),
-      tagIDs: [tags[0].id, tags[2].id], // JavaScript and React
-      state: {
-        isFavorite: false,
-        isDark: true,
+      snippetStateId: snippetState2.id,
+      tags: {
+        connect: [
+          { id: tags[0].id }, // JavaScript
+          { id: tags[2].id }, // React
+        ],
       },
     },
   });
@@ -65,47 +92,18 @@ export default HelloWorld;
 squares = [x**2 for x in range(10)]
 print(squares)
       `.trim(),
-      tagIDs: [tags[1].id], // Python
-      state: {
-        isFavorite: true,
-        isDark: true,
+      snippetStateId: snippetState3.id,
+      tags: {
+        connect: [
+          { id: tags[1].id }, // Python
+        ],
       },
     },
   });
 
   console.log('Created snippets:', snippet1.id, snippet2.id, snippet3.id);
 
-  // Update tags with snippet IDs
-  await Promise.all(
-    tags.map(tag =>
-      prisma.tag.update({
-        where: { id: tag.id },
-        data: { snippetIDs: { set: [] } }, // Clear existing snippet IDs
-      }),
-    ),
-  );
-
-  await prisma.tag.update({
-    where: { id: tags[0].id },
-    data: { snippetIDs: { push: [snippet1.id, snippet2.id] } },
-  });
-
-  await prisma.tag.update({
-    where: { id: tags[1].id },
-    data: { snippetIDs: { push: snippet3.id } },
-  });
-
-  await prisma.tag.update({
-    where: { id: tags[2].id },
-    data: { snippetIDs: { push: snippet2.id } },
-  });
-
-  await prisma.tag.update({
-    where: { id: tags[3].id },
-    data: { snippetIDs: { push: snippet1.id } },
-  });
-
-  console.log('Updated tags with snippet IDs');
+  console.log('Seeding completed successfully.');
 }
 
 main()

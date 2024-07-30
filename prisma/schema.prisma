@@ -20,22 +20,27 @@ model User {
 }
 
 model Snippet {
-    id        String       @id @default(auto()) @map("_id") @db.ObjectId
-    title     String
-    language  String
-    code      String
-    tagIDs    String[]     @db.ObjectId
-    tags      Tag[]        @relation("SnippetTags", fields: [tagIDs], references: [id])
-    state     SnippetState
-    createdAt DateTime     @default(now())
-    updatedAt DateTime     @updatedAt
+    id             String       @id @default(auto()) @map("_id") @db.ObjectId
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+    title          String
+    language       String
+    code           String
+    tagIDs         String[]     @db.ObjectId
+    tags           Tag[]        @relation("SnippetTags", fields: [tagIDs], references: [id])
+    snippetStateId String       @unique @db.ObjectId
+    state          SnippetState @relation(fields: [snippetStateId], references: [id])
 
     @@map("snippets")
 }
 
-type SnippetState {
-    isFavorite Boolean @default(false)
-    isDark     Boolean @default(false)
+model SnippetState {
+    id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    isFavorite Boolean  @default(false)
+    isDark     Boolean  @default(false)
+    Snippet    Snippet?
+
+    @@map("states")
 }
 
 model Tag {
