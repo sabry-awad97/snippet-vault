@@ -1,8 +1,9 @@
 import { Tooltip } from '@/components/Common/Tooltip';
-import { CardHeader, CardTitle } from '@/components/ui/card';
+import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import useSnippets from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
+import { human } from '@/lib/utils/humanReadableTimestamp';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { useCallback } from 'react';
@@ -44,7 +45,7 @@ const SnippetCardHeader = ({
           transition={{ duration: 0.5 }}
         >
           <MdOutlineTitle
-            className={cn('mr-2 h-5 w-5', {
+            className={cn('h-5 w-5', {
               'text-purple-400': isDarkMode,
               'text-purple-600': !isDarkMode,
             })}
@@ -78,6 +79,21 @@ const SnippetCardHeader = ({
           </Tooltip>
         </div>
       </CardTitle>
+      <CardDescription>
+        <div className="flex justify-between text-xs font-light">
+          <time dateTime={snippet.createdAt.toISOString()}>
+            {snippet.createdAt.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
+              second: 'numeric',
+            })}
+          </time>
+          <span>{human(snippet.createdAt)}</span>
+        </div>
+      </CardDescription>
     </CardHeader>
   );
 };

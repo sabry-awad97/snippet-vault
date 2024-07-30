@@ -1,4 +1,5 @@
 import Providers from '@/providers';
+import { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 
@@ -11,9 +12,10 @@ const geistMono = localFont({
   variable: '--font-geist-mono',
 });
 
-export const metadata = {
-  title: 'Snippet Vault',
-  description: 'Manage and share your code snippets',
+export const metadata: Metadata = {
+  title: 'SnippetVault - All your snippets in one place',
+  description:
+    'Stay organized and enhance your productivity with SnippetVault - your ultimate code repository.',
 };
 
 export default function RootLayout({
