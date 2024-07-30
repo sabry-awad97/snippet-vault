@@ -29,12 +29,12 @@ export default function SnippetsPage() {
   }, [auth, router]);
 
   return (
-    <div className="flex flex-1 bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-1 dark:bg-gray-900">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="mx-auto flex flex-col px-4 py-4"
+        className="mx-auto flex flex-col p-4"
       >
         {/* <SnippetsHeader /> */}
         <motion.div

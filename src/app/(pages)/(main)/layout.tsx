@@ -86,7 +86,7 @@ export default function MainLayout({
             </motion.div>
             <motion.div
               variants={itemVariants}
-              className="flex flex-1 rounded-lg bg-white p-6 shadow-lg transition-all duration-300 ease-in-out dark:bg-gray-800 dark:shadow-indigo-500/20"
+              className="flex flex-1 rounded-lg bg-white shadow-lg transition-all duration-300 ease-in-out dark:bg-gray-800 dark:shadow-indigo-500/20"
             >
               <AnimatePresence mode="wait">
                 <motion.div
