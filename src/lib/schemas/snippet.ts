@@ -15,6 +15,7 @@ export const SnippetStateSchema =
 const baseSnippetSchema = z.object({
   ...commonSchema.shape, // Spreading common schema fields
   title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
   language: z.string().min(1, 'Language is required'),
   code: z.string().min(1, 'Code is required'),
   tagIds: z.array(z.string()),

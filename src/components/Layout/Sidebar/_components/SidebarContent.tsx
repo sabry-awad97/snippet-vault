@@ -8,9 +8,8 @@ const sidebarVariants = {
 };
 
 const SidebarContent: React.FC<{
-  logo?: React.ReactNode;
   toggleSidebar: () => void;
-}> = ({ logo, toggleSidebar }) => (
+}> = ({ toggleSidebar }) => (
   <motion.aside
     initial="closed"
     animate="open"
@@ -19,7 +18,7 @@ const SidebarContent: React.FC<{
     transition={{ duration: 0.3, ease: 'easeInOut' }}
     className="fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto bg-gradient-to-b from-white to-gray-100 p-6 shadow-lg dark:from-gray-800 dark:to-gray-900 md:relative"
   >
-    <SidebarHeader logo={logo} toggleSidebar={toggleSidebar} />
+    <SidebarHeader toggleSidebar={toggleSidebar} />
     <SidebarNav />
   </motion.aside>
 );

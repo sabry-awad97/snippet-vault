@@ -38,6 +38,7 @@ pub type Tag = prisma::tag::Data;
 #[serde(rename_all = "camelCase")]
 pub struct SnippetForm {
     pub title: String,
+    pub description: String,
     pub language: String,
     pub code: String,
     pub tag_ids: Vec<String>,

@@ -14,9 +14,8 @@ const buttonVariants = {
 };
 
 const SidebarHeader: React.FC<{
-  logo?: React.ReactNode;
   toggleSidebar: () => void;
-}> = ({ logo, toggleSidebar }) => (
+}> = ({ toggleSidebar }) => (
   <div className="flex items-center justify-between">
     <motion.div
       initial="hidden"
@@ -24,7 +23,7 @@ const SidebarHeader: React.FC<{
       variants={logoVariants}
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
-      {logo || <DefaultLogo />}
+      <DefaultLogo />
     </motion.div>
     <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
       <Button

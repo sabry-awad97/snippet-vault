@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { useMonacoThemeManager } from '@/hooks/useMonacoThemeManager';
 import { Snippet, SnippetSchema } from '@/lib/schemas/snippet';
@@ -72,6 +73,7 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
     resolver: zodResolver(SnippetSchema),
     defaultValues: snippet || {
       title: '',
+      description: '',
       language: '',
       code: '',
       tags: [],
@@ -143,6 +145,40 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                           whileTap={{ scale: 0.98 }}
                         >
                           <Input
+                            {...field}
+                            className={cn(
+                              'w-full rounded-md border-2 px-4 py-2 transition-all duration-200',
+                              isDarkMode
+                                ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
+                                : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
+                              'focus:outline-none focus:ring-2',
+                            )}
+                          />
+                        </motion.div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel
+                        className={cn(
+                          'font-semibold',
+                          isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                        )}
+                      >
+                        Description
+                      </FormLabel>
+                      <FormControl>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Textarea
                             {...field}
                             className={cn(
                               'w-full rounded-md border-2 px-4 py-2 transition-all duration-200',

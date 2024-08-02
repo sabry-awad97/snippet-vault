@@ -26,6 +26,7 @@ pub async fn create_snippet(
             .snippet()
             .create(
                 data.title,
+                data.description,
                 data.language,
                 data.code,
                 prisma::snippet_state::id::equals(state.id),
@@ -116,6 +117,7 @@ pub async fn update_snippet(
 
         let update_params = vec![
             prisma::snippet::title::set(data.title),
+            prisma::snippet::description::set(data.description),
             prisma::snippet::language::set(data.language),
             prisma::snippet::code::set(data.code),
             prisma::snippet::tag_ids::set(data.tag_ids),

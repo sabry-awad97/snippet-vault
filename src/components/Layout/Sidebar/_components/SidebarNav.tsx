@@ -130,7 +130,7 @@ const SidebarNav: React.FC<{}> = ({}) => {
                 );
 
               case 'EMPTY':
-                return <motion.li className="h-4" />;
+                return <motion.li key={index} className="h-4" />;
 
               default:
                 return null;
