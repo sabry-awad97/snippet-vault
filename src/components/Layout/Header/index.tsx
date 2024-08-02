@@ -1,15 +1,11 @@
 'use client';
 
 import ThemeSwitch from '@/components/Common/ThemeSwitch';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { AnimatePresence, motion } from 'framer-motion';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import NotificationButton from './_components/NotificationButton';
 import SearchBar from './_components/SearchBar';
 import Title from './_components/Title';
-import UserMenu from './_components/UserMenu';
 
 const titles: { [key: string]: string } = {
   '/dashboard': 'Dashboard',
@@ -23,19 +19,8 @@ const getTitleFromPathname = (pathname: string) => {
 };
 
 export function Header() {
-  const auth = useAuth();
-  const router = useRouter();
   const pathname = usePathname();
   const pageTitle = getTitleFromPathname(pathname);
-
-  const handleLogout = async () => {
-    try {
-      await auth.logout();
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   return (
     <motion.header
@@ -57,7 +42,7 @@ export function Header() {
           <NotificationButton />
           <ThemeSwitch />
 
-          <AnimatePresence>
+          {/* <AnimatePresence>
             {auth.user ? (
               <UserMenu onLogout={handleLogout} />
             ) : (
@@ -77,7 +62,7 @@ export function Header() {
                 </Link>
               </motion.div>
             )}
-          </AnimatePresence>
+          </AnimatePresence> */}
         </div>
       </div>
     </motion.header>

@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
-import SnippetsHeader from './_components/SnippetsHeader';
 
 export default function SnippetsPage() {
   const auth = useAuth();
@@ -36,11 +35,8 @@ export default function SnippetsPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="mx-auto flex flex-col p-4"
+        className="mx-auto flex flex-1 flex-col p-4"
       >
-        {/* <div className="sticky top-0"> */}
-        <SnippetsHeader />
-        {/* </div> */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

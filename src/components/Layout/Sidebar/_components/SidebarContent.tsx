@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { NavItem } from './NavItem';
 import SidebarHeader from './SidebarHeader';
 import SidebarNav from './SidebarNav';
 
@@ -10,9 +9,8 @@ const sidebarVariants = {
 
 const SidebarContent: React.FC<{
   logo?: React.ReactNode;
-  navItems: NavItem[];
   toggleSidebar: () => void;
-}> = ({ logo, navItems, toggleSidebar }) => (
+}> = ({ logo, toggleSidebar }) => (
   <motion.aside
     initial="closed"
     animate="open"
@@ -22,7 +20,7 @@ const SidebarContent: React.FC<{
     className="fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto bg-gradient-to-b from-white to-gray-100 p-6 shadow-lg dark:from-gray-800 dark:to-gray-900 md:relative"
   >
     <SidebarHeader logo={logo} toggleSidebar={toggleSidebar} />
-    <SidebarNav navItems={navItems} />
+    <SidebarNav />
   </motion.aside>
 );
 
