@@ -17,7 +17,8 @@ interface SnippetCardHeaderProps {
 const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
   const { updateSnippetState } = useSnippets();
 
-  const { isFavorite, isDark } = snippet.state;
+  const isDark = snippet.state?.isDark;
+  const isFavorite = snippet.state?.isFavorite;
 
   return (
     <CardHeader
@@ -51,7 +52,7 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
           </span>
 
           <Tooltip
-            content={snippet.state.isFavorite ? 'Unfavorite' : 'Favorite'}
+            content={isFavorite ? 'Unfavorite' : 'Favorite'}
             sideOffset={5}
           >
             <motion.div
@@ -62,7 +63,7 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
               <Heart
                 onClick={() =>
                   updateSnippetState({
-                    id: snippet.id,
+                    id: snippet.snippetStateId,
                     data: {
                       isFavorite: !isFavorite,
                     },
@@ -106,12 +107,12 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
               <Tag className="h-4 w-4" />
               {snippet.tags.map((tag, index) => (
                 <motion.span
-                  key={tag}
+                  key={tag.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1 * index }}
                 >
-                  <Badge>{tag}</Badge>
+                  <Badge>{tag.name}</Badge>
                 </motion.span>
               ))}
             </motion.div>

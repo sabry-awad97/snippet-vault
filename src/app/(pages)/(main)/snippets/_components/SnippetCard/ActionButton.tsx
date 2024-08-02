@@ -35,7 +35,7 @@ interface ActionButtonProps extends VariantProps<typeof buttonVariants> {
   icon: React.ReactNode;
   tooltip: string;
   isDestructive?: boolean;
-  isDarkMode: boolean;
+  isDarkMode?: boolean;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -43,7 +43,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   icon,
   tooltip,
   isDestructive = false,
-  isDarkMode,
+  isDarkMode = false,
   size,
 }) => {
   const buttonColor = isDestructive

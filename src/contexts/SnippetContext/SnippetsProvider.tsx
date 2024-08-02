@@ -134,7 +134,10 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
         return (
           snippet.title.toLowerCase().includes(searchTerm) ||
           snippet.code.toLowerCase().includes(searchTerm) ||
-          snippet.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+          snippet.tags?.some(tag =>
+            tag.name.toLowerCase().includes(searchTerm),
+          ) ||
+          false
         );
       case FilterType.LANGUAGE:
         return (
@@ -143,10 +146,12 @@ const SnippetProvider = ({ children }: { children: ReactNode }) => {
       case FilterType.TAGS:
         return (
           filter.value.length === 0 ||
-          filter.value.some(tag => snippet.tags.includes(tag))
+          filter.value.some(tagName =>
+            snippet.tags?.some(tag => tag.name.includes(tagName)),
+          )
         );
       case FilterType.FAVORITE:
-        return filter.value ? snippet.state.isFavorite : true;
+        return filter.value ? snippet.state?.isFavorite || false : true;
       case FilterType.DATE_RANGE:
         const snippetDate = new Date(snippet.createdAt);
         return (

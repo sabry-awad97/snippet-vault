@@ -1,7 +1,7 @@
 use crate::{
     database::{
         handle_db_operation,
-        models::{Snippet, SnippetFilter, SnippetForm},
+        models::{Snippet, SnippetFilter, SnippetForm, SnippetState, SnippetStateUpdate},
     },
     ipc::{
         params::{DeleteParams, GetParams, ListParams, PostParams, PutParams},
@@ -20,13 +20,15 @@ pub async fn create_snippet(
     handle_db_operation(app, move |client| async move {
         let data = params.data;
 
+        let state = client.snippet_state().create(vec![]).exec().await?;
+
         let snippet = match client
             .snippet()
             .create(
                 data.title,
                 data.language,
                 data.code,
-                prisma::snippet_state::id::equals(data.snippet_state_id),
+                prisma::snippet_state::id::equals(state.id),
                 vec![prisma::snippet::tag_ids::set(data.tag_ids)],
             )
             .exec()
@@ -188,4 +190,35 @@ fn build_snippet_filters(filter: Option<SnippetFilter>) -> Vec<prisma::snippet::
         }
     }
     where_params
+}
+
+#[tauri::command]
+pub async fn update_snippet_state(
+    app: AppHandle,
+    params: PutParams<SnippetStateUpdate>,
+) -> IpcResponse<SnippetState> {
+    handle_db_operation(app, move |client| async move {
+        let mut updated_params = vec![];
+
+        if let Some(is_dark) = params.data.is_dark {
+            updated_params.push(prisma::snippet_state::is_dark::set(is_dark));
+        }
+
+        if let Some(is_favorite) = params.data.is_favorite {
+            updated_params.push(prisma::snippet_state::is_favorite::set(is_favorite));
+        }
+
+        // Update the SnippetState
+        let updated_state: SnippetState = client
+            .snippet_state()
+            .update(
+                prisma::snippet_state::id::equals(params.id.clone()),
+                updated_params,
+            )
+            .exec()
+            .await?;
+
+        Ok(updated_state)
+    })
+    .await
 }

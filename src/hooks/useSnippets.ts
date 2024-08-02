@@ -1,4 +1,4 @@
-import { Snippet } from '@/lib/schemas/snippet';
+import { Snippet, SnippetState } from '@/lib/schemas/snippet';
 import * as snippetsApi from '@/lib/tauri/api/snippet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -71,7 +71,7 @@ const useSnippets = () => {
     mutationKey: ['updateSnippetState'],
     mutationFn: async (params: {
       id: string;
-      data: Partial<Snippet['state']>;
+      data: Partial<Omit<SnippetState, 'id'>>;
     }) => snippetsApi.updateSnippetState(params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['snippets'] });

@@ -16,7 +16,6 @@ interface SnippetCardFooterProps {
 }
 
 const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
-  const { isDark } = snippet.state;
   const [isCopied, setIsCopied] = useState(false);
   const { deleteSnippet, updateSnippetState } = useSnippets();
   const { setSnippetDialog } = useSnippetsContext();
@@ -50,7 +49,7 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
     <CardFooter
       className={cn(
         'flex items-center justify-between space-x-4 p-4 transition-colors duration-200',
-        isDark ? 'bg-gray-800' : 'bg-purple-50',
+        snippet.state?.isDark ? 'bg-gray-800' : 'bg-purple-50',
       )}
     >
       <motion.div
@@ -79,16 +78,16 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
         {[
           {
             tooltip: 'Toggle Dark Mode',
-            icon: isDark ? (
+            icon: snippet.state?.isDark ? (
               <Sun className="h-4 w-4" />
             ) : (
               <Moon className="h-4 w-4" />
             ),
             onClick: () =>
               updateSnippetState({
-                id: snippet.id,
+                id: snippet.snippetStateId,
                 data: {
-                  isDark: !isDark,
+                  isDark: !snippet.state?.isDark,
                 },
               }),
           },
@@ -118,7 +117,7 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
             tooltip={action.tooltip}
             icon={action.icon}
             onClick={action.onClick}
-            isDarkMode={isDark}
+            isDarkMode={snippet.state?.isDark}
             isDestructive={action.isDestructive}
           />
         ))}

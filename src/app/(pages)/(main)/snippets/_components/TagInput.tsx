@@ -1,4 +1,5 @@
 import { Snippet } from '@/lib/schemas/snippet';
+import { TagSchema } from '@/lib/schemas/tag';
 import React, { useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { FiX } from 'react-icons/fi';
@@ -26,7 +27,14 @@ export const TagInput: React.FC<TagInputProps> = ({
 
   const handleAddTag = () => {
     if (inputValue.trim()) {
-      append({ value: inputValue.trim() });
+      const newTag = {
+        id: Date.now().toString(),
+        name: inputValue.trim(),
+        snippetIds: [],
+        color: '#f7df1e',
+      };
+
+      append(TagSchema.parse(newTag));
       setInputValue('');
     }
   };
@@ -40,9 +48,7 @@ export const TagInput: React.FC<TagInputProps> = ({
   };
 
   const removeTag = (tagToRemove: string) => {
-    // remove(
-    //   fields.findIndex(tag => tag.value === tagToRemove),
-    // );
+    remove(fields.findIndex(tag => tag.name === tagToRemove));
   };
 
   return (
@@ -57,10 +63,10 @@ export const TagInput: React.FC<TagInputProps> = ({
             key={tag.id}
             className="m-1 flex items-center rounded-full bg-purple-100 px-3 py-1 text-purple-800"
           >
-            {tag.value}
+            {tag.name}
             <button
               type="button"
-              onClick={() => removeTag(tag.value)}
+              onClick={() => removeTag(tag.name)}
               className="ml-2 text-purple-600 hover:text-purple-800"
             >
               <FiX />

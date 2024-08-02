@@ -1,4 +1,9 @@
-import { Snippet, SnippetSchema } from '@/lib/schemas/snippet';
+import {
+  Snippet,
+  SnippetSchema,
+  SnippetState,
+  SnippetStateSchema,
+} from '@/lib/schemas/snippet';
 import { invokeCommand } from '@/lib/tauri/invoke';
 import {
   DeleteParams,
@@ -9,7 +14,7 @@ import {
 } from '@/lib/tauri/types';
 
 type SnippetForm = Omit<Snippet, 'id' | 'created_at' | 'updated_at'>;
-type SnippetStateUpdate = Partial<Snippet['state']>;
+type UpdateSnippetState = Partial<Omit<SnippetState, 'id'>>;
 
 interface SnippetFilter {
   title?: string;
@@ -47,8 +52,8 @@ export async function deleteSnippet(params: DeleteParams): Promise<Snippet> {
 }
 
 export async function updateSnippetState(
-  params: PutParams<SnippetStateUpdate>,
-): Promise<Snippet> {
+  params: PutParams<UpdateSnippetState>,
+): Promise<SnippetState> {
   const response = await invokeCommand('update_snippet_state', params);
-  return await SnippetSchema.parseAsync(response);
+  return await SnippetStateSchema.parseAsync(response);
 }

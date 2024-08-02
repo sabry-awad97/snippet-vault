@@ -51,7 +51,7 @@ const useDarkMode = ({
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    const isSnippetDark = snippet?.state.isDark ?? false;
+    const isSnippetDark = snippet?.state?.isDark ?? false;
     const isThemeDark = theme === 'dark';
 
     if (snippet) {
