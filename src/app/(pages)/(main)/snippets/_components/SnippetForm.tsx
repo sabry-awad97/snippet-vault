@@ -23,10 +23,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Editor from '@monaco-editor/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
-import { SubmitErrorHandler, useFieldArray, useForm } from 'react-hook-form';
+import { SubmitErrorHandler, useForm } from 'react-hook-form';
 import { FiPlus, FiSave } from 'react-icons/fi';
 import { toast } from 'sonner';
-import { TagInput } from './TagInput';
+import TagInput from './TagInput';
 
 interface SnippetFormProps {
   snippet?: Snippet;
@@ -84,11 +84,6 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'tags',
-  });
-
   const { handleEditorDidMount } = useMonacoThemeManager();
   const { theme } = useCurrentTheme();
   const isDarkMode = useDarkMode({ snippet, theme });
@@ -98,6 +93,8 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
   };
 
   const onInvalid: SubmitErrorHandler<Snippet> = errors => {
+    console.log({ errors });
+
     Object.values(errors).forEach(error => {
       toast.error(error?.message?.toString());
     });
@@ -256,7 +253,7 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <TagInput />
+                    <TagInput isDarkMode={isDarkMode} />
                   </motion.div>
                 </FormItem>
 
