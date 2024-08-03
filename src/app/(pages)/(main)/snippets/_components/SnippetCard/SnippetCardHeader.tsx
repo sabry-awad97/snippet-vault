@@ -6,7 +6,7 @@ import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { humanReadableTimestamp } from '@blaze/human-readable-timestamp';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, Tag } from 'lucide-react';
+import { FileText, Heart, Tag } from 'lucide-react';
 import { MdOutlineTitle } from 'react-icons/md';
 
 interface SnippetCardHeaderProps {
@@ -46,10 +46,10 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
           />
         </motion.div>
 
-        <div className="flex flex-1 justify-between">
-          <span className="text-lg font-bold leading-none">
+        <motion.div className="flex flex-1 justify-between">
+          <motion.span className="text-lg font-bold leading-none">
             <p className="truncate whitespace-nowrap">{snippet.title}</p>
-          </span>
+          </motion.span>
 
           <Tooltip
             content={isFavorite ? 'Unfavorite' : 'Favorite'}
@@ -78,11 +78,11 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
               />
             </motion.div>
           </Tooltip>
-        </div>
+        </motion.div>
       </CardTitle>
-      <div className="text-muted-foreground">
-        <div className="flex justify-between text-xs font-medium">
-          <time dateTime={snippet.createdAt.toISOString()}>
+      <motion.div className="text-muted-foreground">
+        <motion.div className="flex justify-between text-xs font-medium">
+          <motion.time dateTime={snippet.createdAt.toISOString()}>
             {snippet.createdAt.toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
@@ -91,9 +91,9 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
               minute: 'numeric',
               second: 'numeric',
             })}
-          </time>
-          <span>{humanReadableTimestamp(snippet.createdAt)}</span>
-        </div>
+          </motion.time>
+          <motion.span>{humanReadableTimestamp(snippet.createdAt)}</motion.span>
+        </motion.div>
 
         <AnimatePresence>
           {snippet.tags && snippet.tags.length > 0 && (
@@ -118,9 +118,23 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+
+        <motion.div className="mt-2 flex flex-wrap items-center gap-1">
+          <FileText className="h-4 w-4" />
+          <motion.p className="text-sm text-muted-foreground">
+            {truncateString(snippet.description, 200)}
+          </motion.p>
+        </motion.div>
+      </motion.div>
     </CardHeader>
   );
 };
 
 export default SnippetCardHeader;
+
+const truncateString = (str: string, length: number) => {
+  if (str.length > length) {
+    return `${str.slice(0, length)}...`;
+  }
+  return str;
+};
