@@ -21,7 +21,7 @@ interface SnippetFilter {
 }
 
 export async function createSnippet(
-  params: PostParams<Snippet>,
+  params: PostParams<SnippetForm>,
 ): Promise<Snippet> {
   const response = await invokeCommand('create_snippet', params);
   return await SnippetSchema.parseAsync(response);
