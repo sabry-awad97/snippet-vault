@@ -19,13 +19,7 @@ pub async fn create_tag(app: AppHandle, params: PostParams<TagForm>) -> IpcRespo
 
         let tag = match client
             .tag()
-            .create(
-                data.name,
-                vec![
-                    prisma::tag::color::set(data.color),
-                    prisma::tag::snippet_ids::set(data.snippet_ids),
-                ],
-            )
+            .create(data.name, vec![prisma::tag::color::set(data.color)])
             .exec()
             .await
         {
@@ -102,7 +96,6 @@ pub async fn update_tag(app: AppHandle, params: PutParams<TagForm>) -> IpcRespon
         let update_params = vec![
             prisma::tag::name::set(data.name),
             prisma::tag::color::set(data.color),
-            prisma::tag::snippet_ids::set(data.snippet_ids),
         ];
 
         let updated_tag = match client

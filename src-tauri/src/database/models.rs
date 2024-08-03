@@ -63,7 +63,6 @@ pub struct SnippetStateUpdate {
 pub struct TagForm {
     pub name: String,
     pub color: Option<String>,
-    pub snippet_ids: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
