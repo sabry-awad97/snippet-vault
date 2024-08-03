@@ -71,177 +71,223 @@ const TagDialog: React.FC<TagDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          'rounded-lg p-8 shadow-lg sm:max-w-[425px]',
+          'rounded-lg p-0 shadow-lg sm:max-w-[500px]',
           isDarkMode
             ? 'bg-gradient-to-br from-gray-800 to-gray-900'
             : 'bg-gradient-to-br from-purple-50 to-indigo-50',
         )}
       >
-        <DialogHeader>
-          <DialogTitle
-            className={cn(
-              'font-semibold',
-              isDarkMode ? 'text-purple-300' : 'text-purple-700',
-            )}
-          >
-            Manage Tags
-          </DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label
-              htmlFor="newTagName"
-              className={cn(
-                'text-right font-semibold',
-                isDarkMode ? 'text-purple-300' : 'text-purple-700',
-              )}
-            >
-              New Tag
-            </Label>
-            <Input
-              id="newTagName"
-              value={newTagName}
-              onChange={e => setNewTagName(e.target.value)}
-              className={cn(
-                'col-span-3 rounded-md border-2 px-4 py-2 transition-all duration-200',
-                isDarkMode
-                  ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
-                  : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
-                'focus:outline-none focus:ring-2',
-              )}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label
-              className={cn(
-                'text-right font-semibold',
-                isDarkMode ? 'text-purple-300' : 'text-purple-700',
-              )}
-            >
-              Color
-            </Label>
-            <div className="col-span-3">
-              <HexColorPicker color={newTagColor} onChange={setNewTagColor} />
-            </div>
-          </div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={handleCreateTag}
-              className={cn(
-                'w-full rounded-md py-2 font-semibold text-white shadow-md transition-all duration-200 focus:ring-2 focus:ring-offset-2',
-                isDarkMode
-                  ? 'bg-purple-700 hover:bg-purple-600 focus:ring-purple-400'
-                  : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
-              )}
-            >
-              <FiPlus className="mr-2 h-4 w-4" /> Create Tag
-            </Button>
-          </motion.div>
-        </div>
-        <ScrollArea
-          className={cn(
-            'h-[200px] w-full rounded-md border p-4',
-            isDarkMode ? 'border-purple-700' : 'border-purple-200',
-          )}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.3 }}
         >
-          <AnimatePresence>
-            {existingTags.map(tag => (
-              <motion.div
-                key={tag.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="flex items-center justify-between py-2"
-              >
-                {editingTag && editingTag.id === tag.id ? (
-                  <>
-                    <Input
-                      value={editingTag.name}
-                      onChange={e =>
-                        setEditingTag({ ...editingTag, name: e.target.value })
-                      }
-                      className={cn(
-                        'mr-2 rounded-md border-2 px-4 py-2 transition-all duration-200',
-                        isDarkMode
-                          ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
-                          : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
-                        'focus:outline-none focus:ring-2',
-                      )}
-                    />
-                    <HexColorPicker
-                      color={editingTag.color}
-                      onChange={color =>
-                        setEditingTag({ ...editingTag, color })
-                      }
-                    />
-                    <Button
-                      onClick={handleUpdateTag}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <FiCheck className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      onClick={() => setEditingTag(null)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <FiX className="h-4 w-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center">
-                      <div
-                        className="mr-2 h-3 w-3 rounded-full"
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      <span
-                        className={isDarkMode ? 'text-white' : 'text-gray-800'}
-                      >
-                        {tag.name}
-                      </span>
-                    </div>
-                    <div>
-                      <Button
-                        onClick={() => setEditingTag(tag)}
-                        size="sm"
-                        variant="outline"
-                        className="mr-2"
-                      >
-                        <FiEdit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteTag(tag.id)}
-                        size="sm"
-                        variant="outline"
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <FiTrash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </ScrollArea>
-        <DialogFooter>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={onClose}
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle
               className={cn(
-                'w-full rounded-md py-2 font-semibold text-white shadow-md transition-all duration-200 focus:ring-2 focus:ring-offset-2',
-                isDarkMode
-                  ? 'bg-purple-700 hover:bg-purple-600 focus:ring-purple-400'
-                  : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
+                'text-2xl font-bold',
+                isDarkMode ? 'text-purple-300' : 'text-purple-700',
               )}
             >
-              Close
-            </Button>
-          </motion.div>
-        </DialogFooter>
+              Manage Tags
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-6 p-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+            >
+              <Label
+                htmlFor="newTagName"
+                className={cn(
+                  'mb-2 block font-semibold',
+                  isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                )}
+              >
+                New Tag
+              </Label>
+              <div className="flex space-x-2">
+                <Input
+                  id="newTagName"
+                  value={newTagName}
+                  onChange={e => setNewTagName(e.target.value)}
+                  className={cn(
+                    'flex-grow rounded-md border-2 px-4 py-2 transition-all duration-200',
+                    isDarkMode
+                      ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
+                      : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
+                    'focus:outline-none focus:ring-2',
+                  )}
+                />
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={handleCreateTag}
+                    className={cn(
+                      'rounded-md px-4 py-2 font-semibold text-white shadow-md transition-all duration-200 focus:ring-2 focus:ring-offset-2',
+                      isDarkMode
+                        ? 'bg-purple-700 hover:bg-purple-600 focus:ring-purple-400'
+                        : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
+                    )}
+                  >
+                    <FiPlus className="mr-2 h-4 w-4" /> Add
+                  </Button>
+                </motion.div>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
+              <Label
+                className={cn(
+                  'mb-2 block font-semibold',
+                  isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                )}
+              >
+                Color
+              </Label>
+              <HexColorPicker
+                color={newTagColor}
+                onChange={setNewTagColor}
+                className="w-full"
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+            >
+              <Label
+                className={cn(
+                  'mb-2 block font-semibold',
+                  isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                )}
+              >
+                Existing Tags
+              </Label>
+              <ScrollArea
+                className={cn(
+                  'h-[200px] w-full rounded-md border p-4',
+                  isDarkMode ? 'border-purple-700' : 'border-purple-200',
+                )}
+              >
+                <AnimatePresence>
+                  {existingTags.map(tag => (
+                    <motion.div
+                      key={tag.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="mb-2 flex items-center justify-between rounded-md border p-2"
+                    >
+                      {editingTag && editingTag.id === tag.id ? (
+                        <>
+                          <Input
+                            value={editingTag.name}
+                            onChange={e =>
+                              setEditingTag({
+                                ...editingTag,
+                                name: e.target.value,
+                              })
+                            }
+                            className={cn(
+                              'mr-2 flex-grow rounded-md border-2 px-2 py-1 transition-all duration-200',
+                              isDarkMode
+                                ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
+                                : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
+                              'focus:outline-none focus:ring-2',
+                            )}
+                          />
+                          <HexColorPicker
+                            color={editingTag.color}
+                            onChange={color =>
+                              setEditingTag({ ...editingTag, color })
+                            }
+                          />
+                          <div className="flex space-x-1">
+                            <Button
+                              onClick={handleUpdateTag}
+                              size="sm"
+                              variant="outline"
+                            >
+                              <FiCheck className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={() => setEditingTag(null)}
+                              size="sm"
+                              variant="outline"
+                            >
+                              <FiX className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center">
+                            <div
+                              className="mr-2 h-4 w-4 rounded-full"
+                              style={{ backgroundColor: tag.color }}
+                            />
+                            <span
+                              className={
+                                isDarkMode ? 'text-white' : 'text-gray-800'
+                              }
+                            >
+                              {tag.name}
+                            </span>
+                          </div>
+                          <div className="flex space-x-1">
+                            <Button
+                              onClick={() => setEditingTag(tag)}
+                              size="sm"
+                              variant="outline"
+                            >
+                              <FiEdit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteTag(tag.id)}
+                              size="sm"
+                              variant="outline"
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <FiTrash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </ScrollArea>
+            </motion.div>
+          </div>
+          <DialogFooter className="p-6 pt-0">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full"
+            >
+              <Button
+                onClick={onClose}
+                className={cn(
+                  'w-full rounded-md py-2 font-semibold text-white shadow-md transition-all duration-200 focus:ring-2 focus:ring-offset-2',
+                  isDarkMode
+                    ? 'bg-purple-700 hover:bg-purple-600 focus:ring-purple-400'
+                    : 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
+                )}
+              >
+                Close
+              </Button>
+            </motion.div>
+          </DialogFooter>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
