@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useLinkStore } from '@/hooks/useLinkStore';
-import useSnippetsContext from '@/hooks/useSnippetsContext';
-import useTagsContext from '@/hooks/useTagsContext';
+import useSnippetStore from '@/hooks/useSnippetStore';
+import useTagsContext from '@/hooks/useTagsStore';
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -43,7 +43,7 @@ const quickLinkStyles = cva(
 
 const SidebarNav: React.FC<{}> = ({}) => {
   const { links, setSelectedLink } = useLinkStore();
-  const { handleFavoriteToggle, clearFilters } = useSnippetsContext();
+  const { handleFavoriteToggle, clearFilters } = useSnippetStore();
   const { setIsTagsDialogOpen } = useTagsContext();
 
   const auth = useAuth();

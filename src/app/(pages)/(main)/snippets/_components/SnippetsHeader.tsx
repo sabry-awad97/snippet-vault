@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import useSnippets from '@/hooks/useSnippetsContext';
+import useSnippetStore from '@/hooks/useSnippetStore';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
 import React from 'react';
@@ -31,7 +31,7 @@ const languages = [
 
 const SnippetsHeader: React.FC = () => {
   const { handleLanguageChange, handleDateRangeChange, handleFavoriteToggle } =
-    useSnippets();
+    useSnippetStore();
 
   return (
     <motion.div
@@ -45,7 +45,6 @@ const SnippetsHeader: React.FC = () => {
           <div className="ml-auto flex items-center justify-center gap-5">
             <DateRangePicker
               onUpdate={values => {
-
                 if (values.range.from && values.range.to) {
                   handleDateRangeChange({
                     from: values.range.from,

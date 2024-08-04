@@ -4,8 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { useLinkStore } from '@/hooks/useLinkStore';
 import useSnippets from '@/hooks/useSnippets';
-import useSnippetsContext from '@/hooks/useSnippetsContext';
-import useTagsContext from '@/hooks/useTagsContext';
+import useSnippetStore from '@/hooks/useSnippetStore';
+import useTagsContext from '@/hooks/useTagsStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -27,7 +27,7 @@ export default function SnippetsPage() {
     isEditMode,
     isSnippetDialogOpen,
     resetSnippetDialog,
-  } = useSnippetsContext();
+  } = useSnippetStore();
 
   const { isTagsDialogOpen, setIsTagsDialogOpen } = useTagsContext();
 

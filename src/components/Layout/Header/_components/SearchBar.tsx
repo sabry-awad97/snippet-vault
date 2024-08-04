@@ -1,6 +1,6 @@
 import { Tooltip } from '@/components/Common/Tooltip';
 import { Button } from '@/components/ui/button';
-import useSnippets from '@/hooks/useSnippetsContext';
+import useSnippets from '@/hooks/useSnippetStore';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Search } from 'lucide-react';

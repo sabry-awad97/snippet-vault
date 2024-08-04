@@ -1,6 +1,6 @@
 import { CardFooter } from '@/components/ui/card';
 import useSnippets from '@/hooks/useSnippets';
-import useSnippetsContext from '@/hooks/useSnippetsContext';
+import useSnippetStore from '@/hooks/useSnippetStore';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { titleCase } from '@/lib/utils/stringUtils';
@@ -18,7 +18,7 @@ interface SnippetCardFooterProps {
 const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
   const [isCopied, setIsCopied] = useState(false);
   const { deleteSnippet, updateSnippetState } = useSnippets();
-  const { setSnippetDialog } = useSnippetsContext();
+  const { setSnippetDialog } = useSnippetStore();
 
   const handleCopySnippet = useCallback(() => {
     navigator.clipboard

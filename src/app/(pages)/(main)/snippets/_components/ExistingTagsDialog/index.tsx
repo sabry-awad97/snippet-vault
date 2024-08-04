@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import useTagsContext from '@/hooks/useTagsContext';
+import useTagsContext from '@/hooks/useTagsStore';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import React from 'react';

@@ -69,7 +69,7 @@ export default function MainLayout({
       )}
     >
       <AnimatePresence>
-        <Sidebar navItems={navItems} initialIsOpen={true} />
+        <Sidebar initialIsOpen={true} />
       </AnimatePresence>
 
       <div className="flex flex-1 flex-col overflow-hidden">
