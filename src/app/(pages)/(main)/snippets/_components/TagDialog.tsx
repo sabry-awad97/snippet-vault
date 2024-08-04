@@ -12,9 +12,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tag, TagSchema } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useState } from 'react';
+import React from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { FiCheck, FiEdit2, FiPlus, FiTrash2, FiX } from 'react-icons/fi';
+import { useImmerReducer } from 'use-immer';
 
 interface TagDialogProps {
   isOpen: boolean;
@@ -26,6 +27,48 @@ interface TagDialogProps {
   isDarkMode: boolean;
 }
 
+type State = {
+  newTagName: string;
+  newTagColor: string;
+  editingTag: Tag | null;
+};
+
+type Action =
+  | { type: 'SET_NEW_TAG_NAME'; payload: string }
+  | { type: 'SET_NEW_TAG_COLOR'; payload: string }
+  | { type: 'SET_EDITING_TAG'; payload: Tag | null }
+  | { type: 'UPDATE_EDITING_TAG'; payload: Partial<Tag> }
+  | { type: 'RESET_NEW_TAG' };
+
+const initialState: State = {
+  newTagName: '',
+  newTagColor: '#f7df1e',
+  editingTag: null,
+};
+
+const reducer = (draft: State, action: Action) => {
+  switch (action.type) {
+    case 'SET_NEW_TAG_NAME':
+      draft.newTagName = action.payload;
+      break;
+    case 'SET_NEW_TAG_COLOR':
+      draft.newTagColor = action.payload;
+      break;
+    case 'SET_EDITING_TAG':
+      draft.editingTag = action.payload;
+      break;
+    case 'UPDATE_EDITING_TAG':
+      if (draft.editingTag) {
+        Object.assign(draft.editingTag, action.payload);
+      }
+      break;
+    case 'RESET_NEW_TAG':
+      draft.newTagName = '';
+      draft.newTagColor = '#f7df1e';
+      break;
+  }
+};
+
 const TagDialog: React.FC<TagDialogProps> = ({
   isOpen,
   onClose,
@@ -35,35 +78,32 @@ const TagDialog: React.FC<TagDialogProps> = ({
   onDeleteTag,
   isDarkMode,
 }) => {
-  const [newTagName, setNewTagName] = useState('');
-  const [newTagColor, setNewTagColor] = useState('#f7df1e');
-  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [state, dispatch] = useImmerReducer(reducer, initialState);
 
   const handleCreateTag = () => {
-    if (newTagName.trim()) {
+    if (state.newTagName.trim()) {
       const newTag = TagSchema.parse({
         id: Date.now().toString(),
-        name: newTagName.trim(),
+        name: state.newTagName.trim(),
         snippetIds: [],
-        color: newTagColor,
+        color: state.newTagColor,
       });
       onCreateTag(newTag);
-      setNewTagName('');
-      setNewTagColor('#f7df1e');
+      dispatch({ type: 'RESET_NEW_TAG' });
     }
   };
 
   const handleUpdateTag = () => {
-    if (editingTag && editingTag.name.trim()) {
-      onUpdateTag(editingTag);
-      setEditingTag(null);
+    if (state.editingTag && state.editingTag.name.trim()) {
+      onUpdateTag(state.editingTag);
+      dispatch({ type: 'SET_EDITING_TAG', payload: null });
     }
   };
 
   const handleDeleteTag = (tagId: string) => {
     onDeleteTag(tagId);
-    if (editingTag && editingTag.id === tagId) {
-      setEditingTag(null);
+    if (state.editingTag && state.editingTag.id === tagId) {
+      dispatch({ type: 'SET_EDITING_TAG', payload: null });
     }
   };
 
@@ -111,8 +151,13 @@ const TagDialog: React.FC<TagDialogProps> = ({
               <div className="flex space-x-2">
                 <Input
                   id="newTagName"
-                  value={newTagName}
-                  onChange={e => setNewTagName(e.target.value)}
+                  value={state.newTagName}
+                  onChange={e =>
+                    dispatch({
+                      type: 'SET_NEW_TAG_NAME',
+                      payload: e.target.value,
+                    })
+                  }
                   className={cn(
                     'flex-grow rounded-md border-2 px-4 py-2 transition-all duration-200',
                     isDarkMode
@@ -153,8 +198,10 @@ const TagDialog: React.FC<TagDialogProps> = ({
                 Color
               </Label>
               <HexColorPicker
-                color={newTagColor}
-                onChange={setNewTagColor}
+                color={state.newTagColor}
+                onChange={color =>
+                  dispatch({ type: 'SET_NEW_TAG_COLOR', payload: color })
+                }
                 className="w-full"
               />
             </motion.div>
@@ -185,20 +232,29 @@ const TagDialog: React.FC<TagDialogProps> = ({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="mb-2 flex items-center justify-between rounded-md border p-2"
+                      className={cn(
+                        'mb-2 overflow-hidden rounded-md border',
+                        isDarkMode ? 'border-purple-700' : 'border-purple-200',
+                      )}
                     >
-                      {editingTag && editingTag.id === tag.id ? (
-                        <>
+                      {state.editingTag && state.editingTag.id === tag.id ? (
+                        <motion.div
+                          initial={{ height: 0 }}
+                          animate={{ height: 'auto' }}
+                          exit={{ height: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="p-2"
+                        >
                           <Input
-                            value={editingTag.name}
+                            value={state.editingTag.name}
                             onChange={e =>
-                              setEditingTag({
-                                ...editingTag,
-                                name: e.target.value,
+                              dispatch({
+                                type: 'UPDATE_EDITING_TAG',
+                                payload: { name: e.target.value },
                               })
                             }
                             className={cn(
-                              'mr-2 flex-grow rounded-md border-2 px-2 py-1 transition-all duration-200',
+                              'mb-2 w-full rounded-md border-2 px-2 py-1 transition-all duration-200',
                               isDarkMode
                                 ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
                                 : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
@@ -206,12 +262,16 @@ const TagDialog: React.FC<TagDialogProps> = ({
                             )}
                           />
                           <HexColorPicker
-                            color={editingTag.color}
+                            color={state.editingTag.color}
                             onChange={color =>
-                              setEditingTag({ ...editingTag, color })
+                              dispatch({
+                                type: 'UPDATE_EDITING_TAG',
+                                payload: { color },
+                              })
                             }
+                            className="mb-2 w-full"
                           />
-                          <div className="flex space-x-1">
+                          <div className="flex justify-end space-x-1">
                             <Button
                               onClick={handleUpdateTag}
                               size="sm"
@@ -220,16 +280,27 @@ const TagDialog: React.FC<TagDialogProps> = ({
                               <FiCheck className="h-4 w-4" />
                             </Button>
                             <Button
-                              onClick={() => setEditingTag(null)}
+                              onClick={() =>
+                                dispatch({
+                                  type: 'SET_EDITING_TAG',
+                                  payload: null,
+                                })
+                              }
                               size="sm"
                               variant="outline"
                             >
                               <FiX className="h-4 w-4" />
                             </Button>
                           </div>
-                        </>
+                        </motion.div>
                       ) : (
-                        <>
+                        <motion.div
+                          initial={{ height: 0 }}
+                          animate={{ height: 'auto' }}
+                          exit={{ height: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="flex items-center justify-between p-2"
+                        >
                           <div className="flex items-center">
                             <div
                               className="mr-2 h-4 w-4 rounded-full"
@@ -245,7 +316,12 @@ const TagDialog: React.FC<TagDialogProps> = ({
                           </div>
                           <div className="flex space-x-1">
                             <Button
-                              onClick={() => setEditingTag(tag)}
+                              onClick={() =>
+                                dispatch({
+                                  type: 'SET_EDITING_TAG',
+                                  payload: tag,
+                                })
+                              }
                               size="sm"
                               variant="outline"
                             >
@@ -260,7 +336,7 @@ const TagDialog: React.FC<TagDialogProps> = ({
                               <FiTrash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        </>
+                        </motion.div>
                       )}
                     </motion.div>
                   ))}
