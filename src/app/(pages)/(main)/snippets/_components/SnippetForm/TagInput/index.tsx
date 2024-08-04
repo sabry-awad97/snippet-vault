@@ -19,14 +19,14 @@ import { cn } from '@/lib/utils';
 import React, { useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { FiCheck, FiPlus, FiX } from 'react-icons/fi';
-import TagDialog from './TagDialog';
+import TagFormDialog from '../../TagFormDialog';
 
 interface TagInputProps {
   isDarkMode: boolean;
 }
 
 const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
-  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
+  const [isTagFormDialogOpen, setIsTagFormDialogOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const { control } = useFormContext<Snippet>();
@@ -36,7 +36,11 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
     name: 'tags',
   });
 
-  const { tags: existingTags, createTag, updateTag, deleteTag } = useTags();
+  const { tags: existingTags, createTag } = useTags();
+
+  const handleAddNewTag = () => {
+    setIsTagFormDialogOpen(true);
+  };
 
   const handleSelectTag = (selectedTag: Tag) => {
     const index = fields.findIndex(field => field.id === selectedTag.id);
@@ -114,7 +118,7 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
                 No tag found.
                 <button
                   className="mt-2 w-full rounded-md bg-purple-100 px-2 py-1 text-purple-800"
-                  onClick={() => setIsTagDialogOpen(true)}
+                  onClick={handleAddNewTag}
                 >
                   Create &quot;{inputValue}&quot;
                 </button>
@@ -156,13 +160,12 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
         </Popover>
       </div>
 
-      <TagDialog
-        isOpen={isTagDialogOpen}
-        onClose={() => setIsTagDialogOpen(false)}
-        existingTags={existingTags}
-        onCreateTag={createTag}
-        onUpdateTag={updateTag}
-        onDeleteTag={deleteTag}
+      <TagFormDialog
+        isOpen={isTagFormDialogOpen}
+        onClose={() => {
+          setIsTagFormDialogOpen(false);
+        }}
+        onSubmit={createTag}
         isDarkMode={isDarkMode}
       />
     </>

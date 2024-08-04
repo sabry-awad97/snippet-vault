@@ -1,25 +1,23 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import useTags from '@/hooks/useTags';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import React from 'react';
+import React, { useState } from 'react';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import TagFormDialog from '../TagFormDialog';
 
 interface ExistingTagsListProps {
   existingTags: Tag[];
-  onEditTag: (tag: Tag) => void;
-  onDeleteTag: (tagId: string) => void;
   isDarkMode: boolean;
 }
 
-const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
-  existingTags,
-  onEditTag,
-  onDeleteTag,
-  isDarkMode,
-}) => {
+const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
+  const { tags: existingTags, updateTag, deleteTag } = useTags();
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -64,14 +62,14 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
               </div>
               <div className="flex space-x-1">
                 <Button
-                  onClick={() => onEditTag(tag)}
+                  onClick={() => setEditingTag(tag)}
                   size="sm"
                   variant="outline"
                 >
                   <FiEdit2 className="h-4 w-4" />
                 </Button>
                 <Button
-                  onClick={() => onDeleteTag(tag.id)}
+                  onClick={() => deleteTag(tag.id)}
                   size="sm"
                   variant="outline"
                   className="text-red-500 hover:text-red-700"
@@ -83,6 +81,17 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
           ))}
         </AnimatePresence>
       </ScrollArea>
+
+      <TagFormDialog
+        isOpen={Boolean(editingTag)}
+        initialTag={editingTag}
+        onClose={() => setEditingTag(null)}
+        onSubmit={() => {
+          setEditingTag(null);
+          updateTag(editingTag!);
+        }}
+        isDarkMode={isDarkMode}
+      />
     </motion.div>
   );
 };
