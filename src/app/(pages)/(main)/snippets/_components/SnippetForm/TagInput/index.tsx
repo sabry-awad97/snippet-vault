@@ -51,21 +51,6 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
     }
   };
 
-  const handleAddNewTag = () => {
-    if (inputValue.trim()) {
-      const newTag = TagSchema.parse({
-        id: Date.now().toString(),
-        name: inputValue.trim(),
-        snippetIds: [],
-        color: '#f7df1e', // Default color, you might want to let users choose a color
-      });
-
-      append(newTag);
-      setInputValue('');
-      setOpen(false);
-    }
-  };
-
   return (
     <>
       <div
