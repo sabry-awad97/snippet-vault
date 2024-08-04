@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import useTags from '@/hooks/useTags';
+import useTagsContext from '@/hooks/useTagsContext';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -23,7 +23,7 @@ const TagListDialog: React.FC<TagDialogProps> = ({
   onClose,
   isDarkMode,
 }) => {
-  const { tags: existingTags } = useTags();
+  const { tags: existingTags } = useTagsContext();
 
   return (
     <>

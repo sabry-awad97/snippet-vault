@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useLinkStore } from '@/hooks/useLinkStore';
 import useSnippetsContext from '@/hooks/useSnippetsContext';
+import useTagsContext from '@/hooks/useTagsContext';
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -43,6 +44,7 @@ const quickLinkStyles = cva(
 const SidebarNav: React.FC<{}> = ({}) => {
   const { links, setSelectedLink } = useLinkStore();
   const { handleFavoriteToggle, clearFilters } = useSnippetsContext();
+  const { setIsTagsDialogOpen } = useTagsContext();
 
   const auth = useAuth();
   const router = useRouter();
@@ -77,6 +79,7 @@ const SidebarNav: React.FC<{}> = ({}) => {
           case 'trash':
             break;
           case 'tags':
+            setIsTagsDialogOpen(true);
             break;
           case 'logout':
             handleLogout();
@@ -86,7 +89,13 @@ const SidebarNav: React.FC<{}> = ({}) => {
         }
       };
     },
-    [setSelectedLink, handleLogout, handleFavoriteToggle, clearFilters],
+    [
+      setSelectedLink,
+      handleLogout,
+      handleFavoriteToggle,
+      clearFilters,
+      setIsTagsDialogOpen,
+    ],
   );
 
   return (

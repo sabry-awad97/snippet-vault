@@ -1,17 +1,23 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import useCurrentTheme from '@/hooks/useCurrentTheme';
+import { useLinkStore } from '@/hooks/useLinkStore';
 import useSnippets from '@/hooks/useSnippets';
 import useSnippetsContext from '@/hooks/useSnippetsContext';
+import useTagsContext from '@/hooks/useTagsContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import TagListDialog from './_components/ExistingTagsDialog';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
 
 export default function SnippetsPage() {
   const auth = useAuth();
   const router = useRouter();
+  const { theme } = useCurrentTheme();
+  const { resetLinks } = useLinkStore();
 
   const { createSnippet, updateSnippet } = useSnippets();
 
@@ -22,6 +28,8 @@ export default function SnippetsPage() {
     isSnippetDialogOpen,
     resetSnippetDialog,
   } = useSnippetsContext();
+
+  const { isTagsDialogOpen, setIsTagsDialogOpen } = useTagsContext();
 
   useEffect(() => {
     if (!auth?.user) {
@@ -69,6 +77,14 @@ export default function SnippetsPage() {
           }}
           initialData={editingSnippet}
           isEditMode={isEditMode}
+        />
+        <TagListDialog
+          isOpen={isTagsDialogOpen}
+          onClose={() => {
+            setIsTagsDialogOpen(false);
+            resetLinks();
+          }}
+          isDarkMode={theme === 'dark'}
         />
       </motion.div>
     </div>
