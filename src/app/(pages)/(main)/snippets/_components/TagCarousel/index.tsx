@@ -11,7 +11,6 @@ import useSnippetsWithStore from '@/hooks/useSnippetStore';
 import useTags from '@/hooks/useTags';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
 
 const TagCarousel = () => {
   const { tags } = useTags();
@@ -38,7 +37,7 @@ const TagCarousel = () => {
         className="relative w-full"
       >
         <CarouselContent>
-          {[...tags, ...tags].map((tag, index) => (
+          {tags.map((tag, index) => (
             <CarouselItem
               key={`${tag}-${index}`}
               className="md:basis-1/4 lg:basis-1/6"
@@ -90,37 +89,6 @@ const TagCarousel = () => {
           )}
         />
       </Carousel>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.3 }}
-        className="mt-6 flex flex-wrap gap-2"
-      >
-        {selectedTags.map(tag => (
-          <motion.div
-            key={tag}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-          >
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => handleTagClick(tag)}
-              className={cn(
-                'flex items-center gap-1 rounded-full px-3 py-1 transition-all duration-300',
-                isDarkMode
-                  ? 'bg-purple-700 text-white hover:bg-purple-600'
-                  : 'bg-purple-100 text-purple-600 hover:bg-purple-200',
-              )}
-            >
-              {tag}
-              <X size={14} />
-            </Button>
-          </motion.div>
-        ))}
-      </motion.div>
     </motion.div>
   );
 };

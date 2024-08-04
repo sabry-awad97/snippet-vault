@@ -45,14 +45,13 @@ interface SnippetStore {
   setSnippetDialog: (snippet: Snippet | null) => void;
   resetSnippetDialog: () => void;
   setFilter: (filter: Filter) => void;
-  removeFilter: (filterType: `${FilterType}`) => void;
+  removeFilter: (filterType: FilterType) => void;
   clearFilters: () => void;
   handleSearchChange: (value: string) => void;
   handleLanguageChange: (value: string) => void;
   handleFavoriteToggle: (value: boolean) => void;
   handleDateRangeChange: (range: { from: Date; to: Date }) => void;
   toggleTagSelection: (tag: string) => void;
-  setFilterTags: (tags: string[]) => void;
 }
 
 const useSnippetStore = create<SnippetStore>()(
@@ -91,13 +90,13 @@ const useSnippetStore = create<SnippetStore>()(
         } else {
           state.filters.push(filter);
         }
-        state.filteredSnippets = applyFilters(state.snippets, state.filters);
+        state.filteredSnippets = filterSnippets(state.snippets, state.filters);
       }),
 
-    removeFilter: (filterType: `${FilterType}`) =>
+    removeFilter: (filterType: FilterType) =>
       set(state => {
         state.filters = state.filters.filter(f => f.type !== filterType);
-        state.filteredSnippets = applyFilters(state.snippets, state.filters);
+        state.filteredSnippets = filterSnippets(state.snippets, state.filters);
       }),
 
     clearFilters: () =>
@@ -136,18 +135,13 @@ const useSnippetStore = create<SnippetStore>()(
         } else {
           state.selectedTags.push(tag);
         }
-        get().setFilterTags(state.selectedTags);
-      }),
 
-    setFilterTags: (tags: string[]) =>
-      set(state => {
-        state.selectedTags = tags;
-        get().setFilter({ type: FilterType.TAGS, value: tags });
+        get().setFilter({ type: FilterType.TAGS, value: state.selectedTags });
       }),
   })),
 );
 
-const applyFilters = (snippets: Snippet[], filters: Filter[]): Snippet[] => {
+const filterSnippets = (snippets: Snippet[], filters: Filter[]): Snippet[] => {
   return snippets.filter(snippet =>
     filters.every(filter => applyFilter(snippet, filter)),
   );
@@ -156,57 +150,59 @@ const applyFilters = (snippets: Snippet[], filters: Filter[]): Snippet[] => {
 const applyFilter = (snippet: Snippet, filter: Filter): boolean => {
   switch (filter.type) {
     case FilterType.SEARCH:
-      const searchTerm = filter.value.toLowerCase();
-      return (
-        snippet.title.toLowerCase().includes(searchTerm) ||
-        snippet.code.toLowerCase().includes(searchTerm) ||
-        snippet.tags?.some(tag =>
-          tag.name.toLowerCase().includes(searchTerm),
-        ) ||
-        false
-      );
+      return applySearchFilter(snippet, filter.value);
     case FilterType.LANGUAGE:
-      return (
-        filter.value.length === 0 || filter.value.includes(snippet.language)
-      );
+      return applyLanguageFilter(snippet, filter.value);
     case FilterType.TAGS:
-      return (
-        filter.value.length === 0 ||
-        filter.value.every(tagName =>
-          snippet.tags?.some(tag => tag.name === tagName),
-        )
-      );
+      return applyTagsFilter(snippet, filter.value);
     case FilterType.FAVORITE:
-      return filter.value ? snippet.state?.isFavorite || false : true;
+      return applyFavoriteFilter(snippet, filter.value);
     case FilterType.DATE_RANGE:
-      const snippetDate = new Date(snippet.createdAt);
-      return (
-        snippetDate >= new Date(filter.value[0]) &&
-        snippetDate <= new Date(filter.value[1])
-      );
+      return applyDateRangeFilter(snippet, filter.value);
     default:
       return true;
   }
 };
 
+const applySearchFilter = (snippet: Snippet, searchTerm: string): boolean => {
+  const term = searchTerm.toLowerCase();
+  return (
+    snippet.title.toLowerCase().includes(term) ||
+    snippet.description.toLowerCase().includes(term) ||
+    snippet.code.toLowerCase().includes(term) ||
+    snippet.tags?.some(tag => tag.name.toLowerCase().includes(term)) ||
+    false
+  );
+};
+
+const applyLanguageFilter = (
+  snippet: Snippet,
+  languages: string[],
+): boolean => {
+  return languages.length === 0 || languages.includes(snippet.language);
+};
+
+const applyTagsFilter = (snippet: Snippet, selectedTags: string[]): boolean => {
+  return (
+    selectedTags.length === 0 ||
+    snippet.tags?.some(tag => selectedTags.includes(tag.name)) ||
+    false
+  );
+};
+
+const applyFavoriteFilter = (
+  snippet: Snippet,
+  isFavorite: boolean,
+): boolean => {
+  return isFavorite ? snippet.state?.isFavorite || false : true;
+};
+
+const applyDateRangeFilter = (
+  snippet: Snippet,
+  range: [Date, Date],
+): boolean => {
+  const snippetDate = new Date(snippet.createdAt);
+  return snippetDate >= range[0] && snippetDate <= range[1];
+};
+
 export default useSnippetStore;
-
-// export const useSnippetsWithStore = () => {
-//   const { snippets } = useSnippets();
-//   const store = useSnippetStore();
-
-//   // Initialize snippets if the store is empty
-//   if (store.snippets.length === 0 && snippets.length > 0) {
-//     store.snippets = snippets;
-//     store.filteredSnippets = snippets;
-//     // Extract unique tags from snippets
-//     const uniqueTags = [
-//       ...new Set(snippets.flatMap(s => s.tags?.map(t => t.name) || [])),
-//     ];
-//     store.setTags(uniqueTags);
-//   }
-
-//   return store;
-// };
-
-// export default useSnippetsWithStore;

@@ -43,7 +43,7 @@ export default function MainLayout({
 
   const isDarkMode = theme === 'dark';
 
-  if (!mounted) return <p>Loading...</p>;
+  if (!mounted) return <Loader />;
 
   return (
     <motion.div
@@ -94,5 +94,18 @@ export default function MainLayout({
         </main>
       </div>
     </motion.div>
+  );
+}
+
+function Loader() {
+  return (
+    <div className="flex h-64 items-center justify-center">
+      <motion.div
+        className="h-12 w-12 animate-spin rounded-full border-4 border-t-4 border-indigo-500"
+        initial={{ scale: 0.8, opacity: 0.5 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, yoyo: Infinity }}
+      />
+    </div>
   );
 }

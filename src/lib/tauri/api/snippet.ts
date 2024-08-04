@@ -46,9 +46,8 @@ export async function updateSnippet(
   return await SnippetSchema.parseAsync(response);
 }
 
-export async function deleteSnippet(params: DeleteParams): Promise<Snippet> {
-  const response = await invokeCommand('delete_snippet', params);
-  return await SnippetSchema.parseAsync(response);
+export async function deleteSnippet(params: DeleteParams) {
+  await invokeCommand('delete_snippet', params);
 }
 
 export async function updateSnippetState(
