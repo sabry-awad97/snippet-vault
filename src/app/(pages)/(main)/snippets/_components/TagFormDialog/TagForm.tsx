@@ -71,9 +71,12 @@ const TagForm: React.FC<TagFormProps> = ({
                     {...field}
                     className={cn(
                       'w-full rounded-md border-2 px-4 py-2 transition-all duration-200',
-                      isDarkMode
-                        ? 'border-purple-700 bg-gray-800 text-white hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400'
-                        : 'border-purple-200 bg-white hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300',
+                      {
+                        'border-purple-700 bg-gray-800 text-purple-300 hover:border-purple-500 focus:border-purple-400 focus:ring-purple-400':
+                          isDarkMode,
+                        'border-purple-200 bg-white text-purple-700 hover:border-purple-400 focus:border-purple-500 focus:ring-purple-300':
+                          !isDarkMode,
+                      },
                       'focus:outline-none focus:ring-2',
                     )}
                   />
