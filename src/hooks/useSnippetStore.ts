@@ -1,6 +1,5 @@
 'use client';
 
-import useSnippets from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
@@ -42,6 +41,7 @@ interface SnippetStore {
   isEditMode: boolean;
   editingSnippet: Snippet | null;
   filters: Filter[];
+  selectedTags: string[];
   setSnippetDialog: (snippet: Snippet | null) => void;
   resetSnippetDialog: () => void;
   setFilter: (filter: Filter) => void;
@@ -51,6 +51,8 @@ interface SnippetStore {
   handleLanguageChange: (value: string) => void;
   handleFavoriteToggle: (value: boolean) => void;
   handleDateRangeChange: (range: { from: Date; to: Date }) => void;
+  toggleTagSelection: (tag: string) => void;
+  setFilterTags: (tags: string[]) => void;
 }
 
 const useSnippetStore = create<SnippetStore>()(
@@ -61,6 +63,7 @@ const useSnippetStore = create<SnippetStore>()(
     isEditMode: false,
     editingSnippet: null,
     filters: [],
+    selectedTags: [],
 
     setSnippetDialog: (snippet: Snippet | null) =>
       set(state => {
@@ -101,6 +104,7 @@ const useSnippetStore = create<SnippetStore>()(
       set(state => {
         state.filters = [];
         state.filteredSnippets = state.snippets;
+        state.selectedTags = [];
       }),
 
     handleSearchChange: (value: string) =>
@@ -122,6 +126,23 @@ const useSnippetStore = create<SnippetStore>()(
       get().setFilter({
         type: FilterType.DATE_RANGE,
         value: [range.from, range.to],
+      }),
+
+    toggleTagSelection: (tag: string) =>
+      set(state => {
+        const isSelected = state.selectedTags.includes(tag);
+        if (isSelected) {
+          state.selectedTags = state.selectedTags.filter(t => t !== tag);
+        } else {
+          state.selectedTags.push(tag);
+        }
+        get().setFilterTags(state.selectedTags);
+      }),
+
+    setFilterTags: (tags: string[]) =>
+      set(state => {
+        state.selectedTags = tags;
+        get().setFilter({ type: FilterType.TAGS, value: tags });
       }),
   })),
 );
@@ -151,8 +172,8 @@ const applyFilter = (snippet: Snippet, filter: Filter): boolean => {
     case FilterType.TAGS:
       return (
         filter.value.length === 0 ||
-        filter.value.some(tagName =>
-          snippet.tags?.some(tag => tag.name.includes(tagName)),
+        filter.value.every(tagName =>
+          snippet.tags?.some(tag => tag.name === tagName),
         )
       );
     case FilterType.FAVORITE:
@@ -168,17 +189,24 @@ const applyFilter = (snippet: Snippet, filter: Filter): boolean => {
   }
 };
 
-export const useSnippetsWithStore = () => {
-  const { snippets } = useSnippets();
-  const store = useSnippetStore();
+export default useSnippetStore;
 
-  // Initialize snippets if the store is empty
-  if (store.snippets.length === 0 && snippets.length > 0) {
-    store.snippets = snippets;
-    store.filteredSnippets = snippets;
-  }
+// export const useSnippetsWithStore = () => {
+//   const { snippets } = useSnippets();
+//   const store = useSnippetStore();
 
-  return store;
-};
+//   // Initialize snippets if the store is empty
+//   if (store.snippets.length === 0 && snippets.length > 0) {
+//     store.snippets = snippets;
+//     store.filteredSnippets = snippets;
+//     // Extract unique tags from snippets
+//     const uniqueTags = [
+//       ...new Set(snippets.flatMap(s => s.tags?.map(t => t.name) || [])),
+//     ];
+//     store.setTags(uniqueTags);
+//   }
 
-export default useSnippetsWithStore;
+//   return store;
+// };
+
+// export default useSnippetsWithStore;

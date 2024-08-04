@@ -16,7 +16,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import useHotkeys from '@/hooks/useHotkeys';
 import useTags from '@/hooks/useTags';
-import useTagsWithInitialization from '@/hooks/useTagsStore';
+import useTagsStore from '@/hooks/useTagsStore';
 import { Snippet } from '@/lib/schemas/snippet';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
@@ -66,10 +66,9 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
   const [isTagFormDialogOpen, setIsTagFormDialogOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const { control } = useFormContext<Snippet>();
-  const { createTag } = useTags();
+  const { tags: existingTags, createTag } = useTags();
 
-  const { tags: existingTags, setIsTagsDialogOpen } =
-    useTagsWithInitialization();
+  const { setIsTagsDialogOpen } = useTagsStore();
   useHotkeys([['ctrl+e', () => setIsTagsDialogOpen(true)]]);
 
   const { fields, append, remove } = useFieldArray({

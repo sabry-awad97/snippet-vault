@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import useTags from '@/hooks/useTags';
-import useTagsWithInitialization from '@/hooks/useTagsStore';
+import useTagsStore from '@/hooks/useTagsStore';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -16,14 +16,9 @@ interface ExistingTagsListProps {
 }
 
 const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
-  const { updateTag, deleteTag } = useTags();
-  const {
-    tags: existingTags,
-    isTagFormDialogOpen,
-    setIsTagFormDialogOpen,
-  } = useTagsWithInitialization();
+  const { tags: existingTags, updateTag, deleteTag } = useTags();
+  const { isTagFormDialogOpen, setIsTagFormDialogOpen } = useTagsStore();
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

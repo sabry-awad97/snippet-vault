@@ -1,4 +1,5 @@
 import { CardContent } from '@/components/ui/card';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -26,19 +27,22 @@ const SnippetCardContent = ({ snippet }: SnippetCardContentProps) => {
         transition={{ delay: 0.2 }}
         className="h-full overflow-y-auto rounded-md"
       >
-        <SyntaxHighlighter
-          language={snippet.language}
-          style={snippet.state?.isDark ? vscDarkPlus : vs}
-          customStyle={{
-            margin: 0,
-            borderRadius: '0.375rem',
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-          }}
-        >
-          {snippet.code}
-        </SyntaxHighlighter>
+        <ScrollArea className="h-[20rem]">
+          <SyntaxHighlighter
+            language={snippet.language}
+            style={snippet.state?.isDark ? vscDarkPlus : vs}
+            customStyle={{
+              margin: 0,
+              borderRadius: '0.375rem',
+              display: 'flex',
+              flexDirection: 'column',
+              height: '20rem',
+            }}
+          >
+            {snippet.code}
+          </SyntaxHighlighter>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </motion.div>
     </CardContent>
   );

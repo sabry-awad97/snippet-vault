@@ -1,9 +1,8 @@
-import { Tooltip } from '@/components/Common/Tooltip';
 import { Button } from '@/components/ui/button';
 import useSnippets from '@/hooks/useSnippetStore';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, Search } from 'lucide-react';
+import { PlusCircle, Search } from 'lucide-react';
 import { useState } from 'react';
 
 const SearchBar = () => {
@@ -49,7 +48,7 @@ const SearchBar = () => {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="absolute right-2 flex items-center justify-center"
           >
-            <Button
+            {/* <Button
               onClick={handleNewSnippet}
               size="sm"
               className={cn(
@@ -66,6 +65,16 @@ const SearchBar = () => {
               <Tooltip content="New Snippet">
                 <Plus className="h-4 w-4" />
               </Tooltip>
+            </Button> */}
+
+            <Button
+              onClick={() => setSnippetDialog(null)}
+              className={cn(
+                'flex items-center gap-2 rounded-full bg-purple-600 px-4 py-2 font-semibold text-white shadow-lg transition-all duration-300 hover:bg-purple-700 hover:shadow-xl dark:bg-purple-500 dark:hover:bg-purple-400',
+              )}
+            >
+              <PlusCircle size={20} />
+              Add Snippet
             </Button>
           </motion.div>
         </AnimatePresence>

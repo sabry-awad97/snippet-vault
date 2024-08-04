@@ -65,7 +65,7 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
               );
               onClose();
             }}
-            isDarkMode={false}
+            isDarkMode={isDarkMode}
             initialTag={initialTag}
           />
         </motion.div>
