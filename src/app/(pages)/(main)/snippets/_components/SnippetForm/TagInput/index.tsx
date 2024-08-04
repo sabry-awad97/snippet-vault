@@ -4,6 +4,8 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
+  CommandSeparator,
 } from '@/components/ui/command';
 import { FormField, FormItem } from '@/components/ui/form';
 import {
@@ -12,11 +14,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import useHotkeys from '@/hooks/useHotkeys';
 import useTags from '@/hooks/useTags';
+import useTagsWithInitialization from '@/hooks/useTagsStore';
 import { Snippet } from '@/lib/schemas/snippet';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { Check, Edit2 } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { FiPlus, FiX } from 'react-icons/fi';
@@ -62,7 +66,11 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
   const [isTagFormDialogOpen, setIsTagFormDialogOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const { control } = useFormContext<Snippet>();
-  const { tags: existingTags, createTag } = useTags();
+  const { createTag } = useTags();
+
+  const { tags: existingTags, setIsTagsDialogOpen } =
+    useTagsWithInitialization();
+  useHotkeys([['ctrl+e', () => setIsTagsDialogOpen(true)]]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -203,67 +211,115 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
                   Create &quot;{newTagName}&quot;
                 </button>
               </CommandEmpty>
-              <CommandGroup className="p-2">
-                <ScrollArea className="h-60 overflow-y-auto pr-2">
-                  <div className="space-y-1">
-                    {existingTags.map(tag => {
-                      const selected = fields.some(
-                        field => field.name === tag.name,
-                      );
-
-                      return (
-                        <CommandItem
-                          key={tag.id}
-                          value={tag.name}
-                          onSelect={() => {
-                            if (selected) {
-                              handleUnselectTag(tag);
-                            } else {
-                              handleSelectTag(tag);
-                            }
-                          }}
-                          className={cn(
-                            'group flex cursor-default select-none items-center rounded-md px-3 py-2 text-sm outline-none',
-                            'transition-all duration-200 ease-in-out',
-                            isDarkMode
-                              ? selected
-                                ? 'bg-purple-700 text-white'
-                                : 'text-gray-200 hover:bg-gray-700'
-                              : selected
-                                ? 'bg-purple-100 text-purple-900'
-                                : 'text-gray-700 hover:bg-purple-50',
-                          )}
-                        >
-                          <div className="flex flex-1 items-center space-x-3">
-                            <div
-                              className={cn(
-                                'h-4 w-4 rounded-full transition-all duration-200',
-                                selected ? 'scale-110' : 'scale-100',
-                              )}
-                              style={{ backgroundColor: tag.color }}
-                            />
-                            <span
-                              className={cn(
-                                'font-medium',
-                                selected && 'text-purple-900',
-                              )}
-                            >
-                              {tag.name}
-                            </span>
-                          </div>
-                          <Check
+              <CommandList>
+                <CommandGroup className="p-2">
+                  <ScrollArea className="h-28 overflow-y-auto pr-2">
+                    <div className="space-y-1">
+                      {existingTags.map(tag => {
+                        const selected = fields.some(
+                          field => field.name === tag.name,
+                        );
+                        return (
+                          <CommandItem
+                            key={tag.id}
+                            value={tag.name}
+                            onSelect={() => {
+                              if (selected) {
+                                handleUnselectTag(tag);
+                              } else {
+                                handleSelectTag(tag);
+                              }
+                            }}
                             className={cn(
-                              'ml-2 h-4 w-4 transition-all duration-200',
-                              selected ? 'opacity-100' : 'opacity-0',
-                              isDarkMode ? 'text-white' : 'text-purple-600',
+                              'group flex cursor-default select-none items-center rounded-md px-3 py-2 text-sm outline-none',
+                              'transition-all duration-300 ease-in-out',
+                              'relative overflow-hidden',
+                              isDarkMode
+                                ? selected
+                                  ? 'bg-purple-700 text-white'
+                                  : 'text-gray-200 hover:bg-gray-700'
+                                : selected
+                                  ? 'bg-purple-100 text-purple-900'
+                                  : 'text-gray-700 hover:bg-purple-50',
                             )}
-                          />
-                        </CommandItem>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              </CommandGroup>
+                          >
+                            <div
+                              className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-10"
+                              style={{
+                                backgroundImage: `radial-gradient(circle, ${tag.color} 10%, transparent 10.01%)`,
+                                backgroundSize: '20px 20px',
+                              }}
+                            />
+                            <div className="relative z-10 flex flex-1 items-center space-x-3">
+                              <div
+                                className={cn(
+                                  'h-4 w-4 rounded-full transition-all duration-300',
+                                  selected ? 'scale-110' : 'scale-100',
+                                  'group-hover:animate-ping',
+                                )}
+                                style={{ backgroundColor: tag.color }}
+                              />
+                              <span
+                                className={cn(
+                                  'relative overflow-hidden font-medium',
+                                  selected && 'text-purple-900',
+                                )}
+                              >
+                                <span className="relative z-10 inline-block transition-all duration-300 group-hover:opacity-0">
+                                  {tag.name}
+                                </span>
+                                <span
+                                  className="absolute inset-0 z-0 inline-block opacity-0 transition-all duration-300 group-hover:opacity-100"
+                                  style={{ color: tag.color }}
+                                >
+                                  {tag.name}
+                                </span>
+                              </span>
+                            </div>
+                            <Check
+                              className={cn(
+                                'ml-2 h-4 w-4 transition-all duration-300',
+                                selected
+                                  ? 'rotate-0 scale-100 opacity-100'
+                                  : '-rotate-90 scale-0 opacity-0',
+                                isDarkMode ? 'text-white' : 'text-purple-600',
+                              )}
+                            />
+                          </CommandItem>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </CommandGroup>
+                <CommandSeparator
+                  alwaysRender
+                  className="my-2 bg-gradient-to-r from-transparent via-gray-200 to-transparent dark:via-gray-700"
+                />
+                <CommandGroup>
+                  <CommandItem
+                    value={`:${newTagName}:`}
+                    className="group rounded-md transition-all duration-300 ease-in-out hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                  >
+                    <div
+                      className="group flex w-full cursor-pointer items-center justify-center space-x-2 transition-all duration-300"
+                      onClick={() => setIsTagsDialogOpen(true)}
+                    >
+                      <div className="relative flex items-center justify-center">
+                        <div className="relative mr-3 flex flex-shrink-0 items-center justify-center">
+                          <Edit2 className="h-4 w-4 text-purple-500 transition-all duration-300 group-hover:rotate-12 dark:text-purple-400" />
+                          <span className="absolute inset-0 scale-0 rounded-full bg-purple-200 opacity-0 transition-all duration-300 group-hover:scale-150 group-hover:opacity-30 dark:bg-purple-700"></span>
+                        </div>
+                        <span className="flex-grow text-sm font-medium text-gray-700 transition-colors duration-300 group-hover:text-purple-600 dark:text-gray-200 dark:group-hover:text-purple-300">
+                          Edit Tags
+                        </span>
+                        <span className="ml-2 flex-shrink-0 text-xs text-gray-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:text-gray-500">
+                          Ctrl+E
+                        </span>
+                      </div>
+                    </div>
+                  </CommandItem>
+                </CommandGroup>
+              </CommandList>
             </Command>
           </PopoverContent>
         </Popover>
