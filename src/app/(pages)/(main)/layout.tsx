@@ -5,7 +5,6 @@ import Sidebar from '@/components/Layout/Sidebar';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Code, Folder, Home, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const pageTransition = {
@@ -35,13 +34,6 @@ export default function MainLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const navItems = [
-    { href: '/dashboard', icon: Home, label: 'Dashboard' },
-    { href: '/snippets', icon: Code, label: 'Snippets' },
-    { href: '/collections', icon: Folder, label: 'Collections' },
-    { href: '/settings', icon: Settings, label: 'Settings' },
-  ];
-
   const { theme } = useCurrentTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -51,7 +43,7 @@ export default function MainLayout({
 
   const isDarkMode = theme === 'dark';
 
-  if (!mounted) return null;
+  if (!mounted) return <p>Loading...</p>;
 
   return (
     <motion.div

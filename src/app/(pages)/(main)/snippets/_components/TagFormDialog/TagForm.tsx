@@ -85,30 +85,38 @@ const TagForm: React.FC<TagFormProps> = ({
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="color"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel
-                  className={cn(
-                    'font-semibold',
-                    isDarkMode ? 'text-purple-300' : 'text-purple-700',
-                  )}
-                >
-                  Tag Color
-                </FormLabel>
-                <FormControl>
-                  <HexColorPicker
-                    color={field.value}
-                    onChange={field.onChange}
-                    className="w-full"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel
+                    className={cn(
+                      'font-semibold',
+                      isDarkMode ? 'text-purple-300' : 'text-purple-700',
+                    )}
+                  >
+                    Tag Color
+                  </FormLabel>
+                  <FormControl>
+                    <HexColorPicker
+                      color={field.value}
+                      onChange={field.onChange}
+                      className="w-full"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </motion.div>
+
           <div className="flex w-full space-x-2 pt-4">
             <motion.div
               whileHover={{ scale: 1.05 }}
