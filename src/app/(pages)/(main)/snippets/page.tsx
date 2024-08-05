@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
-import { useLinkStore } from '@/hooks/useLinkStore';
+import useQueryParams from '@/hooks/useQueryParams';
 import useSnippets from '@/hooks/useSnippets';
 import useSnippetStore from '@/hooks/useSnippetStore';
 import useTagsContext from '@/hooks/useTagsStore';
@@ -19,14 +19,14 @@ export default function SnippetsPage() {
   const auth = useAuth();
   const router = useRouter();
   const { theme } = useCurrentTheme();
-  const { resetLinks } = useLinkStore();
   const isDarkMode = theme === 'dark';
 
-  const { createSnippet, updateSnippet } = useSnippets();
+  const filter = useQueryParams();
+
+  const { snippets, createSnippet, updateSnippet } = useSnippets(filter);
 
   const {
     editingSnippet,
-    filteredSnippets,
     isEditMode,
     isSnippetDialogOpen,
     resetSnippetDialog,
@@ -47,7 +47,7 @@ export default function SnippetsPage() {
         'from-gray-900 to-purple-900': isDarkMode,
       })}
     >
-      {!filteredSnippets.length ? null : (
+      {!snippets.length ? null : (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -70,7 +70,7 @@ export default function SnippetsPage() {
             className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
           >
             <AnimatePresence>
-              {filteredSnippets.map(snippet => (
+              {snippets.map(snippet => (
                 <motion.div
                   key={snippet.id}
                   layout
@@ -100,7 +100,6 @@ export default function SnippetsPage() {
             isOpen={isTagsDialogOpen}
             onClose={() => {
               setIsTagsDialogOpen(false);
-              resetLinks();
             }}
             isDarkMode={isDarkMode}
           />

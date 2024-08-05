@@ -14,6 +14,8 @@ pub struct PutParams<D> {
 #[derive(Deserialize)]
 pub struct ListParams<F> {
     pub filter: Option<F>,
+    pub page: Option<i64>,
+    pub page_size: Option<i64>,
 }
 
 #[derive(Deserialize)]

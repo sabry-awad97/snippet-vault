@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import useSnippetStore from '@/hooks/useSnippetStore';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
 import React from 'react';
@@ -30,8 +29,9 @@ const languages = [
 ];
 
 const SnippetsHeader: React.FC = () => {
-  const { handleLanguageChange, handleDateRangeChange, handleFavoriteToggle } =
-    useSnippetStore();
+  const handleLanguageChange = () => {};
+  const handleDateRangeChange = ({}) => {};
+  const handleFavoriteToggle = () => {};
 
   return (
     <motion.div

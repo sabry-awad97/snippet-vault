@@ -2,16 +2,14 @@ import { Snippet, SnippetState } from '@/lib/schemas/snippet';
 import * as snippetsApi from '@/lib/tauri/api/snippet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import useSnippetStore from './useSnippetStore';
 
-const useSnippets = () => {
+const useSnippets = (filter: snippetsApi.SnippetFilter = {}) => {
   const queryClient = useQueryClient();
 
   const { data: snippets = [] } = useQuery<Snippet[]>({
-    queryKey: ['snippets'],
+    queryKey: ['snippets', filter],
     queryFn: async () => {
-      const snippets = await snippetsApi.listSnippets({ filter: {} });
-      useSnippetStore.setState({ snippets, filteredSnippets: snippets });
+      const snippets = await snippetsApi.listSnippets({ filter });
       return snippets;
     },
   });

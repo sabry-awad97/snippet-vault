@@ -1,11 +1,10 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useLinkStore } from '@/hooks/useLinkStore';
-import useSnippetStore from '@/hooks/useSnippetStore';
 import useTagsContext from '@/hooks/useTagsStore';
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
 
 const navItemVariants = {
@@ -42,9 +41,9 @@ const quickLinkStyles = cva(
 );
 
 const SidebarNav: React.FC<{}> = ({}) => {
-  const { links, setSelectedLink } = useLinkStore();
-  const { handleFavoriteToggle, clearFilters } = useSnippetStore();
+  const { links } = useLinkStore();
   const { setIsTagsDialogOpen } = useTagsContext();
+  const searchParams = useSearchParams();
 
   const auth = useAuth();
   const router = useRouter();
@@ -67,16 +66,17 @@ const SidebarNav: React.FC<{}> = ({}) => {
   const createOnClickHandler = useCallback(
     (id: LinkIds) => {
       return () => {
-        setSelectedLink(id);
+        const params = new URLSearchParams(searchParams);
 
         switch (id) {
           case 'all':
-            clearFilters();
+            params.delete('filter');
             break;
           case 'favorites':
-            handleFavoriteToggle(true);
+            params.set('filter', 'favorites');
             break;
           case 'trash':
+            params.set('filter', 'trash');
             break;
           case 'tags':
             setIsTagsDialogOpen(true);
@@ -87,16 +87,16 @@ const SidebarNav: React.FC<{}> = ({}) => {
           default:
             break;
         }
+
+        // Update the URL with the new search params
+        router.push(`?${params.toString()}`);
       };
     },
-    [
-      setSelectedLink,
-      handleLogout,
-      handleFavoriteToggle,
-      clearFilters,
-      setIsTagsDialogOpen,
-    ],
+    [handleLogout, setIsTagsDialogOpen, searchParams, router],
   );
+
+  // Determine which link is currently active based on the URL
+  const activeLink = searchParams.get('filter') || 'all';
 
   return (
     <nav className="mt-20 text-sm">
@@ -114,7 +114,8 @@ const SidebarNav: React.FC<{}> = ({}) => {
           {links.map((item, index) => {
             switch (item.type) {
               case 'LINK':
-                const { id, icon: Icon, label, selected } = item.link;
+                const { id, icon: Icon, label } = item.link;
+                const selected = id === activeLink;
                 return (
                   <motion.li
                     key={label}

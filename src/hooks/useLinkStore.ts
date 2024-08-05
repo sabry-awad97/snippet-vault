@@ -8,7 +8,6 @@ type QuickLink =
         id: 'all' | 'favorites' | 'trash' | 'tags' | 'logout';
         icon: LucideIcon;
         label: string;
-        selected: boolean;
       };
     }
   | { type: 'SEPARATOR' }
@@ -16,8 +15,6 @@ type QuickLink =
 
 interface LinkState {
   links: QuickLink[];
-  setSelectedLink: (id: string) => void;
-  resetLinks: () => void;
 }
 
 export const useLinkStore = create<LinkState>()(set => ({
@@ -28,7 +25,6 @@ export const useLinkStore = create<LinkState>()(set => ({
         id: 'all',
         icon: Grid2X2,
         label: 'All Snippets',
-        selected: true,
       },
     },
     {
@@ -37,7 +33,6 @@ export const useLinkStore = create<LinkState>()(set => ({
         id: 'favorites',
         icon: Heart,
         label: 'Favorites',
-        selected: false,
       },
     },
     {
@@ -46,7 +41,6 @@ export const useLinkStore = create<LinkState>()(set => ({
         id: 'trash',
         icon: Trash,
         label: 'Trash',
-        selected: false,
       },
     },
     { type: 'EMPTY' },
@@ -57,7 +51,6 @@ export const useLinkStore = create<LinkState>()(set => ({
         id: 'tags',
         icon: Tags,
         label: 'Tags',
-        selected: false,
       },
     },
     {
@@ -66,36 +59,7 @@ export const useLinkStore = create<LinkState>()(set => ({
         id: 'logout',
         icon: LogOut,
         label: 'Logout',
-        selected: false,
       },
     },
   ],
-  setSelectedLink: id =>
-    set(state => ({
-      links: state.links.map(item =>
-        item.type === 'LINK'
-          ? {
-              ...item,
-              link: {
-                ...item.link,
-                selected: item.link.id === id,
-              },
-            }
-          : item,
-      ),
-    })),
-  resetLinks: () =>
-    set(state => ({
-      links: state.links.map(item =>
-        item.type === 'LINK'
-          ? {
-              ...item,
-              link: {
-                ...item.link,
-                selected: false,
-              },
-            }
-          : item,
-      ),
-    })),
 }));

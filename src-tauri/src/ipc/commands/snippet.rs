@@ -9,6 +9,8 @@ use crate::{
     },
 };
 use log::{debug, error, info};
+use prisma::Direction;
+use serde::Serialize;
 use tauri::AppHandle;
 
 #[tauri::command]
@@ -84,19 +86,39 @@ pub async fn get_snippet(app: AppHandle, params: GetParams) -> IpcResponse<Optio
     .await
 }
 
+#[derive(Debug, Serialize)]
+pub struct PaginatedResponse<T> {
+    pub data: Vec<T>,
+    pub total: i64,
+    pub page: usize,
+    pub page_size: usize,
+}
+
 #[tauri::command]
 pub async fn list_snippets(
     app: AppHandle,
     params: ListParams<SnippetFilter>,
 ) -> IpcResponse<Vec<Snippet>> {
+    // const DEFAULT_PAGE: i64 = 0;
+    // const DEFAULT_PAGE_SIZE: i64 = 20;
+
     info!("Listing snippets with filter: {:?}", params.filter);
-    handle_db_operation(app, |client| async move {
+    handle_db_operation(app, move |client| async move {
         let where_params = build_snippet_filters(params.filter);
+
+        // let total = client.snippet().count(where_params.clone()).exec().await?;
+
+        // let page = params.page.unwrap_or(DEFAULT_PAGE);
+        // let page_size = params.page_size.unwrap_or(DEFAULT_PAGE_SIZE);
+
         let snippets = client
             .snippet()
             .find_many(where_params)
             .with(prisma::snippet::state::fetch())
             .with(prisma::snippet::tags::fetch(vec![]))
+            .order_by(prisma::snippet::created_at::order(Direction::Desc))
+            // .skip(page * page_size)
+            // .take(page_size)
             .exec()
             .await?;
 
@@ -187,8 +209,45 @@ pub async fn delete_snippet(app: AppHandle, params: DeleteParams) -> IpcResponse
 fn build_snippet_filters(filter: Option<SnippetFilter>) -> Vec<prisma::snippet::WhereParam> {
     let mut where_params = vec![];
     if let Some(filter) = filter {
+        if let Some(search) = filter.search {
+            where_params.push(prisma::or![
+                prisma::snippet::title::contains(search.clone()),
+                prisma::snippet::description::contains(search.clone()),
+                prisma::snippet::code::contains(search.clone()),
+                prisma::snippet::language::contains(search),
+            ]);
+        }
+
         if let Some(title) = filter.title {
             where_params.push(prisma::snippet::title::contains(title));
+        }
+        if let Some(description) = filter.description {
+            where_params.push(prisma::snippet::description::contains(description));
+        }
+        if let Some(language) = filter.language {
+            where_params.push(prisma::snippet::language::equals(language));
+        }
+        if let Some(code) = filter.code {
+            where_params.push(prisma::snippet::code::contains(code));
+        }
+        if let Some(state) = filter.state {
+            let mut state_params = vec![];
+            if let Some(is_favorite) = state.is_favorite {
+                state_params.push(prisma::snippet_state::is_favorite::equals(is_favorite));
+            }
+            if let Some(is_dark) = state.is_dark {
+                state_params.push(prisma::snippet_state::is_dark::equals(is_dark));
+            }
+            if !state_params.is_empty() {
+                where_params.push(prisma::snippet::state::is(state_params));
+            }
+        }
+        if let Some(tags) = filter.tags {
+            if !tags.is_empty() {
+                where_params.push(prisma::snippet::tags::some(vec![
+                    prisma::tag::name::in_vec(tags),
+                ]));
+            }
         }
     }
     where_params

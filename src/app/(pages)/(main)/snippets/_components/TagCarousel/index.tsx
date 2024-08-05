@@ -7,20 +7,44 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
-import useSnippetsWithStore from '@/hooks/useSnippetStore';
 import useTags from '@/hooks/useTags';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
 
 const TagCarousel = () => {
   const { tags } = useTags();
-  const { selectedTags, toggleTagSelection } = useSnippetsWithStore();
   const { theme } = useCurrentTheme();
   const isDarkMode = theme === 'dark';
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleTagClick = (tag: string) => {
-    toggleTagSelection(tag);
-  };
+  const selectedTags = useMemo(() => {
+    const tagsParam = searchParams.get('tags');
+    return tagsParam ? tagsParam.split(',') : [];
+  }, [searchParams]);
+
+  const handleTagClick = useCallback(
+    (tag: string) => {
+      const newSearchParams = new URLSearchParams(searchParams);
+      const currentTags = newSearchParams.get('tags')?.split(',') || [];
+
+      if (currentTags.includes(tag)) {
+        const updatedTags = currentTags.filter(t => t !== tag);
+        if (updatedTags.length > 0) {
+          newSearchParams.set('tags', updatedTags.join(','));
+        } else {
+          newSearchParams.delete('tags');
+        }
+      } else {
+        newSearchParams.set('tags', [...currentTags, tag].join(','));
+      }
+
+      router.push(`?${newSearchParams.toString()}`);
+    },
+    [searchParams, router],
+  );
 
   return (
     <motion.div
@@ -39,7 +63,7 @@ const TagCarousel = () => {
         <CarouselContent>
           {tags.map((tag, index) => (
             <CarouselItem
-              key={`${tag}-${index}`}
+              key={`${tag.name}-${index}`}
               className="md:basis-1/4 lg:basis-1/6"
             >
               <motion.div

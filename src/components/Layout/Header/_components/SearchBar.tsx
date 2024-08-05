@@ -1,17 +1,43 @@
 import { Tooltip } from '@/components/Common/Tooltip';
 import { Button } from '@/components/ui/button';
-import useSnippets from '@/hooks/useSnippetStore';
+import useSnippetStore from '@/hooks/useSnippetStore';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PlusCircle, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const SearchBar = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const { setSnippetDialog, handleSearchChange } = useSnippets();
+  const { setSnippetDialog } = useSnippetStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get('search') || '',
+  );
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm) {
+        router.push(`?search=${encodeURIComponent(searchTerm)}`, {
+          scroll: false,
+        });
+      }
+      // else {
+      //   router.push('/', { scroll: false });
+      // }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, router]);
 
   const handleNewSnippet = () => {
     setSnippetDialog(null);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
   };
 
   return (
@@ -33,6 +59,7 @@ const SearchBar = () => {
               'ring-2 ring-purple-500 dark:ring-purple-400': isSearchFocused,
             },
           )}
+          value={searchTerm}
           onFocus={() => setIsSearchFocused(true)}
           onBlur={() => setIsSearchFocused(false)}
           onChange={e => handleSearchChange(e.target.value)}

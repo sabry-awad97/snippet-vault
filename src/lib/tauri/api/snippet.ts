@@ -16,8 +16,14 @@ import {
 type SnippetForm = Omit<Snippet, 'id' | 'created_at' | 'updated_at'>;
 type UpdateSnippetState = Partial<Omit<SnippetState, 'id'>>;
 
-interface SnippetFilter {
+export interface SnippetFilter {
+  search?: string;
   title?: string;
+  description?: string;
+  language?: string;
+  code?: string;
+  state?: Partial<Omit<SnippetState, 'id'>>;
+  tags?: string[];
 }
 
 export async function createSnippet(
