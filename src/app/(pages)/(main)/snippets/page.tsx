@@ -47,64 +47,62 @@ export default function SnippetsPage() {
         'from-gray-900 to-purple-900': isDarkMode,
       })}
     >
-      {!snippets.length ? null : (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="container mx-auto max-w-7xl px-4 py-8"
+      >
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="container mx-auto max-w-7xl px-4 py-8"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-8"
         >
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mb-8"
-          >
-            <TagCarousel />
-          </motion.div>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
-            <AnimatePresence>
-              {snippets.map(snippet => (
-                <motion.div
-                  key={snippet.id}
-                  layout
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                >
-                  <SnippetCard snippet={snippet} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-
-          <SnippetDialog
-            isOpen={isSnippetDialogOpen}
-            onClose={resetSnippetDialog}
-            onSubmit={async snippet => {
-              await (isEditMode
-                ? updateSnippet(snippet)
-                : createSnippet(snippet));
-            }}
-            initialData={editingSnippet}
-            isEditMode={isEditMode}
-          />
-          <TagListDialog
-            isOpen={isTagsDialogOpen}
-            onClose={() => {
-              setIsTagsDialogOpen(false);
-            }}
-            isDarkMode={isDarkMode}
-          />
+          <TagCarousel />
         </motion.div>
-      )}
+
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
+          <AnimatePresence>
+            {snippets.map(snippet => (
+              <motion.div
+                key={snippet.id}
+                layout
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              >
+                <SnippetCard snippet={snippet} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+
+        <SnippetDialog
+          isOpen={isSnippetDialogOpen}
+          onClose={resetSnippetDialog}
+          onSubmit={async snippet => {
+            await (isEditMode
+              ? updateSnippet(snippet)
+              : createSnippet(snippet));
+          }}
+          initialData={editingSnippet}
+          isEditMode={isEditMode}
+        />
+        <TagListDialog
+          isOpen={isTagsDialogOpen}
+          onClose={() => {
+            setIsTagsDialogOpen(false);
+          }}
+          isDarkMode={isDarkMode}
+        />
+      </motion.div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import Languages from './Languages';
 import SidebarHeader from './SidebarHeader';
 import SidebarNav from './SidebarNav';
 
@@ -20,6 +21,7 @@ const SidebarContent: React.FC<{
   >
     <SidebarHeader toggleSidebar={toggleSidebar} />
     <SidebarNav />
+    <Languages />
   </motion.aside>
 );
 

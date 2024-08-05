@@ -16,9 +16,11 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
+import useLanguageStore from '@/hooks/useLanguageStore';
 import { useMonacoThemeManager } from '@/hooks/useMonacoThemeManager';
 import { Snippet, SnippetSchema } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
+import { titleCase } from '@/lib/utils/stringUtils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Editor from '@monaco-editor/react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -32,15 +34,6 @@ interface SnippetFormProps {
   snippet?: Snippet;
   onSubmit: (snippet: Snippet) => Promise<void>;
 }
-
-const languages = [
-  { value: 'javascript', label: 'JavaScript' },
-  { value: 'python', label: 'Python' },
-  { value: 'rust', label: 'Rust' },
-  { value: 'java', label: 'Java' },
-  { value: 'csharp', label: 'C#' },
-  { value: 'php', label: 'PHP' },
-];
 
 const useDarkMode = ({
   snippet,
@@ -87,6 +80,7 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
   const { handleEditorDidMount } = useMonacoThemeManager();
   const { theme } = useCurrentTheme();
   const isDarkMode = useDarkMode({ snippet, theme });
+  const { languages } = useLanguageStore();
 
   const handleSubmit = async (values: Snippet) => {
     await onSubmit(values);
@@ -229,8 +223,8 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                         </FormControl>
                         <SelectContent>
                           {languages.map(lang => (
-                            <SelectItem key={lang.value} value={lang.value}>
-                              {lang.label}
+                            <SelectItem key={lang.name} value={lang.name}>
+                              {titleCase(lang.name)}
                             </SelectItem>
                           ))}
                         </SelectContent>

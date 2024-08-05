@@ -30,6 +30,7 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
+        aria-describedby=""
         className={cn(
           'rounded-lg p-0 shadow-lg sm:max-w-[400px]',
           isDarkMode

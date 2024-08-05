@@ -1,3 +1,8 @@
+import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Carousel,
@@ -6,19 +11,22 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { Popover, PopoverTrigger } from '@/components/ui/popover';
+
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import useTags from '@/hooks/useTags';
+import useTagsStore from '@/hooks/useTagsStore';
+import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
+import TagFormDialog from '../TagFormDialog';
 
 const TagCarousel = () => {
-  const { tags } = useTags();
+  const { tags, createTag } = useTags();
+  const { isTagFormDialogOpen, setIsTagFormDialogOpen } = useTagsStore();
   const { theme } = useCurrentTheme();
-  const isDarkMode = theme === 'dark';
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [hoveredTag, setHoveredTag] = useState<string | null>(null);
 
   const selectedTags = useMemo(() => {
     const tagsParam = searchParams.get('tags');
@@ -46,74 +54,134 @@ const TagCarousel = () => {
     [searchParams, router],
   );
 
+  const handleAddTag = () => {
+    setIsTagFormDialogOpen(true);
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1, duration: 0.3 }}
-      className="mx-auto w-full max-w-4xl"
-    >
-      <Carousel
-        opts={{
-          align: 'start',
-          loop: true,
-        }}
-        className="relative w-full"
+    <div className="relative mx-auto w-full max-w-4xl">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.3 }}
+        className="mb-4"
       >
-        <CarouselContent>
-          {tags.map((tag, index) => (
-            <CarouselItem
-              key={`${tag.name}-${index}`}
-              className="md:basis-1/4 lg:basis-1/6"
-            >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-1"
-              >
-                <Button
-                  variant={
-                    selectedTags.includes(tag.name) ? 'default' : 'outline'
-                  }
-                  onClick={() => handleTagClick(tag.name)}
-                  className={cn(
-                    'h-full w-full rounded-full px-3 py-2 text-sm font-medium transition-all duration-300',
-                    {
-                      'bg-purple-600 text-white shadow-lg hover:bg-purple-700 hover:shadow-xl':
-                        selectedTags.includes(tag.name) && isDarkMode,
-                      'bg-purple-500 text-white shadow-lg hover:bg-purple-600 hover:shadow-xl':
-                        selectedTags.includes(tag.name) && !isDarkMode,
-                      'bg-gray-800 text-purple-300 hover:bg-gray-700 hover:text-purple-200':
-                        !selectedTags.includes(tag.name) && isDarkMode,
-                      'bg-white text-purple-600 hover:bg-purple-100':
-                        !selectedTags.includes(tag.name) && !isDarkMode,
-                    },
-                  )}
+        <Carousel
+          opts={{
+            align: 'start',
+            loop: true,
+          }}
+          className="w-full px-12"
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {tags.map((tag, index) => {
+              const isSelected = selectedTags.includes(tag.name);
+              return (
+                <CarouselItem
+                  key={`${tag.name}-${index}`}
+                  className="pl-2 md:basis-1/4 lg:basis-1/6"
                 >
-                  {tag.name}
-                </Button>
-              </motion.div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious
-          className={cn(
-            'absolute left-0 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-300',
-            isDarkMode
-              ? 'bg-purple-800 text-purple-200'
-              : 'bg-purple-100 text-purple-600',
-          )}
+                  <motion.div
+                    variants={{
+                      hidden: { y: 20, opacity: 0 },
+                      visible: { y: 0, opacity: 1 },
+                    }}
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.05, rotate: [-1, 1, -1, 0] }}
+                      whileTap={{ scale: 0.95 }}
+                      onHoverStart={() => setHoveredTag(tag.name)}
+                      onHoverEnd={() => setHoveredTag(null)}
+                      className="p-1"
+                    >
+                      <Button
+                        variant={isSelected ? 'default' : 'outline'}
+                        onClick={() => handleTagClick(tag.name)}
+                        className={cn(
+                          'h-full w-full rounded-full px-3 py-2 text-sm font-medium transition-all duration-300',
+                          {
+                            'dark:bg-purple-600 dark:text-white dark:shadow-lg dark:hover:bg-purple-700 dark:hover:shadow-xl':
+                              isSelected,
+                            'bg-purple-500 text-white shadow-lg hover:bg-purple-600 hover:shadow-xl':
+                              isSelected,
+                            'dark:bg-gray-800 dark:text-purple-300 dark:hover:bg-gray-700 dark:hover:text-purple-200':
+                              !isSelected,
+                            'bg-white text-purple-600 hover:bg-purple-100':
+                              !isSelected,
+                          },
+                        )}
+                      >
+                        <span className="relative z-10">{tag.name}</span>
+                        <motion.div
+                          className="absolute inset-0 bg-purple-400"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{
+                            scale: hoveredTag === tag.name ? 1 : 0,
+                            opacity: hoveredTag === tag.name ? 0.2 : 0,
+                          }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+          <CarouselPrevious
+            className={cn(
+              'absolute left-0 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full',
+              'transition-all duration-300',
+              'bg-purple-100 text-purple-600',
+              'dark:bg-purple-800 dark:text-purple-200',
+            )}
+          />
+          <CarouselNext
+            className={cn(
+              'absolute right-0 top-1/2 h-10 w-10 -translate-y-1/2 translate-x-1/2',
+              'rounded-full transition-all duration-300',
+              'bg-purple-100 text-purple-600',
+              'dark:bg-purple-800 dark:text-purple-200',
+            )}
+          />
+        </Carousel>
+
+        <TagFormDialog
+          isOpen={isTagFormDialogOpen}
+          onClose={() => {
+            setIsTagFormDialogOpen(false);
+          }}
+          onSubmit={(tag: Tag) => {
+            createTag(tag);
+            handleTagClick(tag.name);
+          }}
+          isDarkMode={theme === 'dark'}
         />
-        <CarouselNext
-          className={cn(
-            'absolute right-0 top-1/2 h-10 w-10 -translate-y-1/2 translate-x-1/2 rounded-full transition-all duration-300',
-            isDarkMode
-              ? 'bg-purple-800 text-purple-200'
-              : 'bg-purple-100 text-purple-600',
-          )}
-        />
-      </Carousel>
-    </motion.div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+        className="absolute -right-[15%] bottom-0 -translate-x-1/2"
+      >
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              onClick={handleAddTag}
+              className={cn(
+                'h-12 w-12 rounded-full transition-all duration-300',
+                'bg-purple-100 text-purple-700 hover:bg-purple-200',
+                'dark:bg-purple-700 dark:text-purple-100 dark:hover:bg-purple-600',
+              )}
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </PopoverTrigger>
+        </Popover>
+      </motion.div>
+    </div>
   );
 };
 

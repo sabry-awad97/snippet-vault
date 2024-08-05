@@ -19,14 +19,9 @@ const SearchBar = () => {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      if (searchTerm) {
-        router.push(`?search=${encodeURIComponent(searchTerm)}`, {
-          scroll: false,
-        });
-      }
-      // else {
-      //   router.push('/', { scroll: false });
-      // }
+      router.push(`?search=${encodeURIComponent(searchTerm)}`, {
+        scroll: false,
+      });
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
