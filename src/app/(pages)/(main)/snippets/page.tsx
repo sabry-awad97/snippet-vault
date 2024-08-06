@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
@@ -10,18 +11,19 @@ import {
   useUpdateSnippet,
 } from '@/hooks/useSnippets';
 import useSnippetStore from '@/hooks/useSnippetStore';
-import useTagsContext from '@/hooks/useTagsStore';
+import { useCreateTag } from '@/hooks/useTags';
+import useTagsStore from '@/hooks/useTagsStore';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Button } from 'react-day-picker';
 import TagListDialog from './_components/ExistingTagsDialog';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
 import TagCarousel from './_components/TagCarousel';
+import TagFormDialog from './_components/TagFormDialog';
 
 export default function SnippetsPage() {
   const auth = useAuth();
@@ -33,6 +35,7 @@ export default function SnippetsPage() {
 
   const createSnippetMutation = useCreateSnippet();
   const updateSnippetMutation = useUpdateSnippet();
+  const createTagMutation = useCreateTag();
   const { data: snippets = [], isLoading, error } = useSnippetsQuery(filter);
 
   const {
@@ -43,7 +46,12 @@ export default function SnippetsPage() {
     setSnippetDialog,
   } = useSnippetStore();
 
-  const { isTagsDialogOpen, setIsTagsDialogOpen } = useTagsContext();
+  const {
+    isTagsDialogOpen,
+    setIsTagsDialogOpen,
+    isTagFormDialogOpen,
+    setIsTagFormDialogOpen,
+  } = useTagsStore();
 
   useEffect(() => {
     if (!auth?.user) {
@@ -53,7 +61,7 @@ export default function SnippetsPage() {
 
   return (
     <div
-      className={cn('min-h-screen bg-gradient-to-br', {
+      className={cn('flex h-full w-full bg-gradient-to-br', {
         'from-purple-50 to-indigo-100': !isDarkMode,
         'from-gray-900 to-purple-900': isDarkMode,
       })}
@@ -62,7 +70,7 @@ export default function SnippetsPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="container mx-auto max-w-7xl px-4 py-8"
+        className="container mx-auto flex max-w-7xl flex-1 flex-col px-4 py-8"
       >
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -97,6 +105,15 @@ export default function SnippetsPage() {
           onClose={() => {
             setIsTagsDialogOpen(false);
           }}
+          isDarkMode={isDarkMode}
+          onCreateTag={() => setIsTagFormDialogOpen(true)}
+        />
+        <TagFormDialog
+          isOpen={isTagFormDialogOpen}
+          onClose={() => {
+            setIsTagFormDialogOpen(false);
+          }}
+          onSubmit={value => createTagMutation.mutateAsync(value)}
           isDarkMode={isDarkMode}
         />
       </motion.div>
@@ -143,50 +160,32 @@ function EmptySnippetsState({
 }: {
   onCreateSnippet: () => void;
 }) {
-  const { theme } = useCurrentTheme();
-  const isDarkMode = theme === 'dark';
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
       className={cn(
-        'flex h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed',
-        isDarkMode
-          ? 'border-purple-700 bg-gray-800'
-          : 'border-purple-200 bg-white',
+        'flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed border-purple-200 bg-white dark:border-purple-700 dark:bg-gray-800',
       )}
     >
       <PlusCircle
-        className={cn(
-          'mb-4 h-16 w-16',
-          isDarkMode ? 'text-purple-400' : 'text-purple-500',
-        )}
+        className={cn('mb-4 h-16 w-16 text-purple-500 dark:text-purple-400')}
       />
       <h3
         className={cn(
-          'mb-2 text-xl font-semibold',
-          isDarkMode ? 'text-white' : 'text-gray-800',
+          'mb-2 text-xl font-semibold text-gray-800 dark:text-white',
         )}
       >
         No snippets found
       </h3>
-      <p
-        className={cn(
-          'mb-4 text-center',
-          isDarkMode ? 'text-gray-400' : 'text-gray-600',
-        )}
-      >
+      <p className={cn('mb-4 text-center text-gray-600 dark:text-gray-400')}>
         Get started by creating your first snippet
       </p>
       <Button
         onClick={onCreateSnippet}
         className={cn(
-          'transition-all duration-300',
-          isDarkMode
-            ? 'bg-purple-600 hover:bg-purple-700'
-            : 'bg-purple-500 hover:bg-purple-600',
+          'bg-purple-500 transition-all duration-300 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700',
         )}
       >
         Create Snippet

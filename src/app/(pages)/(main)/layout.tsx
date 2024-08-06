@@ -84,7 +84,7 @@ export default function MainLayout({
                   key={children?.toString()}
                   {...pageTransition}
                   transition={{ duration: 0.3 }}
-                  className="flex flex-1"
+                  className="flex w-full flex-1"
                 >
                   {children}
                 </motion.div>

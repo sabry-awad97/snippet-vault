@@ -21,7 +21,7 @@ export const useCreateSnippet = () => {
       toast.success('Snippet Created', {
         description: 'Your snippet has been successfully created.',
       });
-      queryClient.invalidateQueries({ queryKey: ['snippets'] });
+      queryClient.clear();
     },
     onError: error => {
       toast.error('Error', {

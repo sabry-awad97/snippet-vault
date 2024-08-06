@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { Plus, Sparkles } from 'lucide-react'; // Import the Sparkles icon
 import React from 'react';
 import ExistingTagsList from './ExistingTagsList';
 
@@ -15,12 +16,14 @@ interface TagDialogProps {
   isOpen: boolean;
   onClose: () => void;
   isDarkMode: boolean;
+  onCreateTag: () => void;
 }
 
 const TagListDialog: React.FC<TagDialogProps> = ({
   isOpen,
   onClose,
   isDarkMode,
+  onCreateTag,
 }) => {
   return (
     <>
@@ -49,6 +52,43 @@ const TagListDialog: React.FC<TagDialogProps> = ({
                 Manage Tags
               </DialogTitle>
             </DialogHeader>
+
+            <motion.div
+              className="px-6 pt-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Button
+                onClick={onCreateTag}
+                className={cn(
+                  'w-full rounded-md py-3 font-semibold text-white shadow-md transition-all duration-300',
+                  isDarkMode
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
+                    : 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600',
+                )}
+              >
+                <motion.div
+                  className="flex items-center justify-center space-x-2"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Create New Tag</span>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'linear',
+                    }}
+                  >
+                    <Sparkles className="h-5 w-5" />
+                  </motion.div>
+                </motion.div>
+              </Button>
+            </motion.div>
+
             <div className="grid gap-6 p-6">
               <ExistingTagsList isDarkMode={isDarkMode} />
             </div>
