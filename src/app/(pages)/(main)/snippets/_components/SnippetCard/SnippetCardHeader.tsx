@@ -1,7 +1,7 @@
 import { Tooltip } from '@/components/Common/Tooltip';
 import { Badge } from '@/components/ui/badge';
 import { CardHeader, CardTitle } from '@/components/ui/card';
-import useSnippets from '@/hooks/useSnippets';
+import { useUpdateSnippetState } from '@/hooks/useSnippets';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { humanReadableTimestamp } from '@blaze/human-readable-timestamp';
@@ -15,7 +15,7 @@ interface SnippetCardHeaderProps {
 }
 
 const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
-  const { updateSnippetState } = useSnippets();
+  const updateSnippetStateMutation = useUpdateSnippetState();
 
   const isDark = snippet.state?.isDark;
   const isFavorite = snippet.state?.isFavorite;
@@ -62,7 +62,7 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
             >
               <Heart
                 onClick={() =>
-                  updateSnippetState({
+                  updateSnippetStateMutation.mutateAsync({
                     id: snippet.snippetStateId,
                     data: {
                       isFavorite: !isFavorite,

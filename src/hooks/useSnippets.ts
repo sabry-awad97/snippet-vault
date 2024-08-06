@@ -3,18 +3,17 @@ import * as snippetsApi from '@/lib/tauri/api/snippet';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-const useSnippets = (filter: snippetsApi.SnippetFilter = {}) => {
+export const useSnippetsQuery = (filter: snippetsApi.SnippetFilter = {}) => {
+  return useQuery<Snippet[]>({
+    queryKey: ['snippets', filter],
+    queryFn: () => snippetsApi.listSnippets({ filter }),
+  });
+};
+
+export const useCreateSnippet = () => {
   const queryClient = useQueryClient();
 
-  const { data: snippets = [] } = useQuery<Snippet[]>({
-    queryKey: ['snippets', filter],
-    queryFn: async () => {
-      const snippets = await snippetsApi.listSnippets({ filter });
-      return snippets;
-    },
-  });
-
-  const createMutation = useMutation({
+  return useMutation({
     mutationKey: ['createSnippet'],
     mutationFn: (newSnippet: Snippet) =>
       snippetsApi.createSnippet({ data: newSnippet }),
@@ -31,8 +30,12 @@ const useSnippets = (filter: snippetsApi.SnippetFilter = {}) => {
       console.error('Create Snippet Error:', error);
     },
   });
+};
 
-  const updateMutation = useMutation({
+export const useUpdateSnippet = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationKey: ['updateSnippet'],
     mutationFn: async (updatedSnippet: Snippet) =>
       snippetsApi.updateSnippet({
@@ -52,8 +55,12 @@ const useSnippets = (filter: snippetsApi.SnippetFilter = {}) => {
       console.error('Update Snippet Error:', error);
     },
   });
+};
 
-  const deleteMutation = useMutation({
+export const useDeleteSnippet = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationKey: ['deleteSnippet'],
     mutationFn: async (id: string) => snippetsApi.deleteSnippet({ id }),
     onSuccess: () => {
@@ -69,8 +76,12 @@ const useSnippets = (filter: snippetsApi.SnippetFilter = {}) => {
       console.error('Delete Snippet Error:', error);
     },
   });
+};
 
-  const updateSnippetStateMutation = useMutation({
+export const useUpdateSnippetState = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationKey: ['updateSnippetState'],
     mutationFn: async (params: {
       id: string;
@@ -86,14 +97,4 @@ const useSnippets = (filter: snippetsApi.SnippetFilter = {}) => {
       console.error('Update Snippet State Error:', error);
     },
   });
-
-  return {
-    snippets,
-    createSnippet: createMutation.mutateAsync,
-    updateSnippet: updateMutation.mutateAsync,
-    deleteSnippet: deleteMutation.mutateAsync,
-    updateSnippetState: updateSnippetStateMutation.mutateAsync,
-  };
 };
-
-export default useSnippets;

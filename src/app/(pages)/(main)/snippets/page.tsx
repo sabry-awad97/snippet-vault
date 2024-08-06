@@ -3,7 +3,11 @@
 import { useAuth } from '@/hooks/useAuth';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import useQueryParams from '@/hooks/useQueryParams';
-import useSnippets from '@/hooks/useSnippets';
+import {
+  useCreateSnippet,
+  useSnippetsQuery,
+  useUpdateSnippet,
+} from '@/hooks/useSnippets';
 import useSnippetStore from '@/hooks/useSnippetStore';
 import useTagsContext from '@/hooks/useTagsStore';
 import { cn } from '@/lib/utils';
@@ -23,7 +27,9 @@ export default function SnippetsPage() {
 
   const filter = useQueryParams();
 
-  const { snippets, createSnippet, updateSnippet } = useSnippets(filter);
+  const createSnippetMutation = useCreateSnippet();
+  const updateSnippetMutation = useUpdateSnippet();
+  const { data: snippets = [], isLoading, error } = useSnippetsQuery(filter);
 
   const {
     editingSnippet,
@@ -89,8 +95,8 @@ export default function SnippetsPage() {
           onClose={resetSnippetDialog}
           onSubmit={async snippet => {
             await (isEditMode
-              ? updateSnippet(snippet)
-              : createSnippet(snippet));
+              ? updateSnippetMutation.mutateAsync(snippet)
+              : createSnippetMutation.mutateAsync(snippet));
           }}
           initialData={editingSnippet}
           isEditMode={isEditMode}

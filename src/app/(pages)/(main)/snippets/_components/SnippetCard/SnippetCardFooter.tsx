@@ -1,5 +1,5 @@
 import { CardFooter } from '@/components/ui/card';
-import useSnippets from '@/hooks/useSnippets';
+import { useDeleteSnippet, useUpdateSnippetState } from '@/hooks/useSnippets';
 import useSnippetStore from '@/hooks/useSnippetStore';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
@@ -7,17 +7,22 @@ import { titleCase } from '@/lib/utils/stringUtils';
 import { motion } from 'framer-motion';
 import { Check, Copy, Edit, Moon, Sun, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { SiJavascript } from 'react-icons/si';
+import { IconType } from 'react-icons';
 import { toast } from 'sonner';
 import ActionButton from './ActionButton';
 
 interface SnippetCardFooterProps {
   snippet: Snippet;
+  languageIcon?: IconType;
 }
 
-const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
+const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({
+  snippet,
+  languageIcon: Icon,
+}) => {
   const [isCopied, setIsCopied] = useState(false);
-  const { deleteSnippet, updateSnippetState } = useSnippets();
+  const updateSnippetStateMutation = useUpdateSnippetState();
+  const deleteSnippetMutation = useDeleteSnippet();
   const { setSnippetDialog } = useSnippetStore();
 
   const handleCopySnippet = useCallback(() => {
@@ -42,8 +47,8 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
   }, [setSnippetDialog, snippet]);
 
   const handleDelete = useCallback(() => {
-    deleteSnippet(snippet.id);
-  }, [deleteSnippet, snippet.id]);
+    deleteSnippetMutation.mutateAsync(snippet.id);
+  }, [deleteSnippetMutation, snippet.id]);
 
   return (
     <CardFooter
@@ -63,7 +68,7 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
           whileTap={{ scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         >
-          <SiJavascript className="h-4 w-4" />
+          {Icon && <Icon className="h-4 w-4" />}
         </motion.div>
 
         <span className="font-semibold">{titleCase(snippet.language)}</span>
@@ -84,7 +89,7 @@ const SnippetCardFooter: React.FC<SnippetCardFooterProps> = ({ snippet }) => {
               <Moon className="h-4 w-4" />
             ),
             onClick: () =>
-              updateSnippetState({
+              updateSnippetStateMutation.mutateAsync({
                 id: snippet.snippetStateId,
                 data: {
                   isDark: !snippet.state?.isDark,

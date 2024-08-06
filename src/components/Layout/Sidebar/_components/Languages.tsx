@@ -1,28 +1,33 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import useLanguageStore from '@/hooks/useLanguageStore';
-import useSnippets from '@/hooks/useSnippets';
+import { useSnippetsQuery } from '@/hooks/useSnippets';
 import { titleCase } from '@/lib/utils/stringUtils';
+import { useMemo } from 'react';
 import { IconType } from 'react-icons/lib';
 
 const Languages = () => {
-  const { snippets } = useSnippets();
+  const { data: snippets = [] } = useSnippetsQuery();
   const { languageIcons } = useLanguageStore();
 
-  const languageCounts = snippets.reduce(
-    (counts: Record<string, number>, note) => {
-      const { language } = note;
-      counts[language] = (counts[language] || 0) + 1;
-      return counts;
-    },
-    {},
-  );
+  const snippetLanguages = useMemo(() => {
+    const languageCounts = snippets.reduce(
+      (counts, snippet) => {
+        const language = snippet.language;
+        counts[language] = (counts[language] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>,
+    );
 
-  const snippetLanguages = Object.entries(languageCounts).map(
-    ([language, count]) => {
-      const icon = languageIcons[language];
-      return { icon, name: language, count };
-    },
-  );
+    const languages = Object.entries(languageCounts).map(
+      ([language, count]) => {
+        const icon = languageIcons[language];
+        return { icon, name: language, count };
+      },
+    );
+
+    return languages;
+  }, [snippets, languageIcons]);
 
   return (
     <div className="mt-12 text-sm">

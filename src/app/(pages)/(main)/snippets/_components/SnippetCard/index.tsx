@@ -1,8 +1,9 @@
 import { Card } from '@/components/ui/card';
+import useLanguageStore from '@/hooks/useLanguageStore';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import SnippetCardContent from './SnippetCardContent';
 import SnippetCardFooter from './SnippetCardFooter';
 import SnippetCardHeader from './SnippetCardHeader';
@@ -13,6 +14,12 @@ interface SnippetCardProps {
 
 const SnippetCard: React.FC<SnippetCardProps> = ({ snippet }) => {
   const [isHovered, setIsHovered] = useState(false);
+
+  const languages = useLanguageStore(state => state.languages);
+
+  const codeLanguage = useMemo(() => {
+    return languages.find(language => language.name === snippet.language);
+  }, [languages, snippet.language]);
 
   return (
     <motion.div
@@ -36,7 +43,10 @@ const SnippetCard: React.FC<SnippetCardProps> = ({ snippet }) => {
       >
         <SnippetCardHeader snippet={snippet} isHovered={isHovered} />
         <SnippetCardContent snippet={snippet} />
-        <SnippetCardFooter snippet={snippet} />
+        <SnippetCardFooter
+          snippet={snippet}
+          languageIcon={codeLanguage?.icon}
+        />
       </Card>
     </motion.div>
   );
