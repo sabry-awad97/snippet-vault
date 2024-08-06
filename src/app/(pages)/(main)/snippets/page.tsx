@@ -11,14 +11,14 @@ import {
   useUpdateSnippet,
 } from '@/hooks/useSnippets';
 import useSnippetStore from '@/hooks/useSnippetStore';
-import { useCreateTag } from '@/hooks/useTags';
+import { useCreateTag, useFetchTags } from '@/hooks/useTags';
 import useTagsStore from '@/hooks/useTagsStore';
 import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PlusCircle } from 'lucide-react';
+import { ChevronRight, PlusCircle, Tag } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import TagListDialog from './_components/ExistingTagsDialog';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
@@ -160,13 +160,21 @@ function EmptySnippetsState({
 }: {
   onCreateSnippet: () => void;
 }) {
+  const { data: tags = [] } = useFetchTags();
+  const [showTagHint, setShowTagHint] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowTagHint(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
       className={cn(
-        'flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed border-purple-200 bg-white dark:border-purple-700 dark:bg-gray-800',
+        'relative flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed border-purple-200 bg-white dark:border-purple-700 dark:bg-gray-800',
       )}
     >
       <PlusCircle
@@ -190,6 +198,42 @@ function EmptySnippetsState({
       >
         Create Snippet
       </Button>
+
+      <AnimatePresence>
+        {showTagHint && tags.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className={cn(
+              'absolute bottom-4 right-4 max-w-xs rounded-lg bg-purple-100 p-4 shadow-lg dark:bg-purple-900',
+            )}
+          >
+            <div className="flex items-center space-x-2">
+              <Tag className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+              <p className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                Psst! Want a pro tip?
+              </p>
+            </div>
+            <p className="mt-2 text-xs text-purple-600 dark:text-purple-200">
+              Create some tags first to organize your snippets better!
+            </p>
+            <Button
+              variant="link"
+              size="sm"
+              className="mt-2 p-0 text-xs text-purple-700 dark:text-purple-300"
+              onClick={() => {
+                // Handle navigation to tag creation
+                console.log('Navigate to tag creation');
+              }}
+            >
+              Create Tags
+              <ChevronRight className="ml-1 h-3 w-3" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -120,10 +120,10 @@ pub async fn update_tag(app: AppHandle, params: PutParams<TagForm>) -> IpcRespon
 }
 
 #[tauri::command]
-pub async fn delete_tag(app: AppHandle, params: DeleteParams) -> IpcResponse<Tag> {
+pub async fn delete_tag(app: AppHandle, params: DeleteParams) -> IpcResponse<()> {
     info!("Deleting tag with ID: {}", params.id);
     handle_db_operation(app, |client| async move {
-        let tag = match client
+        let _tag = match client
             .tag()
             .delete(prisma::tag::id::equals(params.id.to_owned()))
             .exec()
@@ -139,7 +139,7 @@ pub async fn delete_tag(app: AppHandle, params: DeleteParams) -> IpcResponse<Tag
             }
         };
 
-        Ok(tag)
+        Ok(())
     })
     .await
 }

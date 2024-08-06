@@ -36,7 +36,6 @@ export async function updateTag(params: PutParams<TagForm>): Promise<Tag> {
   return await TagSchema.parseAsync(response);
 }
 
-export async function deleteTag(params: DeleteParams): Promise<Tag> {
-  const response = await invokeCommand('delete_tag', params);
-  return await TagSchema.parseAsync(response);
+export async function deleteTag(params: DeleteParams) {
+  await invokeCommand('delete_tag', params);
 }
