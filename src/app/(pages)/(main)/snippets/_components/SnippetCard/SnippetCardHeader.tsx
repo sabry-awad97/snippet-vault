@@ -6,7 +6,7 @@ import { Snippet } from '@/lib/schemas/snippet';
 import { cn } from '@/lib/utils';
 import { humanReadableTimestamp } from '@blaze/human-readable-timestamp';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FileText, Heart, Tag } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { MdOutlineTitle } from 'react-icons/md';
 
 interface SnippetCardHeaderProps {
@@ -104,7 +104,6 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
               transition={{ delay: 0.6 }}
               className="mt-2 flex flex-wrap items-center gap-1"
             >
-              <Tag className="h-4 w-4" />
               {snippet.tags.map((tag, index) => (
                 <motion.span
                   key={tag.id}
@@ -120,7 +119,6 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
         </AnimatePresence>
 
         <motion.div className="mt-2 flex flex-wrap items-center gap-1">
-          <FileText className="h-4 w-4" />
           <motion.p className="text-sm text-muted-foreground">
             {truncateString(snippet.description, 200)}
           </motion.p>

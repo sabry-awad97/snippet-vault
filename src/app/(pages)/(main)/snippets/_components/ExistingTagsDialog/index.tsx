@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import useTags from '@/hooks/useTags';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -23,8 +22,6 @@ const TagListDialog: React.FC<TagDialogProps> = ({
   onClose,
   isDarkMode,
 }) => {
-  const { tags: existingTags } = useTags();
-
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -53,10 +50,7 @@ const TagListDialog: React.FC<TagDialogProps> = ({
               </DialogTitle>
             </DialogHeader>
             <div className="grid gap-6 p-6">
-              <ExistingTagsList
-                existingTags={existingTags}
-                isDarkMode={isDarkMode}
-              />
+              <ExistingTagsList isDarkMode={isDarkMode} />
             </div>
             <DialogFooter className="p-6 pt-0">
               <motion.div

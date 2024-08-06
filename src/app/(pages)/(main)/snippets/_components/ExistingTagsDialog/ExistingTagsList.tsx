@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import useTags from '@/hooks/useTags';
+import { useDeleteTag, useFetchTags, useUpdateTag } from '@/hooks/useTags';
 import useTagsStore from '@/hooks/useTagsStore';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
@@ -11,14 +11,16 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import TagFormDialog from '../TagFormDialog';
 
 interface ExistingTagsListProps {
-  existingTags: Tag[];
   isDarkMode: boolean;
 }
 
 const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
-  const { tags: existingTags, updateTag, deleteTag } = useTags();
+  const { data: existingTags = [], isLoading, error } = useFetchTags();
+  const updateTagMutation = useUpdateTag();
+  const deleteTagMutation = useDeleteTag();
   const { isTagFormDialogOpen, setIsTagFormDialogOpen } = useTagsStore();
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -39,51 +41,55 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
           isDarkMode ? 'border-purple-700' : 'border-purple-200',
         )}
       >
-        <AnimatePresence>
-          {existingTags.map(tag => (
-            <motion.div
-              key={tag.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className={cn(
-                'mb-2 flex items-center justify-between rounded-md border p-2',
-                isDarkMode ? 'border-purple-700' : 'border-purple-200',
-              )}
-            >
-              <div className="flex items-center">
-                <div
-                  className="mr-2 h-4 w-4 rounded-full"
-                  style={{ backgroundColor: tag.color }}
-                />
-                <span className={isDarkMode ? 'text-white' : 'text-gray-800'}>
-                  {tag.name}
-                </span>
-              </div>
-              <div className="flex space-x-1">
-                <Button
-                  onClick={() => {
-                    setEditingTag(tag);
-                    setIsTagFormDialogOpen(true);
-                  }}
-                  size="sm"
-                  variant="outline"
-                >
-                  <FiEdit2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  onClick={() => deleteTag(tag.id)}
-                  size="sm"
-                  variant="outline"
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <FiTrash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {isLoading ? (
+          <TagListSkeleton isDarkMode={isDarkMode} />
+        ) : (
+          <AnimatePresence>
+            {existingTags.map(tag => (
+              <motion.div
+                key={tag.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className={cn(
+                  'mb-2 flex items-center justify-between rounded-md border p-2',
+                  isDarkMode ? 'border-purple-700' : 'border-purple-200',
+                )}
+              >
+                <div className="flex items-center">
+                  <div
+                    className="mr-2 h-4 w-4 rounded-full"
+                    style={{ backgroundColor: tag.color }}
+                  />
+                  <span className={isDarkMode ? 'text-white' : 'text-gray-800'}>
+                    {tag.name}
+                  </span>
+                </div>
+                <div className="flex space-x-1">
+                  <Button
+                    onClick={() => {
+                      setEditingTag(tag);
+                      setIsTagFormDialogOpen(true);
+                    }}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <FiEdit2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={() => deleteTagMutation.mutateAsync(tag.id)}
+                    size="sm"
+                    variant="outline"
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <FiTrash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
       </ScrollArea>
 
       <TagFormDialog
@@ -95,11 +101,37 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
         }}
         onSubmit={() => {
           setEditingTag(null);
-          updateTag(editingTag!);
+          updateTagMutation.mutateAsync(editingTag!);
         }}
         isDarkMode={isDarkMode}
       />
     </motion.div>
+  );
+};
+
+const TagListSkeleton: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+  return (
+    <>
+      {[...Array(5)].map((_, index) => (
+        <div
+          key={index}
+          className={cn(
+            'mb-2 flex items-center justify-between rounded-md border p-2',
+            isDarkMode ? 'border-purple-700' : 'border-purple-200',
+            'animate-pulse',
+          )}
+        >
+          <div className="flex items-center">
+            <div className="mr-2 h-4 w-4 rounded-full bg-gray-300 dark:bg-gray-600" />
+            <div className="h-4 w-24 rounded bg-gray-300 dark:bg-gray-600" />
+          </div>
+          <div className="flex space-x-1">
+            <div className="h-8 w-8 rounded bg-gray-300 dark:bg-gray-600" />
+            <div className="h-8 w-8 rounded bg-gray-300 dark:bg-gray-600" />
+          </div>
+        </div>
+      ))}
+    </>
   );
 };
 

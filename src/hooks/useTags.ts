@@ -3,15 +3,17 @@ import * as tagsApi from '@/lib/tauri/api/tag';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-const useTags = () => {
-  const queryClient = useQueryClient();
-
-  const { data: tags = [] } = useQuery<Tag[]>({
+export const useFetchTags = () => {
+  return useQuery<Tag[]>({
     queryKey: ['Tags'],
     queryFn: () => tagsApi.listTags({ filter: {} }),
   });
+};
 
-  const createMutation = useMutation({
+export const useCreateTag = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationKey: ['createTag'],
     mutationFn: (newTag: Tag) => tagsApi.createTag({ data: newTag }),
     onSuccess: () => {
@@ -27,8 +29,12 @@ const useTags = () => {
       console.error('Create Tag Error:', error);
     },
   });
+};
 
-  const updateMutation = useMutation({
+export const useUpdateTag = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationKey: ['updateTag'],
     mutationFn: async (updatedTag: Tag) =>
       tagsApi.updateTag({
@@ -48,8 +54,12 @@ const useTags = () => {
       console.error('Update Tag Error:', error);
     },
   });
+};
 
-  const deleteMutation = useMutation({
+export const useDeleteTag = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationKey: ['deleteTag'],
     mutationFn: async (id: string) => tagsApi.deleteTag({ id }),
     onSuccess: () => {
@@ -65,13 +75,4 @@ const useTags = () => {
       console.error('Delete Tag Error:', error);
     },
   });
-
-  return {
-    tags,
-    createTag: createMutation.mutateAsync,
-    updateTag: updateMutation.mutateAsync,
-    deleteTag: deleteMutation.mutateAsync,
-  };
 };
-
-export default useTags;

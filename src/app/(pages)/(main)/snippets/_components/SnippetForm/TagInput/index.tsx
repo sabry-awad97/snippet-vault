@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import useHotkeys from '@/hooks/useHotkeys';
-import useTags from '@/hooks/useTags';
+import { useCreateTag, useFetchTags } from '@/hooks/useTags';
 import useTagsStore from '@/hooks/useTagsStore';
 import { Snippet } from '@/lib/schemas/snippet';
 import { Tag } from '@/lib/schemas/tag';
@@ -66,7 +66,8 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
   const [isTagFormDialogOpen, setIsTagFormDialogOpen] = useState(false);
   const [newTagName, setNewTagName] = useState('');
   const { control } = useFormContext<Snippet>();
-  const { tags: existingTags, createTag } = useTags();
+  const { data: existingTags = [] } = useFetchTags();
+  const createTagMutation = useCreateTag();
 
   const { setIsTagsDialogOpen } = useTagsStore();
   useHotkeys([['ctrl+e', () => setIsTagsDialogOpen(true)]]);
@@ -114,12 +115,12 @@ const TagInput: React.FC<TagInputProps> = ({ isDarkMode }) => {
 
   const handleCreateTag = useCallback(
     async (tag: Tag) => {
-      const newTag = await createTag(tag);
+      const newTag = await createTagMutation.mutateAsync(tag);
       handleSelectTag(newTag);
       setIsTagFormDialogOpen(false);
       setNewTagName('');
     },
-    [createTag, handleSelectTag],
+    [createTagMutation, handleSelectTag],
   );
 
   const renderTrigger = useCallback(
