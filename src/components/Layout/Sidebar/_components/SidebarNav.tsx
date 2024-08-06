@@ -99,7 +99,7 @@ const SidebarNav: React.FC<{}> = ({}) => {
   const activeLink = searchParams.get('filter') || 'all';
 
   return (
-    <nav className="mt-20 text-sm">
+    <nav className="mt-14 text-sm">
       <div className="font-semibold text-slate-400">Quick Links</div>
       <AnimatePresence>
         <motion.ul
