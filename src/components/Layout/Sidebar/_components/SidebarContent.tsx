@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import Languages from './Languages';
+import SidebarLanguages from './Languages';
 import SidebarHeader from './SidebarHeader';
-import SidebarNav from './SidebarNav';
+import QuickLinks from './SidebarNav';
 
 const sidebarVariants = {
   open: { x: 0, opacity: 1 },
@@ -20,8 +20,8 @@ const SidebarContent: React.FC<{
     className="fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto bg-gradient-to-b from-white to-gray-100 p-6 shadow-lg dark:from-gray-800 dark:to-gray-900 md:relative"
   >
     <SidebarHeader toggleSidebar={toggleSidebar} />
-    <SidebarNav />
-    <Languages />
+    <QuickLinks />
+    <SidebarLanguages />
   </motion.aside>
 );
 

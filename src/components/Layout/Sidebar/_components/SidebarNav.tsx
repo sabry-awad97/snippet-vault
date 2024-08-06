@@ -40,7 +40,7 @@ const quickLinkStyles = cva(
   },
 );
 
-const SidebarNav: React.FC<{}> = ({}) => {
+const QuickLinks: React.FC<{}> = ({}) => {
   const { links } = useLinkStore();
   const { setIsTagsDialogOpen } = useTagsContext();
   const searchParams = useSearchParams();
@@ -99,7 +99,7 @@ const SidebarNav: React.FC<{}> = ({}) => {
   const activeLink = searchParams.get('filter') || 'all';
 
   return (
-    <nav className="mt-14 text-sm">
+    <nav className="mt-4 text-sm">
       <div className="font-semibold text-slate-400">Quick Links</div>
       <AnimatePresence>
         <motion.ul
@@ -152,4 +152,4 @@ const SidebarNav: React.FC<{}> = ({}) => {
   );
 };
 
-export default SidebarNav;
+export default QuickLinks;
