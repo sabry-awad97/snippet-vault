@@ -23,7 +23,7 @@ import TagListDialog from './_components/ExistingTagsDialog';
 import SnippetCard from './_components/SnippetCard';
 import SnippetDialog from './_components/SnippetDialog';
 import TagCarousel from './_components/TagCarousel';
-import TagFormDialog from './_components/TagFormDialog';
+import TagCreateFormDialog from './_components/TagFormDialog';
 
 export default function SnippetsPage() {
   const auth = useAuth();
@@ -49,8 +49,8 @@ export default function SnippetsPage() {
   const {
     isTagsDialogOpen,
     setIsTagsDialogOpen,
-    isTagFormDialogOpen,
-    setIsTagFormDialogOpen,
+    isTagCreateFormDialogOpen: isTagFormDialogOpen,
+    setIsTagCreateFormDialogOpen: setIsTagFormDialogOpen,
   } = useTagsStore();
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function SnippetsPage() {
           isDarkMode={isDarkMode}
           onCreateTag={() => setIsTagFormDialogOpen(true)}
         />
-        <TagFormDialog
+        <TagCreateFormDialog
           isOpen={isTagFormDialogOpen}
           onClose={() => {
             setIsTagFormDialogOpen(false);

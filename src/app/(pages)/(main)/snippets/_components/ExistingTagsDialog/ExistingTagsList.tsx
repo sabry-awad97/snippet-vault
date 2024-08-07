@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
-import TagFormDialog from '../TagFormDialog';
+import TagUpdateFormDialog from '../TagFormDialog';
 
 interface ExistingTagsListProps {
   isDarkMode: boolean;
@@ -18,7 +18,8 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
   const { data: existingTags = [], isLoading, error } = useFetchTags();
   const updateTagMutation = useUpdateTag();
   const deleteTagMutation = useDeleteTag();
-  const { isTagFormDialogOpen, setIsTagFormDialogOpen } = useTagsStore();
+  const { isTagEditFormDialogOpen, setIsTagEditFormDialogOpen } =
+    useTagsStore();
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
 
   return (
@@ -70,7 +71,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
                   <Button
                     onClick={() => {
                       setEditingTag(tag);
-                      setIsTagFormDialogOpen(true);
+                      setIsTagEditFormDialogOpen(true);
                     }}
                     size="sm"
                     variant="outline"
@@ -92,12 +93,12 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
         )}
       </ScrollArea>
 
-      <TagFormDialog
-        isOpen={isTagFormDialogOpen}
+      <TagUpdateFormDialog
+        isOpen={isTagEditFormDialogOpen}
         initialTag={editingTag}
         onClose={() => {
           setEditingTag(null);
-          setIsTagFormDialogOpen(false);
+          setIsTagEditFormDialogOpen(false);
         }}
         onSubmit={() => {
           setEditingTag(null);

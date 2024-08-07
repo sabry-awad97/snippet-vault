@@ -21,7 +21,10 @@ import TagFormDialog from '../TagFormDialog';
 const TagCarousel = () => {
   const { data: tags, isLoading, error } = useFetchTags();
   const createTagMutation = useCreateTag();
-  const { isTagFormDialogOpen, setIsTagFormDialogOpen } = useTagsStore();
+  const {
+    isTagCreateFormDialogOpen: isTagFormDialogOpen,
+    setIsTagCreateFormDialogOpen: setIsTagFormDialogOpen,
+  } = useTagsStore();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
