@@ -8,6 +8,9 @@ import { humanReadableTimestamp } from '@blaze/human-readable-timestamp';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { MdOutlineTitle } from 'react-icons/md';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick-theme.css';
+import 'slick-carousel/slick/slick.css';
 
 interface SnippetCardHeaderProps {
   isHovered: boolean;
@@ -102,18 +105,26 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ delay: 0.6 }}
-              className="mt-2 flex flex-wrap items-center gap-1"
+              className="mt-2"
             >
-              {snippet.tags.map((tag, index) => (
-                <motion.span
-                  key={tag.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 * index }}
-                >
-                  <Badge>{tag.name}</Badge>
-                </motion.span>
-              ))}
+              <Slider
+                dots={false}
+                infinite={true}
+                speed={500}
+                slidesToShow={3}
+                slidesToScroll={1}
+                autoplay={true}
+                autoplaySpeed={3000}
+                pauseOnHover={true}
+              >
+                {snippet.tags.map(tag => (
+                  <div key={tag.id} className="px-1">
+                    <Badge className="inline-flex w-full items-center justify-center text-center text-xs font-medium transition-all duration-200 ease-in-out hover:scale-105">
+                      <span className="truncate px-2">{tag.name}</span>
+                    </Badge>
+                  </div>
+                ))}
+              </Slider>
             </motion.div>
           )}
         </AnimatePresence>

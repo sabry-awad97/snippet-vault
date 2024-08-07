@@ -19,7 +19,25 @@ const SearchBar = () => {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      router.push(`?search=${encodeURIComponent(searchTerm)}`, {
+      const currentParams = new URLSearchParams(window.location.search);
+      const newParams = new URLSearchParams();
+
+      // Copy all parameters except 'search'
+      for (const [key, value] of currentParams.entries()) {
+        if (key !== 'search') {
+          newParams.append(key, value);
+        }
+      }
+
+      // Add 'search' parameter only if searchTerm is not empty
+      if (searchTerm) {
+        newParams.set('search', encodeURIComponent(searchTerm));
+      }
+
+      const newSearch = newParams.toString();
+      const newPath = newSearch ? `?${newSearch}` : '';
+
+      router.replace(newPath, {
         scroll: false,
       });
     }, 300);

@@ -2,12 +2,12 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
-import useQueryParams from '@/hooks/useQueryParams';
 import {
   useCreateSnippet,
   useSnippetsQuery,
   useUpdateSnippet,
 } from '@/hooks/useSnippets';
+import useSnippetsFilter from '@/hooks/useSnippetsFilter';
 import useSnippetStore from '@/hooks/useSnippetStore';
 import { useCreateTag } from '@/hooks/useTags';
 import useTagsStore from '@/hooks/useTagsStore';
@@ -59,17 +59,12 @@ export default function SnippetsPage() {
   const { theme } = useCurrentTheme();
   const isDarkMode = theme === 'dark';
 
-  const filter = useQueryParams();
-
   const createSnippetMutation = useCreateSnippet();
   const updateSnippetMutation = useUpdateSnippet();
   const createTagMutation = useCreateTag();
-  const {
-    data: snippets = [],
-    isLoading,
-    error,
-    refetch,
-  } = useSnippetsQuery(filter);
+
+  const { isLoading, error, refetch } = useSnippetsQuery();
+  const filteredSnippets = useSnippetsFilter();
 
   const {
     editingSnippet,
@@ -134,7 +129,7 @@ export default function SnippetsPage() {
             >
               <ErrorDisplay error={error} onRetry={refetch} />
             </motion.div>
-          ) : snippets.length === 0 ? (
+          ) : filteredSnippets.length === 0 ? (
             <motion.div
               key="empty"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -152,7 +147,7 @@ export default function SnippetsPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <SnippetGrid snippets={snippets} />
+              <SnippetGrid snippets={filteredSnippets} />
             </motion.div>
           )}
         </AnimatePresence>

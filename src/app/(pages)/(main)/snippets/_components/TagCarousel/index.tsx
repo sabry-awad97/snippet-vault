@@ -69,6 +69,20 @@ const TagCarousel = () => {
     return <EmptyTagCarousel onAddTag={handleAddTag} isDarkMode={isDarkMode} />;
   }
 
+  const tagVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: (i: number) => ({
+      y: 0,
+      opacity: 1,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        type: 'spring',
+        stiffness: 100,
+      },
+    }),
+  };
+
   return (
     <div className="relative mx-auto w-full max-w-4xl">
       {tags && tags.length > 0 && (
@@ -90,14 +104,9 @@ const TagCarousel = () => {
                 return (
                   <CarouselItem
                     key={`${tag.name}-${index}`}
-                    className="pl-2 md:basis-1/4 lg:basis-1/6"
+                    className="pl-2 md:basis-1/4 lg:basis-1/5"
                   >
-                    <motion.div
-                      variants={{
-                        hidden: { y: 20, opacity: 0 },
-                        visible: { y: 0, opacity: 1 },
-                      }}
-                    >
+                    <motion.div custom={index} variants={tagVariants}>
                       <motion.div
                         whileHover={{ scale: 1.05, rotate: [-1, 1, -1, 0] }}
                         whileTap={{ scale: 0.95 }}
@@ -109,20 +118,27 @@ const TagCarousel = () => {
                           variant={isSelected ? 'default' : 'outline'}
                           onClick={() => handleTagClick(tag.name)}
                           className={cn(
-                            'h-full w-full rounded-full px-3 py-2 text-sm font-medium transition-all duration-300',
+                            'group relative h-full w-full overflow-hidden rounded-full px-3 py-2 text-sm font-medium transition-all duration-300',
                             {
-                              'dark:bg-purple-600 dark:text-white dark:shadow-lg dark:hover:bg-purple-700 dark:hover:shadow-xl':
+                              'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg hover:from-purple-600 hover:to-indigo-700 hover:shadow-xl':
                                 isSelected,
-                              'bg-purple-500 text-white shadow-lg hover:bg-purple-600 hover:shadow-xl':
-                                isSelected,
-                              'dark:bg-gray-800 dark:text-purple-300 dark:hover:bg-gray-700 dark:hover:text-purple-200':
-                                !isSelected,
-                              'bg-white text-purple-600 hover:bg-purple-100':
+                              'bg-white text-purple-600 hover:bg-purple-50 dark:bg-gray-800 dark:text-purple-300 dark:hover:bg-gray-700':
                                 !isSelected,
                             },
                           )}
                         >
                           <span className="relative z-10">{tag.name}</span>
+                          {isSelected && (
+                            <motion.div
+                              className="absolute inset-0 z-0"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <Sparkles className="absolute -right-1 -top-1 h-4 w-4 text-yellow-300 opacity-75" />
+                              <Sparkles className="absolute -bottom-1 -left-1 h-4 w-4 text-yellow-300 opacity-75" />
+                            </motion.div>
+                          )}
                           <motion.div
                             className="absolute inset-0 bg-purple-400"
                             initial={{ scale: 0, opacity: 0 }}

@@ -8,7 +8,7 @@ use crate::{
         responses::IpcResponse,
     },
 };
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use prisma::Direction;
 use serde::Serialize;
 use tauri::AppHandle;
@@ -208,8 +208,14 @@ pub async fn delete_snippet(app: AppHandle, params: DeleteParams) -> IpcResponse
 
 fn build_snippet_filters(filter: Option<SnippetFilter>) -> Vec<prisma::snippet::WhereParam> {
     let mut where_params = vec![];
+
+    info!("Building snippet filters");
+
     if let Some(filter) = filter {
+        info!("Processing filter: {:?}", filter);
+
         if let Some(search) = filter.search {
+            debug!("Adding search filter: {}", search);
             where_params.push(prisma::or![
                 prisma::snippet::title::contains(search.clone()),
                 prisma::snippet::description::contains(search.clone()),
@@ -219,37 +225,53 @@ fn build_snippet_filters(filter: Option<SnippetFilter>) -> Vec<prisma::snippet::
         }
 
         if let Some(title) = filter.title {
+            debug!("Adding title filter: {}", title);
             where_params.push(prisma::snippet::title::contains(title));
         }
+
         if let Some(description) = filter.description {
+            debug!("Adding description filter: {}", description);
             where_params.push(prisma::snippet::description::contains(description));
         }
+
         if let Some(language) = filter.language {
+            debug!("Adding language filter: {}", language);
             where_params.push(prisma::snippet::language::equals(language));
         }
+
         if let Some(code) = filter.code {
+            debug!("Adding code filter: {}", code);
             where_params.push(prisma::snippet::code::contains(code));
         }
+
         if let Some(state) = filter.state {
             let mut state_params = vec![];
             if let Some(is_favorite) = state.is_favorite {
+                debug!("Adding is_favorite filter: {}", is_favorite);
                 state_params.push(prisma::snippet_state::is_favorite::equals(is_favorite));
             }
             if let Some(is_dark) = state.is_dark {
+                debug!("Adding is_dark filter: {}", is_dark);
                 state_params.push(prisma::snippet_state::is_dark::equals(is_dark));
             }
             if !state_params.is_empty() {
+                info!("Adding state filter");
                 where_params.push(prisma::snippet::state::is(state_params));
             }
         }
+
         if let Some(tags) = filter.tags {
             if !tags.is_empty() {
+                debug!("Adding tags filter: {:?}", tags);
                 where_params.push(prisma::snippet::tags::some(vec![
                     prisma::tag::name::in_vec(tags),
                 ]));
             }
         }
+    } else {
+        warn!("No filter provided");
     }
+
     where_params
 }
 

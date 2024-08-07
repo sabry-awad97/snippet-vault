@@ -89,7 +89,10 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
   const { languages } = useLanguageStore();
 
   const handleSubmit = async (values: Snippet) => {
-    await onSubmit(values);
+    await onSubmit({
+      ...values,
+      tagIds: values.tags?.map(tag => tag.id) || [],
+    });
   };
 
   const onInvalid: SubmitErrorHandler<Snippet> = errors => {
