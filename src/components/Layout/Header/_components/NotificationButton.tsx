@@ -8,11 +8,27 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { AnimatePresence, motion, Variants } from 'framer-motion';
-import { Bell, Code, Heart, MessageSquare, RefreshCw, X } from 'lucide-react';
-import React, { useState } from 'react';
+import {
+  Bell,
+  ChevronDown,
+  Code,
+  Heart,
+  MessageSquare,
+  RefreshCw,
+  Share2,
+  Star,
+  User,
+  X,
+} from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-// Define types
-type NotificationType = 'comment' | 'like' | 'update';
+type NotificationType =
+  | 'comment'
+  | 'like'
+  | 'update'
+  | 'mention'
+  | 'star'
+  | 'share';
 
 interface Notification {
   id: number;
@@ -21,55 +37,72 @@ interface Notification {
   user: string;
   content?: string;
   timestamp: string;
+  isNew: boolean;
+  priority: 'low' | 'medium' | 'high';
 }
 
-// Mock notifications
 const mockNotifications: Notification[] = [
   {
     id: 1,
     type: 'comment',
-    snippet: 'React Hooks Example',
-    user: 'Alice',
-    content: 'Great snippet! Very helpful.',
+    snippet: 'React Hooks Advanced Usage',
+    user: 'Alice Chen',
+    content:
+      'Brilliant implementation! Have you considered using useCallback for optimization?',
     timestamp: '2h ago',
+    isNew: true,
+    priority: 'high',
   },
   {
     id: 2,
-    type: 'like',
-    snippet: 'Python Data Analysis',
-    user: 'Bob',
+    type: 'star',
+    snippet: 'AI-Powered Code Refactoring',
+    user: 'Bob Smith',
     timestamp: '4h ago',
+    isNew: false,
+    priority: 'medium',
   },
   {
     id: 3,
     type: 'update',
-    snippet: 'Vue.js Component',
-    user: 'Eve',
-    content: 'Updated to use Composition API',
+    snippet: 'Vue 3 Composition API Tutorial',
+    user: 'Eve Johnson',
+    content: 'Major update: Now includes Suspense and Teleport examples',
     timestamp: '1d ago',
+    isNew: false,
+    priority: 'medium',
   },
   {
     id: 4,
-    type: 'comment',
-    snippet: 'CSS Grid Layout',
-    user: 'Charlie',
-    content: 'Could you explain the fr unit more?',
+    type: 'mention',
+    snippet: 'GraphQL Best Practices',
+    user: 'Charlie Brown',
+    content:
+      '@YourUsername Your input on schema design would be invaluable here.',
     timestamp: '2d ago',
+    isNew: true,
+    priority: 'high',
   },
   {
     id: 5,
-    type: 'like',
-    snippet: 'JavaScript Promise Example',
-    user: 'Diana',
+    type: 'share',
+    snippet: 'Quantum Computing in JavaScript',
+    user: 'Diana Prince',
     timestamp: '3d ago',
+    isNew: false,
+    priority: 'low',
   },
 ];
 
-// Animation variants
 const notificationVariants: Variants = {
   initial: { opacity: 0, y: 20, scale: 0.8 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -20, scale: 0.8 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', stiffness: 500, damping: 25 },
+  },
+  exit: { opacity: 0, y: -20, scale: 0.8, transition: { duration: 0.2 } },
 };
 
 const containerVariants: Variants = {
@@ -96,7 +129,18 @@ const containerVariants: Variants = {
   },
 };
 
-// Component for notification icon
+const pulseVariants: Variants = {
+  pulse: {
+    scale: [1, 1.1, 1],
+    opacity: [0.7, 1, 0.7],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    },
+  },
+};
+
 const NotificationIcon: React.FC<{ type: NotificationType }> = ({ type }) => {
   const iconProps = { className: 'h-4 w-4' };
   switch (type) {
@@ -106,18 +150,31 @@ const NotificationIcon: React.FC<{ type: NotificationType }> = ({ type }) => {
       return <Heart {...iconProps} className="text-pink-500" />;
     case 'update':
       return <RefreshCw {...iconProps} className="text-indigo-500" />;
+    case 'mention':
+      return <User {...iconProps} className="text-blue-500" />;
+    case 'star':
+      return <Star {...iconProps} className="text-yellow-500" />;
+    case 'share':
+      return <Share2 {...iconProps} className="text-green-500" />;
     default:
       return <Bell {...iconProps} className="text-gray-500" />;
   }
 };
 
-// Component for individual notification item
 const NotificationItem: React.FC<{ notification: Notification }> = ({
   notification,
 }) => (
   <motion.div
     variants={notificationVariants}
-    className="rounded-md p-3 transition-colors duration-200 hover:bg-purple-100 dark:hover:bg-purple-900"
+    className={`rounded-md p-3 transition-colors duration-200 hover:bg-purple-100 dark:hover:bg-purple-900 ${
+      notification.isNew ? 'bg-purple-50 dark:bg-purple-800' : ''
+    } ${
+      notification.priority === 'high'
+        ? 'border-l-4 border-red-500'
+        : notification.priority === 'medium'
+          ? 'border-l-4 border-yellow-500'
+          : ''
+    }`}
   >
     <div className="flex items-start space-x-3">
       <div className="flex-shrink-0">
@@ -130,8 +187,19 @@ const NotificationItem: React.FC<{ notification: Notification }> = ({
             ? 'liked'
             : notification.type === 'comment'
               ? 'commented on'
-              : 'updated'}{' '}
+              : notification.type === 'update'
+                ? 'updated'
+                : notification.type === 'mention'
+                  ? 'mentioned you in'
+                  : notification.type === 'star'
+                    ? 'starred'
+                    : 'shared'}{' '}
           your snippet
+          {notification.isNew && (
+            <span className="ml-2 inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-200 dark:text-purple-800">
+              New
+            </span>
+          )}
         </p>
         <p className="mt-1 flex items-center text-xs text-purple-600 dark:text-purple-300">
           <Code className="mr-1 inline-block h-3 w-3" />
@@ -150,10 +218,43 @@ const NotificationItem: React.FC<{ notification: Notification }> = ({
   </motion.div>
 );
 
-// Main NotificationButton component
 const NotificationButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const count = mockNotifications.length;
+  const [notifications, setNotifications] = useState(mockNotifications);
+  const [hasNewNotifications, setHasNewNotifications] = useState(true);
+
+  const count = notifications.length;
+  const newCount = notifications.filter(n => n.isNew).length;
+
+  const handleOpen = useCallback(() => {
+    setIsOpen(true);
+    setHasNewNotifications(false);
+    setNotifications(notifications.map(n => ({ ...n, isNew: false })));
+  }, [notifications]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newNotification: Notification = {
+        id: Date.now(),
+        type: ['comment', 'like', 'update', 'mention', 'star', 'share'][
+          Math.floor(Math.random() * 6)
+        ] as NotificationType,
+        snippet: 'New Cutting-Edge Snippet',
+        user: 'Tech Innovator',
+        content: 'This notification brings exciting news!',
+        timestamp: 'Just now',
+        isNew: true,
+        priority: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as
+          | 'low'
+          | 'medium'
+          | 'high',
+      };
+      setNotifications(prev => [newNotification, ...prev]);
+      setHasNewNotifications(true);
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <TooltipProvider>
@@ -169,7 +270,7 @@ const NotificationButton: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 className="relative text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={handleOpen}
               >
                 <Bell className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
                 <AnimatePresence>
@@ -182,19 +283,26 @@ const NotificationButton: React.FC = () => {
                     >
                       <Badge
                         variant="destructive"
-                        className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-500 p-0 text-white"
+                        className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 p-0 text-white"
                       >
                         {count}
                       </Badge>
                     </motion.div>
                   )}
                 </AnimatePresence>
+                {hasNewNotifications && (
+                  <motion.div
+                    variants={pulseVariants}
+                    animate="pulse"
+                    className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-gradient-to-r from-pink-500 to-red-500"
+                  />
+                )}
                 <span className="sr-only">Toggle notifications</span>
               </Button>
             </motion.div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Notifications</p>
+            <p>Notifications Hub</p>
           </TooltipContent>
         </Tooltip>
 
@@ -205,7 +313,7 @@ const NotificationButton: React.FC = () => {
               initial="closed"
               animate="open"
               exit="closed"
-              className="absolute right-0 mt-2 w-80 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-purple-500 ring-opacity-5 dark:bg-gray-800"
+              className="absolute right-0 mt-2 w-96 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-purple-500 ring-opacity-5 dark:bg-gray-800"
             >
               <div className="p-4">
                 <div className="mb-4 flex items-center justify-between">
@@ -214,7 +322,12 @@ const NotificationButton: React.FC = () => {
                     animate={{ x: 0, opacity: 1 }}
                     className="text-lg font-medium text-purple-900 dark:text-purple-100"
                   >
-                    Notifications
+                    Notification Center
+                    {newCount > 0 && (
+                      <span className="ml-2 inline-flex items-center rounded-full bg-gradient-to-r from-purple-400 to-pink-500 px-2.5 py-0.5 text-xs font-medium text-white">
+                        {newCount} new
+                      </span>
+                    )}
                   </motion.h3>
                   <Button
                     variant="ghost"
@@ -225,9 +338,9 @@ const NotificationButton: React.FC = () => {
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
-                <ScrollArea className="h-[300px] pr-4">
+                <ScrollArea className="h-[400px] pr-4">
                   <AnimatePresence>
-                    {mockNotifications.map(notification => (
+                    {notifications.map(notification => (
                       <NotificationItem
                         key={notification.id}
                         notification={notification}
@@ -240,14 +353,15 @@ const NotificationButton: React.FC = () => {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="bg-purple-50 px-4 py-3 text-center dark:bg-purple-900"
+                className="bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 text-center dark:from-purple-900 dark:to-pink-900"
               >
                 <Button
                   variant="link"
                   size="sm"
-                  className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-300 dark:hover:text-purple-200"
+                  className="text-sm font-semibold text-purple-600 hover:text-purple-700 dark:text-purple-300 dark:hover:text-purple-200"
                 >
                   View all notifications
+                  <ChevronDown className="ml-1 h-4 w-4" />
                 </Button>
               </motion.div>
             </motion.div>
