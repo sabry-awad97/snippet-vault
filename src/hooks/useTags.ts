@@ -1,6 +1,7 @@
 import { Tag } from '@/lib/schemas/tag';
 import * as tagsApi from '@/lib/tauri/api/tag';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 export const useFetchTags = () => {
@@ -12,6 +13,7 @@ export const useFetchTags = () => {
 
 export const useCreateTag = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationKey: ['createTag'],
@@ -21,6 +23,7 @@ export const useCreateTag = () => {
         description: 'Your Tag has been successfully created.',
       });
       queryClient.invalidateQueries({ queryKey: ['Tags'] });
+      router.refresh();
     },
     onError: error => {
       toast.error('Error', {

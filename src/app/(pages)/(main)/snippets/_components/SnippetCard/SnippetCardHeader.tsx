@@ -47,8 +47,8 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
         </motion.div>
 
         <motion.div className="flex flex-1 justify-between">
-          <motion.span className="text-lg font-bold leading-none">
-            <p className="truncate whitespace-nowrap">{snippet.title}</p>
+          <motion.span className="w-[calc(100%-6rem)] overflow-hidden text-ellipsis whitespace-nowrap">
+            {snippet.title}
           </motion.span>
 
           <Tooltip

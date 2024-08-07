@@ -14,6 +14,8 @@
     "prisma:push": "npm run prisma-ts-push && npm run prisma-rs-push"
   },
   "dependencies": {
+    "@babel/parser": "^7.25.3",
+    "@babel/traverse": "^7.25.3",
     "@blaze/human-readable-timestamp": "npm:@jsr/blaze__human-readable-timestamp@^1.0.0",
     "@hookform/resolvers": "^3.9.0",
     "@monaco-editor/react": "^4.6.0",
@@ -43,6 +45,7 @@
     "embla-carousel-react": "^8.1.8",
     "framer-motion": "^11.3.19",
     "lucide-react": "^0.416.0",
+    "monaco-jsx-highlighter": "^2.77.77",
     "next": "14.2.4",
     "next-themes": "^0.3.0",
     "react": "^18",
@@ -66,6 +69,7 @@
     "@prisma/client": "^5.17.0",
     "@tanstack/react-query-devtools": "^5.51.15",
     "@tauri-apps/cli": "^1.6.0",
+    "@types/babel__traverse": "^7.20.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

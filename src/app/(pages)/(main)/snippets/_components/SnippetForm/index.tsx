@@ -311,9 +311,10 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
                           <Editor
                             onMount={handleEditorDidMount}
                             height="100%"
-                            defaultLanguage={
+                            language={
                               form.getValues('language') || 'javascript'
                             }
+                            defaultLanguage={'typescript'}
                             defaultValue={field.value}
                             onChange={value => field.onChange(value || '')}
                             options={{

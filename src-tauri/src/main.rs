@@ -16,7 +16,6 @@ mod state;
 use ipc::commands;
 use prelude::AppResult;
 use state::init_state;
-use tauri::Manager;
 
 fn main() -> AppResult<()> {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
@@ -27,12 +26,6 @@ fn main() -> AppResult<()> {
 
     tauri::Builder::default()
         .setup(|app| {
-            #[cfg(debug_assertions)]
-            {
-                let window = app.get_window("main").unwrap();
-                window.open_devtools();
-            }
-
             tauri::async_runtime::block_on(async {
                 init_state(app.handle())
                     .await

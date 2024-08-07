@@ -4,7 +4,6 @@ import ThemeSwitch from '@/components/Common/ThemeSwitch';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import NotificationButton from './_components/NotificationButton';
 import SearchBar from './_components/SearchBar';
 
 const titles: { [key: string]: string } = {
@@ -50,7 +49,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <NotificationButton />
+          {/* <NotificationButton /> */}
           <ThemeSwitch />
         </div>
       </div>

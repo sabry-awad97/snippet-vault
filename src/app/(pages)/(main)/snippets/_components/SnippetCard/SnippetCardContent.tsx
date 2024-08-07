@@ -16,7 +16,7 @@ interface SnippetCardContentProps {
 const SnippetCardContent = ({ snippet }: SnippetCardContentProps) => {
   return (
     <CardContent
-      className={cn('h-full overflow-hidden p-4', {
+      className={cn('h-full p-4', {
         'text-gray-300': snippet.state?.isDark,
         'text-gray-800': !snippet.state?.isDark,
       })}
@@ -25,22 +25,27 @@ const SnippetCardContent = ({ snippet }: SnippetCardContentProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="h-full overflow-y-auto rounded-md"
+        className="h-full rounded-md"
       >
-        <ScrollArea className="h-[20rem]">
-          <SyntaxHighlighter
-            language={snippet.language}
-            style={snippet.state?.isDark ? vscDarkPlus : vs}
-            customStyle={{
-              margin: 0,
-              borderRadius: '0.375rem',
-              display: 'flex',
-              flexDirection: 'column',
-              height: '20rem',
-            }}
-          >
-            {snippet.code}
-          </SyntaxHighlighter>
+        <ScrollArea className="h-[20rem] w-full">
+          <div className="min-w-full">
+            <SyntaxHighlighter
+              language={snippet.language}
+              style={snippet.state?.isDark ? vscDarkPlus : vs}
+              customStyle={{
+                margin: 0,
+                padding: '1rem',
+                borderRadius: '0.375rem',
+                minHeight: '20rem',
+                width: 'auto',
+                overflow: 'visible',
+              }}
+              wrapLines={true}
+              wrapLongLines={true}
+            >
+              {snippet.code}
+            </SyntaxHighlighter>
+          </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </motion.div>
