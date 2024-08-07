@@ -13,7 +13,7 @@ import useTagsStore from '@/hooks/useTagsStore';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Plus, TagIcon } from 'lucide-react';
+import { Plus, Sparkles, TagIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import TagFormDialog from '../TagFormDialog';
@@ -226,75 +226,142 @@ interface EmptyTagCarouselProps {
   isDarkMode: boolean;
 }
 
-const EmptyTagCarousel = ({ onAddTag, isDarkMode }: EmptyTagCarouselProps) => {
+const EmptyTagCarousel: React.FC<EmptyTagCarouselProps> = ({
+  onAddTag,
+  isDarkMode,
+}) => {
+  const colorScheme = isDarkMode
+    ? {
+        bg: 'from-gray-900 to-purple-900',
+        border: 'border-purple-700',
+        text: 'text-white',
+        subtext: 'text-purple-200',
+        button: 'bg-purple-600 hover:bg-purple-500',
+        icon: 'text-purple-400',
+      }
+    : {
+        bg: 'from-white to-purple-50',
+        border: 'border-purple-200',
+        text: 'text-gray-800',
+        subtext: 'text-purple-700',
+        button: 'bg-purple-500 hover:bg-purple-600',
+        icon: 'text-purple-500',
+      };
+
+  const floatingTags = [
+    { rotate: 15, x: '-10%', y: '20%', delay: 0 },
+    { rotate: -10, x: '10%', y: '40%', delay: 0.5 },
+    { rotate: 5, x: '-15%', y: '60%', delay: 1 },
+    { rotate: -5, x: '15%', y: '80%', delay: 1.5 },
+  ];
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1, duration: 0.3 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
       className={cn(
-        'relative mx-auto w-full max-w-4xl rounded-lg border-2 border-dashed p-8',
-        isDarkMode
-          ? 'border-purple-600 bg-gray-800'
-          : 'border-purple-200 bg-white',
+        'relative mx-auto w-full max-w-4xl overflow-hidden rounded-lg border-2 border-dashed p-12',
+        colorScheme.border,
+        'bg-gradient-to-br',
+        colorScheme.bg,
       )}
     >
-      <div className="flex flex-col items-center text-center">
-        <TagIcon
-          className={cn(
-            'mb-4 h-16 w-16',
-            isDarkMode ? 'text-purple-400' : 'text-purple-500',
-          )}
-        />
-        <h3
-          className={cn(
-            'mb-2 text-xl font-semibold',
-            isDarkMode ? 'text-white' : 'text-gray-800',
-          )}
-        >
-          No tags yet
-        </h3>
-        <p
-          className={cn(
-            'mb-6 text-sm',
-            isDarkMode ? 'text-gray-300' : 'text-gray-600',
-          )}
-        >
-          Tags help you organize your snippets. Create your first tag to get
-          started!
-        </p>
-        <Button
-          onClick={onAddTag}
-          className={cn(
-            'flex items-center space-x-2 transition-all duration-300',
-            isDarkMode
-              ? 'bg-purple-600 hover:bg-purple-700'
-              : 'bg-purple-500 hover:bg-purple-600',
-          )}
-        >
-          <Plus className="h-4 w-4" />
-          <span>Create Your First Tag</span>
-        </Button>
-      </div>
+      {/* Animated background */}
       <motion.div
-        className="absolute -left-4 -top-4 h-8 w-8 rounded-full"
+        className="absolute inset-0 opacity-20"
         animate={{
-          scale: [1, 1.2, 1],
-          backgroundColor: isDarkMode
-            ? ['#9333ea', '#a855f7', '#9333ea']
-            : ['#a855f7', '#c084fc', '#a855f7'],
+          backgroundPosition: ['0% 0%', '100% 100%'],
         }}
-        transition={{ duration: 2, repeat: Infinity }}
+        transition={{
+          duration: 20,
+          ease: 'linear',
+          repeat: Infinity,
+          repeatType: 'reverse',
+        }}
+        style={{
+          backgroundImage: `radial-gradient(circle, ${isDarkMode ? '#9333ea' : '#a855f7'} 10%, transparent 10%)`,
+          backgroundSize: '40px 40px',
+        }}
       />
-      <motion.div
-        className="absolute -bottom-4 -right-4 h-8 w-8 rounded-full"
-        animate={{
-          scale: [1, 1.2, 1],
-          backgroundColor: isDarkMode
-            ? ['#9333ea', '#a855f7', '#9333ea']
-            : ['#a855f7', '#c084fc', '#a855f7'],
-        }}
-        transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+
+      {/* Floating tags */}
+      {floatingTags.map((tag, index) => (
+        <motion.div
+          key={index}
+          className={cn('absolute opacity-30', colorScheme.icon)}
+          animate={{
+            y: [tag.y, `calc(${tag.y} - 20px)`, tag.y],
+            x: tag.x,
+            rotate: tag.rotate,
+          }}
+          transition={{
+            y: { duration: 2, repeat: Infinity, repeatType: 'reverse' },
+            delay: tag.delay,
+          }}
+        >
+          <TagIcon className="h-8 w-8" />
+        </motion.div>
+      ))}
+
+      <div className="relative flex flex-col items-center text-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        >
+          <TagIcon className={cn('mb-6 h-24 w-24', colorScheme.icon)} />
+        </motion.div>
+
+        <motion.h3
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className={cn('mb-3 text-3xl font-bold', colorScheme.text)}
+        >
+          Unleash Your Tag Potential
+        </motion.h3>
+
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className={cn('mb-8 max-w-md text-lg', colorScheme.subtext)}
+        >
+          Tags are the secret ingredient to organizing your snippets. Create
+          your first tag and watch your productivity soar!
+        </motion.p>
+
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            onClick={onAddTag}
+            className={cn(
+              'group relative overflow-hidden px-8 py-3 text-lg font-semibold text-white transition-all duration-300',
+              colorScheme.button,
+            )}
+          >
+            <span className="relative z-10 flex items-center space-x-2">
+              <Plus className="h-5 w-5" />
+              <span>Create Your First Tag</span>
+            </span>
+            <motion.div
+              className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100"
+              initial={false}
+              animate={{ rotate: 360, scale: 1.5 }}
+              transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+              style={{
+                background: `radial-gradient(circle, ${isDarkMode ? '#a855f7' : '#c084fc'} 0%, transparent 70%)`,
+              }}
+            />
+          </Button>
+        </motion.div>
+      </div>
+
+      {/* Decorative elements */}
+      <Sparkles
+        className={cn('absolute right-4 top-4 h-6 w-6', colorScheme.icon)}
+      />
+      <Sparkles
+        className={cn('absolute bottom-4 left-4 h-6 w-6', colorScheme.icon)}
       />
     </motion.div>
   );
