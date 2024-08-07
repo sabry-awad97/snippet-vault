@@ -12,10 +12,10 @@ import { useCreateTag, useFetchTags } from '@/hooks/useTags';
 import useTagsStore from '@/hooks/useTagsStore';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { Plus, Sparkles, TagIcon } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Hash, Layers, Plus, Sparkles, TagIcon, Zap } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import TagFormDialog from '../TagFormDialog';
 
 const TagCarousel = () => {
@@ -230,9 +230,11 @@ const EmptyTagCarousel: React.FC<EmptyTagCarouselProps> = ({
   onAddTag,
   isDarkMode,
 }) => {
+  const [currentBenefit, setCurrentBenefit] = useState(0);
+
   const colorScheme = isDarkMode
     ? {
-        bg: 'from-gray-900 to-purple-900',
+        bg: 'from-gray-900 via-purple-900 to-indigo-900',
         border: 'border-purple-700',
         text: 'text-white',
         subtext: 'text-purple-200',
@@ -240,7 +242,7 @@ const EmptyTagCarousel: React.FC<EmptyTagCarouselProps> = ({
         icon: 'text-purple-400',
       }
     : {
-        bg: 'from-white to-purple-50',
+        bg: 'from-white via-purple-50 to-indigo-100',
         border: 'border-purple-200',
         text: 'text-gray-800',
         subtext: 'text-purple-700',
@@ -248,20 +250,26 @@ const EmptyTagCarousel: React.FC<EmptyTagCarouselProps> = ({
         icon: 'text-purple-500',
       };
 
-  const floatingTags = [
-    { rotate: 15, x: '-10%', y: '20%', delay: 0 },
-    { rotate: -10, x: '10%', y: '40%', delay: 0.5 },
-    { rotate: 5, x: '-15%', y: '60%', delay: 1 },
-    { rotate: -5, x: '15%', y: '80%', delay: 1.5 },
+  const benefits = [
+    { icon: Hash, text: 'Organize snippets effortlessly' },
+    { icon: Zap, text: 'Boost your productivity' },
+    { icon: Layers, text: 'Create a structured knowledge base' },
   ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentBenefit(prev => (prev + 1) % benefits.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [setCurrentBenefit, benefits.length]);
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+      transition={{ duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] }}
       className={cn(
-        'relative mx-auto w-full max-w-4xl overflow-hidden rounded-lg border-2 border-dashed p-12',
+        'relative mx-auto w-full overflow-hidden rounded-2xl border-2 border-dashed p-12',
         colorScheme.border,
         'bg-gradient-to-br',
         colorScheme.bg,
@@ -285,51 +293,58 @@ const EmptyTagCarousel: React.FC<EmptyTagCarouselProps> = ({
         }}
       />
 
-      {/* Floating tags */}
-      {floatingTags.map((tag, index) => (
-        <motion.div
-          key={index}
-          className={cn('absolute opacity-30', colorScheme.icon)}
-          animate={{
-            y: [tag.y, `calc(${tag.y} - 20px)`, tag.y],
-            x: tag.x,
-            rotate: tag.rotate,
-          }}
-          transition={{
-            y: { duration: 2, repeat: Infinity, repeatType: 'reverse' },
-            delay: tag.delay,
-          }}
-        >
-          <TagIcon className="h-8 w-8" />
-        </motion.div>
-      ))}
-
-      <div className="relative flex flex-col items-center text-center">
+      <div className="relative z-10 flex flex-col items-center text-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+          className="relative mb-8"
         >
-          <TagIcon className={cn('mb-6 h-24 w-24', colorScheme.icon)} />
+          <TagIcon className={cn('h-32 w-32', colorScheme.icon)} />
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            animate={{
+              boxShadow: [
+                `0 0 0 0px ${isDarkMode ? 'rgba(167, 139, 250, 0.3)' : 'rgba(167, 139, 250, 0.1)'}`,
+                `0 0 0 20px ${isDarkMode ? 'rgba(167, 139, 250, 0)' : 'rgba(167, 139, 250, 0)'}`,
+              ],
+            }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
         </motion.div>
 
         <motion.h3
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className={cn('mb-3 text-3xl font-bold', colorScheme.text)}
+          className={cn('mb-4 text-4xl font-bold', colorScheme.text)}
         >
           Unleash Your Tag Potential
         </motion.h3>
 
-        <motion.p
+        <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className={cn('mb-8 max-w-md text-lg', colorScheme.subtext)}
+          className={cn('mb-8 h-16')}
         >
-          Tags are the secret ingredient to organizing your snippets. Create
-          your first tag and watch your productivity soar!
-        </motion.p>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentBenefit}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="flex items-center justify-center space-x-2"
+            >
+              {React.createElement(benefits[currentBenefit].icon, {
+                className: cn('h-8 w-8', colorScheme.icon),
+              })}
+              <p className={cn('text-xl', colorScheme.subtext)}>
+                {benefits[currentBenefit].text}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
 
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
@@ -349,7 +364,11 @@ const EmptyTagCarousel: React.FC<EmptyTagCarouselProps> = ({
               animate={{ rotate: 360, scale: 1.5 }}
               transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
               style={{
-                background: `radial-gradient(circle, ${isDarkMode ? '#a855f7' : '#c084fc'} 0%, transparent 70%)`,
+                background: `radial-gradient(circle, ${
+                  isDarkMode
+                    ? 'rgba(168, 85, 247, 0.4)'
+                    : 'rgba(192, 132, 252, 0.4)'
+                } 0%, transparent 70%)`,
               }}
             />
           </Button>
@@ -358,10 +377,10 @@ const EmptyTagCarousel: React.FC<EmptyTagCarouselProps> = ({
 
       {/* Decorative elements */}
       <Sparkles
-        className={cn('absolute right-4 top-4 h-6 w-6', colorScheme.icon)}
+        className={cn('absolute right-8 top-8 h-10 w-10', colorScheme.icon)}
       />
       <Sparkles
-        className={cn('absolute bottom-4 left-4 h-6 w-6', colorScheme.icon)}
+        className={cn('absolute bottom-8 left-8 h-10 w-10', colorScheme.icon)}
       />
     </motion.div>
   );
