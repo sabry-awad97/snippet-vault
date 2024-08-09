@@ -2,12 +2,17 @@ import { Tooltip } from '@/components/Common/Tooltip';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Slider } from '@/components/ui/slider';
-import { Sortable, SortableItem } from '@/components/ui/sortable';
+import {
+  Sortable,
+  SortableDragHandle,
+  SortableItem,
+} from '@/components/ui/sortable';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { useDeleteTag, useFetchTags, useUpdateTag } from '@/hooks/useTags';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
 import { closestCorners } from '@dnd-kit/core';
+import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion, Variants } from 'framer-motion';
 import {
   ChevronDown,
@@ -266,7 +271,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
             ? 'flex items-center justify-between'
             : 'flex flex-col items-center space-y-2',
           isDarkMode ? 'text-purple-200' : 'text-purple-900',
-          expandedTag === tag.id ? 'z-10 scale-105' : ''
+          expandedTag === tag.id ? 'z-10 scale-105' : '',
         )}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-transparent to-purple-900 opacity-0 transition-opacity duration-300 group-hover:opacity-20" />
@@ -274,9 +279,18 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
         <div
           className={cn(
             'flex items-center space-x-3',
-            tagView === 'grid' ? 'flex-col space-x-0 space-y-2' : ''
+            tagView === 'grid' ? 'flex-col space-x-0 space-y-2' : '',
           )}
         >
+          <SortableDragHandle className="z-10">
+            <motion.div
+              className="cursor-grab active:cursor-grabbing"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <DotsHorizontalIcon className="h-5 w-5" />
+            </motion.div>
+          </SortableDragHandle>
           <motion.div
             className="flex h-12 w-12 items-center justify-center rounded-full shadow-lg"
             style={{ backgroundColor: tag.color }}
@@ -288,7 +302,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
           <span
             className={cn(
               'font-medium',
-              tagView === 'grid' ? 'text-center' : ''
+              tagView === 'grid' ? 'text-center' : '',
             )}
           >
             {tag.name}
@@ -323,8 +337,10 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
           />
           <TagActionButton
             icon={expandedTag === tag.id ? ChevronUp : ChevronDown}
-            onClick={() => setExpandedTag(expandedTag === tag.id ? null : tag.id)}
-            tooltip={expandedTag === tag.id ? "Collapse" : "Expand"}
+            onClick={() =>
+              setExpandedTag(expandedTag === tag.id ? null : tag.id)
+            }
+            tooltip={expandedTag === tag.id ? 'Collapse' : 'Expand'}
           />
         </div>
 
@@ -349,16 +365,16 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
               exit={{ opacity: 0, height: 0 }}
               className="mt-4 w-full"
             >
-              <p className="text-sm">Created: {tag.createdAt.toLocaleDateString()}</p>
+              <p className="text-sm">
+                Created: {tag.createdAt.toLocaleDateString()}
+              </p>
               <p className="text-sm">Color: {tag.color}</p>
-              {/* Add more tag details here */}
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
     </SortableItem>
   );
-
 
   const TagActionButton: React.FC<{
     icon: React.ElementType;
@@ -374,7 +390,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
         size="sm"
         variant="ghost"
         className={cn(
-          'transition-all duration-200 hover:scale-110',
+          'z-10 transition-all duration-200 hover:scale-110',
           isActive
             ? activeColor
             : 'hover:bg-purple-200 dark:hover:bg-purple-800',
