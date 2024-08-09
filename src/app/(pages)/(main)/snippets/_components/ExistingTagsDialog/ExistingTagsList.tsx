@@ -100,9 +100,9 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({ isDarkMode }) => {
           setEditingTag(null);
           setIsTagEditFormDialogOpen(false);
         }}
-        onSubmit={() => {
+        onSubmit={value => {
           setEditingTag(null);
-          updateTagMutation.mutateAsync(editingTag!);
+          updateTagMutation.mutateAsync(value);
         }}
         isDarkMode={isDarkMode}
       />

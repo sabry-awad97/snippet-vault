@@ -129,10 +129,8 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
           )}
         </AnimatePresence>
 
-        <motion.div className="mt-2 flex flex-wrap items-center gap-1">
-          <motion.p className="text-sm text-muted-foreground">
-            {truncateString(snippet.description, 200)}
-          </motion.p>
+        <motion.div className="mt-2 h-20 overflow-hidden text-sm text-muted-foreground">
+          <p>{truncateString(snippet.description, 200)}</p>
         </motion.div>
       </motion.div>
     </CardHeader>
