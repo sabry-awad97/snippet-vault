@@ -1,91 +1,90 @@
+import { Snippet, SnippetState } from '@/lib/schemas/snippet';
+import { Tag } from '@/lib/schemas/tag';
 import useQueryParams from './useQueryParams';
 import { useSnippetsQuery } from './useSnippets';
 
+type StateFilter = {
+  isFavorite?: boolean;
+  isDark?: boolean;
+};
+
+// Apply search filter
+const applySearch = (snippet: Snippet, search: string) => {
+  const searchLower = search.toLowerCase();
+  return (
+    snippet.title.toLowerCase().includes(searchLower) ||
+    snippet.description.toLowerCase().includes(searchLower) ||
+    snippet.code.toLowerCase().includes(searchLower) ||
+    snippet.language.toLowerCase().includes(searchLower)
+  );
+};
+
+// Apply general filter criterion
+const applyFilterCriterion = (
+  value: string | undefined,
+  snippetValue: string,
+) =>
+  value === undefined ||
+  snippetValue.toLowerCase().includes(value.toLowerCase());
+
+// Apply state filter
+const applyStateFilter = (
+  stateFilter?: StateFilter,
+  snippetState?: SnippetState,
+) => {
+  if (stateFilter) {
+    return (
+      (stateFilter.isFavorite === undefined ||
+        snippetState?.isFavorite === stateFilter.isFavorite) &&
+      (stateFilter.isDark === undefined ||
+        snippetState?.isDark === stateFilter.isDark)
+    );
+  }
+  return true;
+};
+
+// Apply tags filter
+const applyTagsFilter = (tagsFilter?: string[], snippetTags?: Tag[]) => {
+  if (tagsFilter && tagsFilter.length > 0) {
+    const snippetTagNames =
+      snippetTags?.map(tag => tag.name.toLowerCase()) || [];
+    return tagsFilter.some(tagName =>
+      snippetTagNames.includes(tagName.toLowerCase()),
+    );
+  }
+  return true;
+};
+
+// Apply all filters to a snippet
+const applyFilters = (
+  snippet: Snippet,
+  filter: {
+    search?: string;
+    title?: string;
+    description?: string;
+    code?: string;
+    language?: string;
+    state?: StateFilter;
+    tags?: string[];
+  },
+) => {
+  return (
+    (!filter.search || applySearch(snippet, filter.search)) &&
+    applyFilterCriterion(filter.title, snippet.title) &&
+    applyFilterCriterion(filter.description, snippet.description) &&
+    applyFilterCriterion(filter.code, snippet.code) &&
+    (!filter.language ||
+      snippet.language.toLowerCase() === filter.language.toLowerCase()) &&
+    applyStateFilter(filter.state, snippet.state) &&
+    applyTagsFilter(filter.tags, snippet.tags)
+  );
+};
+
+// Main hook function to filter snippets based on query parameters
 const useSnippetsFilter = () => {
   const { data: snippets = [] } = useSnippetsQuery();
   const filter = useQueryParams();
-
-  return snippets.filter(snippet => {
-    // Search filter
-    if (filter.search) {
-      const searchLower = filter.search.toLowerCase();
-      if (
-        !(
-          snippet.title.toLowerCase().includes(searchLower) ||
-          snippet.description.toLowerCase().includes(searchLower) ||
-          snippet.code.toLowerCase().includes(searchLower) ||
-          snippet.language.toLowerCase().includes(searchLower)
-        )
-      ) {
-        return false;
-      }
-    }
-
-    // Title filter
-    if (
-      filter.title &&
-      !snippet.title.toLowerCase().includes(filter.title.toLowerCase())
-    ) {
-      return false;
-    }
-
-    // Description filter
-    if (
-      filter.description &&
-      !snippet.description
-        .toLowerCase()
-        .includes(filter.description.toLowerCase())
-    ) {
-      return false;
-    }
-
-    // Language filter
-    if (
-      filter.language &&
-      snippet.language.toLowerCase() !== filter.language.toLowerCase()
-    ) {
-      return false;
-    }
-
-    // Code filter
-    if (
-      filter.code &&
-      !snippet.code.toLowerCase().includes(filter.code.toLowerCase())
-    ) {
-      return false;
-    }
-
-    // State filter
-    if (filter.state) {
-      if (
-        filter.state.isFavorite !== undefined &&
-        snippet.state?.isFavorite !== filter.state.isFavorite
-      ) {
-        return false;
-      }
-      if (
-        filter.state.isFavorite !== undefined &&
-        snippet.state?.isDark !== filter.state.isDark
-      ) {
-        return false;
-      }
-    }
-
-    // Tags filter
-    if (filter.tags && filter.tags.length > 0) {
-      const snippetTagNames = snippet.tags?.map(tag => tag.name.toLowerCase());
-      if (
-        !filter.tags.some(tagName =>
-          snippetTagNames?.includes(tagName.toLowerCase()),
-        )
-      ) {
-        return false;
-      }
-    }
-
-    // If all filters pass, include this snippet
-    return true;
-  });
+  return snippets.filter(snippet => applyFilters(snippet, filter));
 };
 
 export default useSnippetsFilter;
