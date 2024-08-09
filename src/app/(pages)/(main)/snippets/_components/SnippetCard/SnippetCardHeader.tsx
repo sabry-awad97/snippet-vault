@@ -49,39 +49,37 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
           />
         </motion.div>
 
-        <motion.div className="flex flex-1 justify-between">
-          <motion.span className="w-[calc(100%-6rem)] overflow-hidden text-ellipsis whitespace-nowrap">
-            {snippet.title}
-          </motion.span>
+        <motion.span className="ml-2 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+          {snippet.title}
+        </motion.span>
 
-          <Tooltip
-            content={isFavorite ? 'Unfavorite' : 'Favorite'}
-            sideOffset={5}
+        <Tooltip
+          content={isFavorite ? 'Unfavorite' : 'Favorite'}
+          sideOffset={5}
+        >
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-              <Heart
-                onClick={() =>
-                  updateSnippetStateMutation.mutateAsync({
-                    id: snippet.snippetStateId,
-                    data: {
-                      isFavorite: !isFavorite,
-                    },
-                  })
-                }
-                className={cn(
-                  'h-4 w-4 cursor-pointer text-slate-400 hover:text-purple-600',
-                  {
-                    'fill-current text-purple-600': isFavorite,
+            <Heart
+              onClick={() =>
+                updateSnippetStateMutation.mutateAsync({
+                  id: snippet.snippetStateId,
+                  data: {
+                    isFavorite: !isFavorite,
                   },
-                )}
-              />
-            </motion.div>
-          </Tooltip>
-        </motion.div>
+                })
+              }
+              className={cn(
+                'ml-2 h-4 w-4 cursor-pointer text-slate-400 hover:text-purple-600',
+                {
+                  'fill-current text-purple-600': isFavorite,
+                },
+              )}
+            />
+          </motion.div>
+        </Tooltip>
       </CardTitle>
       <motion.div className="text-muted-foreground">
         <motion.div className="flex justify-between text-xs font-medium">
@@ -116,6 +114,7 @@ const SnippetCardHeader = ({ isHovered, snippet }: SnippetCardHeaderProps) => {
                 autoplay={true}
                 autoplaySpeed={3000}
                 pauseOnHover={true}
+                arrows={false}
               >
                 {snippet.tags.map(tag => (
                   <div key={tag.id} className="px-1">

@@ -11,6 +11,7 @@ import useSnippetsFilter from '@/hooks/useSnippetsFilter';
 import useSnippetStore from '@/hooks/useSnippetStore';
 import { useCreateTag } from '@/hooks/useTags';
 import useTagsStore from '@/hooks/useTagsStore';
+import { SnippetFilter } from '@/lib/tauri/api/snippet';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, RefreshCw } from 'lucide-react';
@@ -53,7 +54,11 @@ const ErrorDisplay = ({ error, onRetry }: ErrorProps) => (
   </motion.div>
 );
 
-export default function SnippetsPage() {
+interface SnippetsPageProps {
+  searchParams: SnippetFilter;
+}
+
+export default function SnippetsPage({ searchParams }: SnippetsPageProps) {
   const auth = useAuth();
   const router = useRouter();
   const { theme } = useCurrentTheme();
