@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import TagUpdateFormDialog from '../TagFormDialog';
+import TagGalaxyBackground from './TagGalaxyBackground';
 import TagListSkeleton from './TagListSkeleton';
 
 interface TagsState {
@@ -281,7 +282,8 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
             if (!tag) return null;
             return <DragOverlay tag={tag} />;
           }}
-        >
+          >
+          <TagGalaxyBackground>
           {isLoading ? (
             <TagListSkeleton />
           ) : (
@@ -297,145 +299,148 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
                     : '',
                 )}
               >
-                {sortedTags.map(tag => (
-                  <SortableItem key={tag.id} asTrigger value={tag.id} asChild>
-                    <motion.div
-                      key={tag.id}
-                      variants={itemVariants}
-                      layout
-                      style={{
-                        height: tagView === 'list' ? `${tagSize}px` : 'auto',
-                        background: generateTagBackground(tag.color || ''),
-                      }}
-                      className={cn(
-                        'mb-2 rounded-md border p-3',
-                        isDarkMode ? 'border-purple-700' : 'border-purple-200',
-                        'transition-all duration-300 hover:scale-105 hover:shadow-lg',
-                        highlightedTag === tag.id
-                          ? 'ring-2 ring-purple-500'
-                          : '',
-                        tagView === 'list'
-                          ? 'flex items-center justify-between'
-                          : 'flex flex-col items-center space-y-2',
-                      )}
-                      onMouseEnter={() => setHighlightedTag(tag.id)}
-                      onMouseLeave={() => setHighlightedTag(null)}
-                    >
-                      <div
+                  {sortedTags.map(tag => (
+                    <SortableItem key={tag.id} asTrigger value={tag.id} asChild>
+                      <motion.div
+                        key={tag.id}
+                        variants={itemVariants}
+                        layout
+                        style={{
+                          height: tagView === 'list' ? `${tagSize}px` : 'auto',
+                          background: generateTagBackground(tag.color || ''),
+                        }}
                         className={cn(
-                          'flex items-center space-x-3',
-                          tagView === 'grid'
-                            ? 'flex-col space-x-0 space-y-2'
+                          'mb-2 rounded-md border p-3',
+                          isDarkMode
+                            ? 'border-purple-700'
+                            : 'border-purple-200',
+                          'transition-all duration-300 hover:scale-105 hover:shadow-lg',
+                          highlightedTag === tag.id
+                            ? 'ring-2 ring-purple-500'
                             : '',
+                          tagView === 'list'
+                            ? 'flex items-center justify-between'
+                            : 'flex flex-col items-center space-y-2',
                         )}
+                        onMouseEnter={() => setHighlightedTag(tag.id)}
+                        onMouseLeave={() => setHighlightedTag(null)}
                       >
-                        <motion.div
-                          className="h-10 w-10 rounded-full shadow-inner"
-                          style={{ backgroundColor: tag.color }}
-                          whileHover={{ scale: 1.2, rotate: 360 }}
-                          transition={{ duration: 0.3 }}
-                        />
-                        <span
+                        <div
                           className={cn(
-                            'font-medium text-gray-800 dark:text-white',
-                            tagView === 'grid' ? 'text-center' : '',
+                            'flex items-center space-x-3',
+                            tagView === 'grid'
+                              ? 'flex-col space-x-0 space-y-2'
+                              : '',
                           )}
                         >
-                          {tag.name}
-                        </span>
-                      </div>
-                      <div
-                        className={cn(
-                          'flex space-x-2',
-                          tagView === 'grid' ? 'mt-2' : '',
-                        )}
-                      >
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={() => toggleFavorite(tag.id)}
-                                size="sm"
-                                variant="outline"
-                                className={cn(
-                                  'transition-colors duration-200',
-                                  favoriteTagIds.includes(tag.id)
-                                    ? 'bg-yellow-500 text-white'
-                                    : isDarkMode
-                                      ? 'hover:bg-yellow-700'
-                                      : 'hover:bg-yellow-100',
-                                )}
-                              >
-                                <Star className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {favoriteTagIds.includes(tag.id)
-                                  ? 'Remove from Favorites'
-                                  : 'Add to Favorites'}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={() => {
-                                  setEditingTag(tag);
-                                  setIsTagEditFormDialogOpen(true);
-                                }}
-                                size="sm"
-                                variant="outline"
-                                className={cn(
-                                  'transition-colors duration-200 hover:bg-purple-100 dark:hover:bg-purple-700',
-                                )}
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit Tag</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                onClick={() => handleDeleteTag(tag.id)}
-                                size="sm"
-                                variant="outline"
-                                className={cn(
-                                  'text-destructive transition-colors duration-200 hover:bg-red-100 dark:hover:bg-red-900',
-                                )}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Delete Tag</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      {highlightedTag === tag.id && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0 }}
-                          className="absolute -right-2 -top-2"
+                          <motion.div
+                            className="h-10 w-10 rounded-full shadow-inner"
+                            style={{ backgroundColor: tag.color }}
+                            whileHover={{ scale: 1.2, rotate: 360 }}
+                            transition={{ duration: 0.3 }}
+                          />
+                          <span
+                            className={cn(
+                              'font-medium text-gray-800 dark:text-white',
+                              tagView === 'grid' ? 'text-center' : '',
+                            )}
+                          >
+                            {tag.name}
+                          </span>
+                        </div>
+                        <div
+                          className={cn(
+                            'flex space-x-2',
+                            tagView === 'grid' ? 'mt-2' : '',
+                          )}
                         >
-                          <Sparkles className="h-6 w-6 text-yellow-400" />
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  </SortableItem>
-                ))}
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  onClick={() => toggleFavorite(tag.id)}
+                                  size="sm"
+                                  variant="outline"
+                                  className={cn(
+                                    'transition-colors duration-200',
+                                    favoriteTagIds.includes(tag.id)
+                                      ? 'bg-yellow-500 text-white'
+                                      : isDarkMode
+                                        ? 'hover:bg-yellow-700'
+                                        : 'hover:bg-yellow-100',
+                                  )}
+                                >
+                                  <Star className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {favoriteTagIds.includes(tag.id)
+                                    ? 'Remove from Favorites'
+                                    : 'Add to Favorites'}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  onClick={() => {
+                                    setEditingTag(tag);
+                                    setIsTagEditFormDialogOpen(true);
+                                  }}
+                                  size="sm"
+                                  variant="outline"
+                                  className={cn(
+                                    'transition-colors duration-200 hover:bg-purple-100 dark:hover:bg-purple-700',
+                                  )}
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit Tag</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  onClick={() => handleDeleteTag(tag.id)}
+                                  size="sm"
+                                  variant="outline"
+                                  className={cn(
+                                    'text-destructive transition-colors duration-200 hover:bg-red-100 dark:hover:bg-red-900',
+                                  )}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete Tag</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        {highlightedTag === tag.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0 }}
+                            className="absolute -right-2 -top-2"
+                          >
+                            <Sparkles className="h-6 w-6 text-yellow-400" />
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    </SortableItem>
+                  ))}
               </motion.div>
             </AnimatePresence>
           )}
+          </TagGalaxyBackground>
         </Sortable>
       </ScrollArea>
 
