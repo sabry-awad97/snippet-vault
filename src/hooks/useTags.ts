@@ -19,17 +19,8 @@ export const useCreateTag = () => {
     mutationKey: ['createTag'],
     mutationFn: (newTag: Tag) => tagsApi.createTag({ data: newTag }),
     onSuccess: () => {
-      toast.success('Tag Created', {
-        description: 'Your Tag has been successfully created.',
-      });
       queryClient.invalidateQueries({ queryKey: ['Tags'] });
       router.refresh();
-    },
-    onError: error => {
-      toast.error('Error', {
-        description: 'Failed to create Tag.',
-      });
-      console.error('Create Tag Error:', error);
     },
   });
 };
@@ -45,9 +36,6 @@ export const useUpdateTag = () => {
         data: updatedTag,
       }),
     onSuccess: () => {
-      toast.success('Tag Updated', {
-        description: 'Your Tag has been successfully updated.',
-      });
       queryClient.invalidateQueries({ queryKey: ['Tags'] });
     },
     onError: error => {

@@ -122,6 +122,7 @@ const SnippetForm: React.FC<SnippetFormProps> = ({ snippet, onSubmit }) => {
           <form
             onSubmit={form.handleSubmit(handleSubmit, onInvalid)}
             className="space-y-6"
+            autoComplete="off"
           >
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-6">

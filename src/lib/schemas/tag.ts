@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { commonSchema } from './common';
 
 const baseTagSchema = z.object({
-  id: z.string(),
+  ...commonSchema.shape,
   name: z.string().min(1, 'Tag name is required'),
   color: z
     .string()

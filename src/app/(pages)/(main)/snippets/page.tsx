@@ -14,9 +14,10 @@ import useTagsStore from '@/hooks/useTagsStore';
 import { SnippetFilter } from '@/lib/tauri/api/snippet';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, TagIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 import EmptySnippetsState from './_components/EmptySnippetsState';
 import TagListDialog from './_components/ExistingTagsDialog';
 import SnippetDialog from './_components/SnippetDialog';
@@ -190,8 +191,16 @@ export default function SnippetsPage({ searchParams }: SnippetsPageProps) {
             try {
               await createTagMutation.mutateAsync(value);
               setIsTagFormDialogOpen(false);
+              toast.success('Tag Created', {
+                description: 'Your Tag has been successfully created.',
+                icon: <TagIcon className="h-5 w-5 text-green-500" />,
+              });
             } catch (error) {
               console.error('Error creating tag:', error);
+              toast.error('Error', {
+                description: 'Failed to create Tag.',
+                icon: <TagIcon className="h-5 w-5 text-red-500" />,
+              });
             }
           }}
           isDarkMode={isDarkMode}

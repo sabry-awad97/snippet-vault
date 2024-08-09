@@ -12,7 +12,7 @@ import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -37,11 +37,20 @@ const TagForm: React.FC<TagFormProps> = ({
 }) => {
   const isEditMode = !!initialTag;
 
+  const randomColor = useMemo(() => {
+    return (
+      '#' +
+      Math.floor(Math.random() * 16777215)
+        .toString(16)
+        .padStart(6, '0')
+    );
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialTag || {
       name: '',
-      color: '#f7df1e',
+      color: randomColor,
     },
   });
 
@@ -52,7 +61,11 @@ const TagForm: React.FC<TagFormProps> = ({
       transition={{ delay: 0.1, duration: 0.3 }}
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 p-6"
+          autoComplete="off"
+        >
           <FormField
             control={form.control}
             name="name"

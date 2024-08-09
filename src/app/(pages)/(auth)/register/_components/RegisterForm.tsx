@@ -55,6 +55,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
       <form
         onSubmit={form.handleSubmit(onValid, onInValid)}
         className="space-y-4"
+        autoComplete="off"
       >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
