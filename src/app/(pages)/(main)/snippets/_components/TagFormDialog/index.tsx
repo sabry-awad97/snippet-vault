@@ -62,6 +62,8 @@ const TagFormDialog: React.FC<TagFormDialogProps> = ({
                   name: values.name,
                   color: values.color,
                   snippetIds: initialTag?.snippetIds || [],
+                  createdAt: initialTag?.createdAt || Date.now(),
+                  updatedAt: initialTag?.updatedAt || Date.now(),
                 }),
               );
               onClose();

@@ -17,14 +17,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  Moon,
-  Plus,
-  Search,
-  Sparkles,
-  Sun,
-  Tag as TagIcon,
-} from 'lucide-react';
+import { Plus, Search, Sparkles, Tag as TagIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import ExistingTagsList from './ExistingTagsList';
 
@@ -33,7 +26,6 @@ interface TagDialogProps {
   onClose: () => void;
   isDarkMode: boolean;
   onCreateTag: () => void;
-  onToggleDarkMode: () => void;
 }
 
 const TagListDialog: React.FC<TagDialogProps> = ({
@@ -41,7 +33,6 @@ const TagListDialog: React.FC<TagDialogProps> = ({
   onClose,
   isDarkMode,
   onCreateTag,
-  onToggleDarkMode,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'color' | 'recent'>('name');
@@ -106,23 +97,6 @@ const TagListDialog: React.FC<TagDialogProps> = ({
                   <TagIcon className="h-10 w-10" />
                   <span>Manage Tags</span>
                 </DialogTitle>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={onToggleDarkMode}
-                  className={cn(
-                    'rounded-full p-2',
-                    isDarkMode
-                      ? 'bg-purple-800 text-yellow-300'
-                      : 'bg-purple-200 text-purple-800',
-                  )}
-                >
-                  {isDarkMode ? (
-                    <Sun className="h-6 w-6" />
-                  ) : (
-                    <Moon className="h-6 w-6" />
-                  )}
-                </motion.button>
               </DialogHeader>
 
               <motion.div
