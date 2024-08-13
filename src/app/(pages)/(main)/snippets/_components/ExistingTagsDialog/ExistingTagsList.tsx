@@ -1,3 +1,10 @@
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Slider } from '@/components/ui/slider';
+import useCurrentTheme from '@/hooks/useCurrentTheme';
+import { useDeleteTag, useFetchTags, useUpdateTag } from '@/hooks/useTags';
+import { Tag } from '@/lib/schemas/tag';
+import { cn } from '@/lib/utils';
+import { getRandomEmoji } from '@/lib/utils/emojiHelper';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Edit2,
@@ -5,116 +12,22 @@ import {
   GripVertical,
   List,
   Moon,
+  RefreshCw,
   Shuffle,
-  Sparkles,
   Star,
   Sun,
-  Tag as TagIcon,
+  TagIcon,
   Trash2,
   Zap,
 } from 'lucide-react';
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { toast } from 'sonner';
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-
-import { Tooltip } from '@/components/Common/Tooltip';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Slider } from '@/components/ui/slider';
-import useCurrentTheme from '@/hooks/useCurrentTheme';
-import { useDeleteTag, useFetchTags, useUpdateTag } from '@/hooks/useTags';
-import { Tag } from '@/lib/schemas/tag';
-import { cn } from '@/lib/utils';
 import TagUpdateFormDialog from '../TagFormDialog';
+import TagActionButton from './TagActionButton';
 import TagListSkeleton from './TagListSkeleton';
-
-interface TagsState {
-  favoriteTagIds: string[];
-  tagSize: number;
-  tagView: 'list' | 'grid';
-  highlightedTag: string | null;
-  expandedTag: string | null;
-  isTagEditFormDialogOpen: boolean;
-  editingTag: Tag | null;
-  toggleFavorite: (tagId: string) => void;
-  setTagSize: (size: number) => void;
-  setTagView: (view: 'list' | 'grid') => void;
-  setHighlightedTag: (tagId: string | null) => void;
-  setExpandedTag: (tagId: string | null) => void;
-  setIsTagEditFormDialogOpen: (isOpen: boolean) => void;
-  setEditingTag: (tag: Tag | null) => void;
-}
-
-const useTagsStore = create<TagsState>()(
-  persist(
-    set => ({
-      favoriteTagIds: [],
-      tagSize: 100,
-      tagView: 'list',
-      highlightedTag: null,
-      expandedTag: null,
-      isTagEditFormDialogOpen: false,
-      editingTag: null,
-      toggleFavorite: tagId =>
-        set(state => {
-          const newFavorites = new Set(state.favoriteTagIds);
-          if (newFavorites.has(tagId)) {
-            newFavorites.delete(tagId);
-          } else {
-            newFavorites.add(tagId);
-          }
-          return { favoriteTagIds: Array.from(newFavorites) };
-        }),
-      setTagSize: size => set({ tagSize: size }),
-      setTagView: view => set({ tagView: view }),
-      setHighlightedTag: tagId => set({ highlightedTag: tagId }),
-      setExpandedTag: tagId => set({ expandedTag: tagId }),
-      setIsTagEditFormDialogOpen: isOpen =>
-        set({ isTagEditFormDialogOpen: isOpen }),
-      setEditingTag: tag => set({ editingTag: tag }),
-    }),
-    {
-      name: 'tags-storage',
-      getStorage: () => localStorage,
-    },
-  ),
-);
-
-interface TagActionButtonProps {
-  icon: React.ElementType;
-  onClick: () => void;
-  isActive?: boolean;
-  activeColor?: string;
-  tooltip: string;
-  className?: string;
-}
-
-const TagActionButton: React.FC<TagActionButtonProps> = ({
-  icon: Icon,
-  onClick,
-  isActive,
-  activeColor,
-  tooltip,
-  className,
-}) => (
-  <Tooltip content={tooltip}>
-    <Button
-      onClick={onClick}
-      size="sm"
-      variant="ghost"
-      className={cn(
-        'z-10 transition-all duration-200 hover:scale-110',
-        isActive ? activeColor : 'hover:bg-purple-200 dark:hover:bg-purple-800',
-        className,
-      )}
-    >
-      <Icon className="h-4 w-4" />
-    </Button>
-  </Tooltip>
-);
+import { useTagsStore } from './useTagsStore';
 
 interface DraggableTagItemProps {
   tag: Tag;
@@ -122,25 +35,16 @@ interface DraggableTagItemProps {
   moveTag: (dragIndex: number, hoverIndex: number) => void;
 }
 
-const mergeRefs = <T extends any>(
-  ...refs: Array<React.MutableRefObject<T> | React.LegacyRef<T>>
-): React.RefCallback<T> => {
-  return value => {
-    refs.forEach(ref => {
-      if (typeof ref === 'function') {
-        ref(value);
-      } else if (ref != null) {
-        (ref as React.MutableRefObject<T | null>).current = value;
-      }
-    });
-  };
-};
-
 const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
   tag,
   index,
   moveTag,
 }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [currentEmoji, setCurrentEmoji] = useState(getRandomEmoji());
+  const [isHovering, setIsHovering] = useState(false);
+  const [particlesVisible, setParticlesVisible] = useState(false);
+
   const [{ isDragging }, drag, preview] = useDrag({
     type: 'TAG',
     item: { id: tag.id, index },
@@ -180,9 +84,6 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
     },
   });
 
-  const ref = useRef<HTMLDivElement>(null);
-  drag(drop(ref));
-
   const {
     favoriteTagIds,
     tagSize,
@@ -197,10 +98,22 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
   const { theme } = useCurrentTheme();
   const isDarkMode = theme === 'dark';
 
+  useEffect(() => {
+    if (highlightedTag === tag.id) {
+      setParticlesVisible(true);
+      const timer = setTimeout(() => setParticlesVisible(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedTag, tag.id]);
+
   const tagItemVariants = {
     hidden: { opacity: 0, scale: 0.8, y: 20 },
     visible: { opacity: 1, scale: 1, y: 0 },
-    hover: { scale: 1.05, boxShadow: '0 0 20px rgba(147, 51, 234, 0.7)' },
+    hover: {
+      scale: 1.05,
+      boxShadow: '0 8px 32px rgba(147, 51, 234, 0.3)',
+      transition: { duration: 0.3 },
+    },
   };
 
   const deleteTagMutation = useDeleteTag();
@@ -220,96 +133,167 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
     }
   };
 
-  const dragDropRef = useMemo(
-    () => mergeRefs(drag as any, drop as any, ref),
-    [drag, drop],
-  );
+  drag(drop(ref));
+
+  const renderParticles = () => {
+    return (
+      <AnimatePresence>
+        {particlesVisible && (
+          <motion.div
+            className="absolute inset-0 overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute h-2 w-2 rounded-full bg-yellow-300"
+                initial={{
+                  x: '50%',
+                  y: '50%',
+                  scale: 0,
+                }}
+                animate={{
+                  x: `${Math.random() * 100}%`,
+                  y: `${Math.random() * 100}%`,
+                  scale: Math.random() * 1.5 + 0.5,
+                  opacity: 0,
+                }}
+                transition={{
+                  duration: 2,
+                  ease: 'easeOut',
+                  delay: Math.random() * 0.2,
+                }}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  };
 
   return (
     <motion.div
-      ref={dragDropRef}
+      ref={ref}
       layout
       variants={tagItemVariants}
       initial="hidden"
       animate="visible"
       whileHover="hover"
+      onHoverStart={() => setIsHovering(true)}
+      onHoverEnd={() => setIsHovering(false)}
       style={{
         opacity: isDragging ? 0.5 : 1,
         height: tagView === 'list' ? `${tagSize}px` : 'auto',
-        background: `linear-gradient(135deg, ${tag.color}33, ${tag.color}22)`,
+        background: `linear-gradient(135deg, ${tag.color}33, ${tag.color}11)`,
       }}
       className={cn(
-        'group relative mb-2 overflow-hidden rounded-lg border p-3 backdrop-blur-sm transition-all duration-300',
+        'group relative mb-4 overflow-hidden rounded-xl border p-5 backdrop-blur-lg transition-all duration-300',
         isDarkMode ? 'border-purple-700' : 'border-purple-300',
         tagView === 'list'
           ? 'flex items-center justify-between'
-          : 'flex flex-col items-center space-y-2',
+          : 'flex flex-col items-center space-y-4',
         isDarkMode ? 'text-purple-200' : 'text-purple-900',
       )}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-purple-900 opacity-0 transition-opacity duration-300 group-hover:opacity-20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-purple-900 opacity-0 transition-opacity duration-300 group-hover:opacity-15" />
+
+      {renderParticles()}
 
       <div
         className={cn(
-          'flex items-center space-x-3',
-          tagView === 'grid' ? 'flex-col space-x-0 space-y-2' : '',
+          'flex items-center space-x-4',
+          tagView === 'grid' ? 'flex-col space-x-0 space-y-3' : '',
         )}
       >
         <motion.div
-          className="flex h-12 w-12 items-center justify-center rounded-full shadow-lg"
+          className="relative flex h-16 w-16 items-center justify-center rounded-full shadow-lg"
           style={{ backgroundColor: tag.color }}
-          whileHover={{ scale: 1.2, rotate: 360 }}
+          whileHover={{ scale: 1.1, rotate: 360 }}
           transition={{ duration: 0.5 }}
         >
-          <span className="text-xl">⚽</span>
+          <span className="text-3xl">{currentEmoji}</span>
+          <motion.button
+            className="absolute -bottom-1 -right-1 rounded-full bg-white p-1 shadow-md"
+            whileHover={{ scale: 1.2 }}
+            onClick={() => setCurrentEmoji(getRandomEmoji())}
+            title="Change emoji"
+          >
+            <RefreshCw className="h-4 w-4 text-purple-500" />
+          </motion.button>
         </motion.div>
-        <span
-          className={cn('font-medium', tagView === 'grid' ? 'text-center' : '')}
+        <motion.span
+          className={cn(
+            'text-xl font-semibold',
+            tagView === 'grid' ? 'text-center' : '',
+          )}
+          whileHover={{ scale: 1.05 }}
         >
           {tag.name}
-        </span>
+        </motion.span>
       </div>
 
-      <div className={cn('flex space-x-2', tagView === 'grid' ? 'mt-2' : '')}>
-        <TagActionButton
-          icon={Star}
-          onClick={() => toggleFavorite(tag.id)}
-          isActive={favoriteTagIds.includes(tag.id)}
-          activeColor="bg-yellow-500"
-          tooltip={
-            favoriteTagIds.includes(tag.id)
-              ? 'Remove from Favorites'
-              : 'Add to Favorites'
-          }
-        />
-        <TagActionButton
-          icon={Edit2}
-          onClick={() => {
-            setEditingTag(tag);
-            setIsTagEditFormDialogOpen(true);
-          }}
-          tooltip="Edit Tag"
-        />
-        <TagActionButton
-          icon={Trash2}
-          onClick={() => handleDeleteTag(tag.id)}
-          tooltip="Delete Tag"
-          className="text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-        />
-        <div ref={ref} className="z-10 cursor-move">
-          <GripVertical className="h-4 w-4" />
-        </div>
-      </div>
+      <AnimatePresence>
+        {isHovering && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className={cn('flex space-x-3', tagView === 'grid' ? 'mt-3' : '')}
+          >
+            <TagActionButton
+              icon={Star}
+              onClick={() => toggleFavorite(tag.id)}
+              isActive={favoriteTagIds.includes(tag.id)}
+              activeColor="bg-yellow-500"
+              tooltip={
+                favoriteTagIds.includes(tag.id)
+                  ? 'Remove from Favorites'
+                  : 'Add to Favorites'
+              }
+            />
+            <TagActionButton
+              icon={Edit2}
+              onClick={() => {
+                setEditingTag(tag);
+                setIsTagEditFormDialogOpen(true);
+              }}
+              tooltip="Edit Tag"
+            />
+            <TagActionButton
+              icon={Trash2}
+              onClick={() => handleDeleteTag(tag.id)}
+              tooltip="Delete Tag"
+              className="text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
+            />
+            <TagActionButton
+              icon={isDarkMode ? Sun : Moon}
+              onClick={() => setHighlightedTag(tag.id)}
+              tooltip="Highlight Tag"
+              className="text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-900"
+            />
+            <motion.div
+              ref={ref}
+              className="z-10 flex cursor-move items-center justify-center"
+              whileHover={{ scale: 1.1 }}
+            >
+              <GripVertical className="h-5 w-5" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {highlightedTag === tag.id && (
           <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
-            className="absolute -right-2 -top-2"
+            initial={{ opacity: 0, scale: 0, rotate: -180 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0, rotate: 180 }}
+            transition={{ duration: 0.5 }}
+            className="absolute -right-3 -top-3"
           >
-            <Sparkles className="h-8 w-8 text-yellow-300" />
+            <Zap className="drop-shadow-glow h-12 w-12 text-yellow-300" />
           </motion.div>
         )}
       </AnimatePresence>

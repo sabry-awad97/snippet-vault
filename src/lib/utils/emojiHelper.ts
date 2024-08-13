@@ -21,3 +21,40 @@ export function getEmoji(tagName: string): string {
   }
   return '🏷️'; // Default emoji for tags without a specific match
 }
+
+export const getRandomEmoji = (): string => {
+  const emojis = [
+    '🏷️',
+    '🔖',
+    '📌',
+    '🔑',
+    '🎯',
+    '💡',
+    '🚀',
+    '🌟',
+    '🔮',
+    '📊',
+    '🧩',
+    '🎨',
+    '📚',
+    '💼',
+    '🔬',
+    '🔧',
+    '📈',
+    '🏆',
+    '🎭',
+    '🌈',
+    '🦄',
+    '🍀',
+    '🔔',
+    '💎',
+    '🎁',
+    '🔍',
+    '🧠',
+    '💻',
+    '🌱',
+    '🌍',
+  ];
+
+  return emojis[Math.floor(Math.random() * emojis.length)];
+};
