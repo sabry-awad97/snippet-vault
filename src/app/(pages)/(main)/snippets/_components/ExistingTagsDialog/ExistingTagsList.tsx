@@ -5,7 +5,7 @@ import { useDeleteTag, useFetchTags, useUpdateTag } from '@/hooks/useTags';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
 import { getRandomEmoji } from '@/lib/utils/emojiHelper';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useSpring } from 'framer-motion';
 import {
   Edit2,
   Grid,
@@ -33,12 +33,14 @@ interface DraggableTagItemProps {
   tag: Tag;
   index: number;
   moveTag: (dragIndex: number, hoverIndex: number) => void;
+  tagSize: number;
 }
 
 const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
   tag,
   index,
   moveTag,
+  tagSize,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [currentEmoji, setCurrentEmoji] = useState(getRandomEmoji());
@@ -86,7 +88,6 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
 
   const {
     favoriteTagIds,
-    tagSize,
     tagView,
     highlightedTag,
     toggleFavorite,
@@ -173,6 +174,19 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
     );
   };
 
+  const springConfig = { stiffness: 300, damping: 30 };
+  const scale = useSpring(1, springConfig);
+  const opacity = useSpring(1, springConfig);
+  const fontSize = useSpring(16, springConfig);
+  const emojiSize = useSpring(48, springConfig);
+
+  useEffect(() => {
+    scale.set(tagSize / 100);
+    opacity.set(tagSize / 150);
+    fontSize.set(tagSize / 6);
+    emojiSize.set(tagSize / 3);
+  }, [tagSize, scale, opacity, fontSize, emojiSize]);
+
   return (
     <motion.div
       ref={ref}
@@ -184,16 +198,18 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
       onHoverStart={() => setIsHovering(true)}
       onHoverEnd={() => setIsHovering(false)}
       style={{
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.5 : opacity,
+        scale,
         height: tagView === 'list' ? `${tagSize}px` : 'auto',
+        width: tagView === 'grid' ? `${tagSize * 2}px` : 'auto',
         background: `linear-gradient(135deg, ${tag.color}33, ${tag.color}11)`,
       }}
       className={cn(
-        'group relative mb-4 overflow-hidden rounded-xl border p-5 backdrop-blur-lg transition-all duration-300',
+        'group relative mb-4 overflow-hidden rounded-xl border backdrop-blur-lg transition-all duration-300',
         isDarkMode ? 'border-purple-700' : 'border-purple-300',
         tagView === 'list'
           ? 'flex items-center justify-between'
-          : 'flex flex-col items-center space-y-4',
+          : 'flex flex-col items-center space-y-2',
         isDarkMode ? 'text-purple-200' : 'text-purple-900',
       )}
     >
@@ -203,17 +219,23 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
 
       <div
         className={cn(
-          'flex items-center space-x-4',
-          tagView === 'grid' ? 'flex-col space-x-0 space-y-3' : '',
+          'flex w-full items-center',
+          tagView === 'grid' ? 'flex-col space-y-2' : 'space-x-4',
         )}
       >
         <motion.div
-          className="relative flex h-16 w-16 items-center justify-center rounded-full shadow-lg"
-          style={{ backgroundColor: tag.color }}
+          className="relative flex items-center justify-center rounded-full shadow-lg"
+          style={{
+            backgroundColor: tag.color,
+            width: emojiSize,
+            height: emojiSize,
+          }}
           whileHover={{ scale: 1.1, rotate: 360 }}
           transition={{ duration: 0.5 }}
         >
-          <span className="text-3xl">{currentEmoji}</span>
+          <motion.span style={{ fontSize: emojiSize }}>
+            {currentEmoji}
+          </motion.span>
           <motion.button
             className="absolute -bottom-1 -right-1 rounded-full bg-white p-1 shadow-md"
             whileHover={{ scale: 1.2 }}
@@ -223,15 +245,15 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
             <RefreshCw className="h-4 w-4 text-purple-500" />
           </motion.button>
         </motion.div>
-        <motion.span
+        <motion.div
           className={cn(
-            'text-xl font-semibold',
-            tagView === 'grid' ? 'text-center' : '',
+            'truncate font-semibold',
+            tagView === 'grid' ? 'w-full text-center' : 'flex-1',
           )}
-          whileHover={{ scale: 1.05 }}
+          style={{ fontSize }}
         >
           {tag.name}
-        </motion.span>
+        </motion.div>
       </div>
 
       <AnimatePresence>
@@ -240,7 +262,11 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className={cn('flex space-x-3', tagView === 'grid' ? 'mt-3' : '')}
+            className={cn(
+              'flex',
+              tagView === 'grid' ? 'mt-2 justify-center' : 'space-x-2',
+            )}
+            style={{ fontSize: fontSize.get() * 0.75 }}
           >
             <TagActionButton
               icon={Star}
@@ -274,7 +300,6 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
               className="text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-900"
             />
             <motion.div
-              ref={ref}
               className="z-10 flex cursor-move items-center justify-center"
               whileHover={{ scale: 1.1 }}
             >
@@ -354,9 +379,23 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
     console.log('New tags:', newTags);
   };
 
+  const backgroundOpacity = useSpring(0.3);
+  const borderRadius = useSpring(8);
+
+  useEffect(() => {
+    backgroundOpacity.set(tagSize / 300);
+    borderRadius.set(tagSize / 10);
+  }, [tagSize, backgroundOpacity, borderRadius]);
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="relative w-full overflow-hidden bg-gradient-to-b from-purple-900 via-indigo-900 to-black">
+      <motion.div
+        className="relative w-full overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, rgba(128, 0, 128, ${backgroundOpacity}), rgba(75, 0, 130, ${backgroundOpacity}), rgba(0, 0, 0, ${backgroundOpacity}))`,
+          borderRadius,
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -364,14 +403,14 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
           className="container mx-auto space-y-6 p-6"
         >
           <div className="flex items-center justify-between">
-            <h3
+            <motion.h3
               className={cn(
                 'text-3xl font-bold',
                 isDarkMode ? 'text-purple-200' : 'text-purple-900',
               )}
             >
               Cosmic Tag Realm
-            </h3>
+            </motion.h3>
             <div className="flex items-center space-x-4">
               <TagActionButton
                 icon={tagView === 'list' ? Grid : List}
@@ -383,7 +422,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
                 onValueChange={([value]) => setTagSize(value)}
                 max={150}
                 min={50}
-                step={10}
+                step={1}
                 className="w-32"
               />
               <TagActionButton
@@ -407,11 +446,12 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
 
           <ScrollArea
             className={cn(
-              'h-[400px] rounded-lg border',
+              'rounded-lg border',
               isDarkMode
                 ? 'border-purple-700 bg-purple-900/30'
                 : 'border-purple-300 bg-purple-100/30',
             )}
+            style={{ height: `${tagSize * 4}px` }}
           >
             {isLoading ? (
               <TagListSkeleton />
@@ -428,6 +468,12 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
                     ? 'grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4'
                     : '',
                 )}
+                style={{
+                  gridTemplateColumns:
+                    tagView === 'grid'
+                      ? `repeat(auto-fill, minmax(${tagSize * 2}px, 1fr))`
+                      : 'none',
+                }}
               >
                 {sortedTags.map((tag, index) => (
                   <DraggableTagItem
@@ -435,6 +481,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
                     tag={tag}
                     index={index}
                     moveTag={moveTag}
+                    tagSize={tagSize}
                   />
                 ))}
               </motion.div>
@@ -466,7 +513,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
             isDarkMode={isDarkMode}
           />
         </motion.div>
-      </div>
+      </motion.div>
     </DndProvider>
   );
 };
