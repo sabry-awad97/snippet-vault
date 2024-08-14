@@ -8,7 +8,9 @@
 )]
 
 use chrono::Local;
+use rodio::{Decoder, OutputStream, Sink};
 use serde::{Deserialize, Serialize};
+use std::io::Cursor;
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc, Mutex,
@@ -28,9 +30,19 @@ use ipc::commands;
 use prelude::AppResult;
 use state::init_state;
 
+// Include the sound file as bytes
+const NOTIFICATION_SOUND: &[u8] = include_bytes!("../assets/notification_sound.wav");
+
+#[derive(Clone, Serialize, Deserialize)]
+struct NotificationSettings {
+    sound_enabled: bool,
+    volume: f32,
+}
+
 #[derive(Serialize, Deserialize)]
 struct AppState {
     notification_count: AtomicUsize,
+    notification_settings: NotificationSettings,
 }
 
 #[derive(Clone)]
@@ -55,6 +67,10 @@ fn main() -> AppResult<()> {
 
     let app_state = Arc::new(Mutex::new(AppState {
         notification_count: AtomicUsize::new(0),
+        notification_settings: NotificationSettings {
+            sound_enabled: true,
+            volume: 0.7,
+        },
     }));
 
     let menu_items = vec![
@@ -79,6 +95,11 @@ fn main() -> AppResult<()> {
             title: "Show Stats".into(),
             handler: Arc::new(|app, state| show_stats(app, state)),
         }),
+        MenuItemType::Normal(MenuItem {
+            id: "change_notification_settings".into(),
+            title: "Toggle Notification Sound".into(),
+            handler: Arc::new(change_notification_settings),
+        }),
         MenuItemType::Separator,
         MenuItemType::Normal(MenuItem {
             id: "quit".into(),
@@ -100,7 +121,6 @@ fn main() -> AppResult<()> {
             _ => {}
         })
         .setup(|app| {
-            // Set the default tooltip here
             app.tray_handle()
                 .set_tooltip("Welcome to the Snippet Vault")
                 .expect("Failed to set default tooltip");
@@ -240,6 +260,11 @@ fn send_notification(app: &AppHandle, state: &mut AppState) {
         .notify(app)
         .unwrap();
 
+    // Play notification sound
+    if state.notification_settings.sound_enabled {
+        play_notification_sound(&state.notification_settings);
+    }
+
     // Reset the tray icon after 5 seconds
     let app_handle = app.clone();
     std::thread::spawn(move || {
@@ -253,8 +278,34 @@ fn send_notification(app: &AppHandle, state: &mut AppState) {
     });
 }
 
+fn play_notification_sound(settings: &NotificationSettings) {
+    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+    let sink = Sink::try_new(&stream_handle).unwrap();
+
+    let cursor = Cursor::new(NOTIFICATION_SOUND);
+    let source = Decoder::new(cursor).unwrap();
+
+    sink.set_volume(settings.volume);
+    sink.append(source);
+    sink.sleep_until_end();
+}
+
 fn show_stats(app: &AppHandle, state: &AppState) {
     let count = state.notification_count.load(Ordering::Relaxed);
     let stats = format!("Notifications sent: {}", count);
     app.tray_handle().set_tooltip(&stats).unwrap();
+}
+
+fn change_notification_settings(app: &AppHandle, state: &mut AppState) {
+    state.notification_settings.sound_enabled = !state.notification_settings.sound_enabled;
+
+    let status = if state.notification_settings.sound_enabled {
+        "enabled"
+    } else {
+        "disabled"
+    };
+
+    app.tray_handle()
+        .set_tooltip(&format!("Notification sound {}", status))
+        .unwrap();
 }
