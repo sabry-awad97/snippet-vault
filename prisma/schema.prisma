@@ -9,49 +9,125 @@ generator client {
 }
 
 model User {
-    id           String   @id @default(auto()) @map("_id") @db.ObjectId
-    name         String
-    email        String   @unique
-    passwordHash String
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+    id             String          @id @default(auto()) @map("_id") @db.ObjectId
+    name           String
+    email          String          @unique
+    emailVerified  Boolean         @default(false)
+    phone          String?
+    phoneVerified  Boolean         @default(false)
+    passwordHash   String
+    createdAt      DateTime        @default(now())
+    updatedAt      DateTime        @updatedAt
+    notifications  Notification[]
+    apiRateLimits  ApiRateLimit[]
+    snippetRatings SnippetRating[]
 
     @@map("users")
 }
 
 model Snippet {
-    id             String       @id @default(auto()) @map("_id") @db.ObjectId
-    createdAt      DateTime     @default(now())
-    updatedAt      DateTime     @updatedAt
+    id             String          @id @default(auto()) @map("_id") @db.ObjectId
+    createdAt      DateTime        @default(now())
+    updatedAt      DateTime        @updatedAt
     title          String
     description    String
     language       String
     code           String
-    tagIds         String[]     @db.ObjectId
-    tags           Tag[]        @relation("SnippetTags", fields: [tagIds], references: [id])
-    snippetStateId String       @unique @db.ObjectId
-    state          SnippetState @relation(fields: [snippetStateId], references: [id])
+    tagIds         String[]        @db.ObjectId
+    tags           Tag[]           @relation("SnippetTags", fields: [tagIds], references: [id])
+    snippetStateId String          @unique @db.ObjectId
+    state          SnippetState    @relation(fields: [snippetStateId], references: [id])
+    snippetRatings SnippetRating[]
+    tagUsages      TagUsage[]
+    metadata       Json?
 
     @@map("snippets")
+}
+
+model SnippetRating {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    snippetId String   @db.ObjectId
+    userId    String   @db.ObjectId
+    rating    Int // e.g., 1 to 5
+    createdAt DateTime @default(now())
+
+    snippet Snippet @relation(fields: [snippetId], references: [id])
+    user    User    @relation(fields: [userId], references: [id])
+
+    @@map("snippet_ratings")
 }
 
 model SnippetState {
     id         String   @id @default(auto()) @map("_id") @db.ObjectId
     isFavorite Boolean  @default(false)
     isDark     Boolean  @default(false)
-    Snippet    Snippet?
+    snippet    Snippet?
 
     @@map("states")
 }
 
 model Tag {
-    id         String    @id @default(auto()) @map("_id") @db.ObjectId
-    createdAt  DateTime  @default(now())
-    updatedAt  DateTime  @updatedAt
+    id         String     @id @default(auto()) @map("_id") @db.ObjectId
+    createdAt  DateTime   @default(now())
+    updatedAt  DateTime   @updatedAt
     name       String
     color      String?
-    snippetIds String[]  @db.ObjectId
-    snippets   Snippet[] @relation("SnippetTags", fields: [snippetIds], references: [id])
+    emoji      String?
+    count      Int        @default(0)
+    parentId   String?    @db.ObjectId
+    parent     Tag?       @relation("TagHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    children   Tag[]      @relation("TagHierarchy")
+    snippetIds String[]   @db.ObjectId
+    snippets   Snippet[]  @relation("SnippetTags", fields: [snippetIds], references: [id])
+    tagUsages  TagUsage[]
 
+    @@index([name])
     @@map("tags")
+}
+
+model TagUsage {
+    id        String @id @default(auto()) @map("_id") @db.ObjectId
+    tagId     String @db.ObjectId
+    snippetId String @db.ObjectId
+    count     Int    @default(0)
+
+    tag     Tag     @relation(fields: [tagId], references: [id])
+    snippet Snippet @relation(fields: [snippetId], references: [id])
+
+    @@map("tag_usages")
+}
+
+model ActivityLog {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    userId    String   @db.ObjectId
+    action    String
+    timestamp DateTime @default(now())
+    snippetId String?  @db.ObjectId
+
+    @@map("activity_logs")
+}
+
+model Notification {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    userId    String   @db.ObjectId
+    message   String
+    read      Boolean  @default(false)
+    createdAt DateTime @default(now())
+
+    user User @relation(fields: [userId], references: [id])
+
+    @@map("notifications")
+}
+
+model ApiRateLimit {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    userId    String   @db.ObjectId
+    endpoint  String
+    limit     Int
+    count     Int
+    lastReset DateTime @default(now())
+
+    user User @relation(fields: [userId], references: [id])
+
+    @@map("api_rate_limits")
 }
