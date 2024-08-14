@@ -8,7 +8,7 @@ interface TooltipProps {
   sideOffset?: number;
   className?: string;
   gradient?: boolean;
-  side?: 'top' | 'right' | 'bottom' | 'left'; // New prop for specifying the side
+  side?: 'top' | 'right' | 'bottom' | 'left';
 }
 
 export const Tooltip: FC<TooltipProps> = ({
@@ -18,7 +18,7 @@ export const Tooltip: FC<TooltipProps> = ({
   sideOffset = 5,
   className = '',
   gradient = true,
-  side = 'top', // Default value for side
+  side = 'top',
 }) => {
   const gradientClass = gradient
     ? 'bg-gradient-to-r from-purple-500 to-indigo-500'

@@ -1,13 +1,14 @@
 import { Tooltip } from '@/components/Common/Tooltip';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { MouseEventHandler } from 'react';
 
 interface TagActionButtonProps {
   icon: React.ElementType;
-  onClick: () => void;
+  onClick: MouseEventHandler<HTMLButtonElement>;
   isActive?: boolean;
   activeColor?: string;
-  tooltip: string;
+  tooltip?: string;
   className?: string;
 }
 
@@ -18,8 +19,8 @@ const TagActionButton: React.FC<TagActionButtonProps> = ({
   activeColor,
   tooltip,
   className,
-}) => (
-  <Tooltip content={tooltip}>
+}) => {
+  const button = (
     <Button
       onClick={onClick}
       size="sm"
@@ -32,7 +33,9 @@ const TagActionButton: React.FC<TagActionButtonProps> = ({
     >
       <Icon className="h-4 w-4" />
     </Button>
-  </Tooltip>
-);
+  );
+
+  return tooltip ? <Tooltip content={tooltip}>{button}</Tooltip> : button;
+};
 
 export default TagActionButton;

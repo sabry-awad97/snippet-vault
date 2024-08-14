@@ -6,15 +6,11 @@ interface TagsState {
   favoriteTagIds: string[];
   tagSize: number;
   tagView: 'list' | 'grid';
-  highlightedTag: string | null;
-  expandedTag: string | null;
   isTagEditFormDialogOpen: boolean;
   editingTag: Tag | null;
   toggleFavorite: (tagId: string) => void;
   setTagSize: (size: number) => void;
   setTagView: (view: 'list' | 'grid') => void;
-  setHighlightedTag: (tagId: string | null) => void;
-  setExpandedTag: (tagId: string | null) => void;
   setIsTagEditFormDialogOpen: (isOpen: boolean) => void;
   setEditingTag: (tag: Tag | null) => void;
 }
@@ -25,8 +21,6 @@ export const useTagsStore = create<TagsState>()(
       favoriteTagIds: [],
       tagSize: 100,
       tagView: 'list',
-      highlightedTag: null,
-      expandedTag: null,
       isTagEditFormDialogOpen: false,
       editingTag: null,
       toggleFavorite: tagId =>
@@ -41,8 +35,6 @@ export const useTagsStore = create<TagsState>()(
         }),
       setTagSize: size => set({ tagSize: size }),
       setTagView: view => set({ tagView: view }),
-      setHighlightedTag: tagId => set({ highlightedTag: tagId }),
-      setExpandedTag: tagId => set({ expandedTag: tagId }),
       setIsTagEditFormDialogOpen: isOpen =>
         set({ isTagEditFormDialogOpen: isOpen }),
       setEditingTag: tag => set({ editingTag: tag }),

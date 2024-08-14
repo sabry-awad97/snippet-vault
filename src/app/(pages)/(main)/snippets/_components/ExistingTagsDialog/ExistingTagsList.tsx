@@ -1,30 +1,9 @@
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Slider } from '@/components/ui/slider';
 import useCurrentTheme from '@/hooks/useCurrentTheme';
 import { useDeleteTag, useFetchTags, useUpdateTag } from '@/hooks/useTags';
 import { Tag } from '@/lib/schemas/tag';
-import { cn } from '@/lib/utils';
-import { getRandomEmoji } from '@/lib/utils/emojiHelper';
-import { saveAs } from 'file-saver';
 import { AnimatePresence, motion, useSpring } from 'framer-motion';
-import {
-  Download,
-  Edit2,
-  Grid,
-  GripVertical,
-  List,
-  Moon,
-  RefreshCw,
-  Shuffle,
-  Star,
-  Sun,
-  TagIcon,
-  Trash2,
-  Upload,
-  Zap,
-} from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { DndProvider, DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { toast } from 'sonner';
 import TagUpdateFormDialog from '../TagFormDialog';
@@ -32,150 +11,106 @@ import TagActionButton from './TagActionButton';
 import TagListSkeleton from './TagListSkeleton';
 import { useTagsStore } from './useTagsStore';
 
-interface DraggableTagItemProps {
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Slider } from '@/components/ui/slider';
+import { cn } from '@/lib/utils';
+import { getRandomEmoji } from '@/lib/utils/emojiHelper';
+import saveAs from 'file-saver';
+import {
+  Check,
+  Download,
+  Edit2,
+  Grid,
+  List,
+  Moon,
+  RefreshCw,
+  Shuffle,
+  Star,
+  Sun,
+  Trash2,
+  Upload,
+  X,
+  Zap,
+} from 'lucide-react';
+
+const MotionCard = motion(Card);
+
+interface TagItemProps {
   tag: Tag;
   index: number;
   moveTag: (dragIndex: number, hoverIndex: number) => void;
   tagSize: number;
+  isSelected: boolean;
+  onSelect: (tagId: string) => void;
+  selectionMode: boolean;
 }
 
-const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
+interface DragItem {
+  index: number;
+  id: string;
+}
+
+const TagItem: React.FC<TagItemProps> = ({
   tag,
   index,
   moveTag,
   tagSize,
+  isSelected,
+  onSelect,
+  selectionMode,
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [currentEmoji, setCurrentEmoji] = useState(getRandomEmoji());
-  const [isHovering, setIsHovering] = useState(false);
-  const [particlesVisible, setParticlesVisible] = useState(false);
+  const [currentEmoji, setCurrentEmoji] = useState<string>(getRandomEmoji());
+  const [isHovering, setIsHovering] = useState<boolean>(false);
+  const [particlesVisible, setParticlesVisible] = useState<boolean>(false);
+  const { theme } = useCurrentTheme();
+  const isDarkMode = theme === 'dark';
+  const {
+    favoriteTagIds,
+    tagView, // 'list' or 'grid'
+    toggleFavorite,
+    setIsTagEditFormDialogOpen,
+    setEditingTag,
+  } = useTagsStore();
 
-  const [{ isDragging }, drag, preview] = useDrag({
+  const deleteTagMutation = useDeleteTag();
+  const ref = useRef<HTMLDivElement>(null);
+
+  const [{ isDragging }, drag, preview] = useDrag<
+    DragItem,
+    void,
+    { isDragging: boolean }
+  >({
     type: 'TAG',
     item: { id: tag.id, index },
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-    }),
+    collect: monitor => ({ isDragging: monitor.isDragging() }),
   });
 
-  const [, drop] = useDrop<
-    { id: string; index: number },
-    void,
-    { handlerId: string | symbol | null }
-  >({
+  const [, drop] = useDrop<DragItem, void, {}>({
     accept: 'TAG',
-    hover(item, monitor) {
-      if (!ref.current) {
-        return;
-      }
+    hover(item: DragItem, monitor: DropTargetMonitor) {
+      if (!ref.current) return;
       const dragIndex = item.index;
       const hoverIndex = index;
-      if (dragIndex === hoverIndex) {
-        return;
-      }
+      if (dragIndex === hoverIndex) return;
+
       const hoverBoundingRect = ref.current?.getBoundingClientRect();
       const hoverMiddleY =
         (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
       const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-        return;
-      }
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-        return;
-      }
+
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
       moveTag(dragIndex, hoverIndex);
       item.index = hoverIndex;
     },
   });
 
-  const {
-    favoriteTagIds,
-    tagView,
-    highlightedTag,
-    toggleFavorite,
-    setHighlightedTag,
-    setIsTagEditFormDialogOpen,
-    setEditingTag,
-  } = useTagsStore();
-
-  const { theme } = useCurrentTheme();
-  const isDarkMode = theme === 'dark';
-
-  useEffect(() => {
-    if (highlightedTag === tag.id) {
-      setParticlesVisible(true);
-      const timer = setTimeout(() => setParticlesVisible(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [highlightedTag, tag.id]);
-
-  const tagItemVariants = {
-    hidden: { opacity: 0, scale: 0.8, y: 20 },
-    visible: { opacity: 1, scale: 1, y: 0 },
-    hover: {
-      scale: 1.05,
-      boxShadow: '0 8px 32px rgba(147, 51, 234, 0.3)',
-      transition: { duration: 0.3 },
-    },
-  };
-
-  const deleteTagMutation = useDeleteTag();
-
-  const handleDeleteTag = async (tagId: string) => {
-    try {
-      await deleteTagMutation.mutateAsync(tagId);
-      toast.success('Tag Deleted', {
-        description: 'Your cosmic tag has been successfully deleted.',
-        icon: <TagIcon className="h-5 w-5 text-red-500" />,
-      });
-    } catch (error) {
-      console.error('Delete Tag Error:', error);
-      toast.error('Error', {
-        description: 'Failed to delete the cosmic tag.',
-      });
-    }
-  };
-
   drag(drop(ref));
-
-  const renderParticles = () => {
-    return (
-      <AnimatePresence>
-        {particlesVisible && (
-          <motion.div
-            className="absolute inset-0 overflow-hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute h-2 w-2 rounded-full bg-yellow-300"
-                initial={{
-                  x: '50%',
-                  y: '50%',
-                  scale: 0,
-                }}
-                animate={{
-                  x: `${Math.random() * 100}%`,
-                  y: `${Math.random() * 100}%`,
-                  scale: Math.random() * 1.5 + 0.5,
-                  opacity: 0,
-                }}
-                transition={{
-                  duration: 2,
-                  ease: 'easeOut',
-                  delay: Math.random() * 0.2,
-                }}
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    );
-  };
 
   const springConfig = { stiffness: 300, damping: 30 };
   const scale = useSpring(1, springConfig);
@@ -190,142 +125,256 @@ const DraggableTagItem: React.FC<DraggableTagItemProps> = ({
     emojiSize.set(tagSize / 3);
   }, [tagSize, scale, opacity, fontSize, emojiSize]);
 
+  const handleDeleteTag = async () => {
+    try {
+      await deleteTagMutation.mutateAsync(tag.id);
+      toast.success('Tag Deleted', {
+        description: 'Your cosmic tag has been successfully deleted.',
+        icon: <Trash2 className="h-5 w-5 text-red-500" />,
+      });
+    } catch (error) {
+      console.error('Delete Tag Error:', error);
+      toast.error('Error', { description: 'Failed to delete the cosmic tag.' });
+    }
+  };
+
+  const cardVariants = {
+    unselected: {
+      scale: 1,
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      transition: { duration: 0.3 },
+    },
+    selected: {
+      scale: 1.05,
+      boxShadow: `0 10px 20px ${tag.color}66`,
+      transition: { duration: 0.3 },
+    },
+    hover: {
+      scale: 1.02,
+      boxShadow: '0 8px 15px rgba(0, 0, 0, 0.2)',
+    },
+  };
+
+  const checkmarkVariants = {
+    hidden: { scale: 0, opacity: 0 },
+    visible: { scale: 1, opacity: 1, transition: { duration: 0.3 } },
+  };
+
+  const emojiVariants = {
+    hover: { scale: 1.1, rotate: 360, transition: { duration: 0.5 } },
+  };
+
+  const actionButtonVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 20 },
+  };
+
+  const particleVariants = {
+    hidden: { opacity: 0, scale: 0 },
+    visible: (i: number) => ({
+      opacity: [0, 1, 0],
+      scale: [0, 1.5, 0],
+      x: `${(Math.random() - 0.5) * 100}%`,
+      y: `${(Math.random() - 0.5) * 100}%`,
+      transition: { duration: 1, ease: 'easeOut', delay: i * 0.02 },
+    }),
+  };
+
+  const handleSelect = () => {
+    onSelect(tag.id);
+    setParticlesVisible(true);
+    setTimeout(() => setParticlesVisible(false), 1000);
+  };
+
   return (
-    <motion.div
+    <MotionCard
       ref={ref}
       layout
-      variants={tagItemVariants}
+      variants={cardVariants}
       initial="hidden"
       animate="visible"
+      exit="exit"
       whileHover="hover"
       onHoverStart={() => setIsHovering(true)}
       onHoverEnd={() => setIsHovering(false)}
       style={{
-        opacity: isDragging ? 0.5 : opacity,
-        scale,
-        height: tagView === 'list' ? `${tagSize}px` : 'auto',
-        width: tagView === 'grid' ? `${tagSize * 2}px` : 'auto',
-        background: `linear-gradient(135deg, ${tag.color}33, ${tag.color}11)`,
+        background: `linear-gradient(135deg, ${tag.color}22, ${tag.color}11, ${tag.color}05)`,
+        borderColor: isSelected ? tag.color : 'transparent',
+        cursor: 'default',
       }}
       className={cn(
-        'group relative mb-4 overflow-hidden rounded-xl border backdrop-blur-lg transition-all duration-300',
-        isDarkMode ? 'border-purple-700' : 'border-purple-300',
-        tagView === 'list'
-          ? 'flex items-center justify-between'
-          : 'flex flex-col items-center space-y-2',
-        isDarkMode ? 'text-purple-200' : 'text-purple-900',
+        'group relative mb-4 overflow-hidden transition-all duration-300',
+        'rounded-lg border-2 shadow-lg hover:shadow-xl',
+        'flex items-center justify-between p-3',
+        isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800',
       )}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-purple-900 opacity-0 transition-opacity duration-300 group-hover:opacity-15" />
-
-      {renderParticles()}
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black opacity-5" />
 
       <div
         className={cn(
-          'flex w-full items-center',
-          tagView === 'grid' ? 'flex-col space-y-2' : 'space-x-4',
+          'flex h-full w-full',
+          tagView === 'list'
+            ? 'flex-row items-center justify-between p-3'
+            : 'flex-col items-center justify-center p-4',
         )}
       >
-        <motion.div
-          className="relative flex items-center justify-center rounded-full shadow-lg"
-          style={{
-            backgroundColor: tag.color,
-            width: emojiSize,
-            height: emojiSize,
-          }}
-          whileHover={{ scale: 1.1, rotate: 360 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.span style={{ fontSize: emojiSize }}>
-            {currentEmoji}
-          </motion.span>
-          <motion.button
-            className="absolute -bottom-1 -right-1 rounded-full bg-white p-1 shadow-md"
-            whileHover={{ scale: 1.2 }}
-            onClick={() => setCurrentEmoji(getRandomEmoji())}
-            title="Change emoji"
-          >
-            <RefreshCw className="h-4 w-4 text-purple-500" />
-          </motion.button>
-        </motion.div>
-        <motion.div
+        <div
           className={cn(
-            'truncate font-semibold',
-            tagView === 'grid' ? 'w-full text-center' : 'flex-1',
+            'flex items-center',
+            tagView === 'list' ? 'space-x-4' : 'flex-col space-y-3',
           )}
-          style={{ fontSize }}
         >
-          {tag.name}
-        </motion.div>
-      </div>
+          <div className="relative">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={handleSelect}
+              className="absolute -left-2 -top-2 z-10"
+            />
+            <motion.div
+              className="relative"
+              variants={emojiVariants}
+              whileHover="hover"
+            >
+              <Avatar
+                className="relative"
+                style={{
+                  backgroundColor: tag.color,
+                  width: emojiSize.get() * 1.5,
+                  height: emojiSize.get() * 1.5,
+                }}
+              >
+                <AvatarFallback style={{ fontSize: fontSize.get() * 1.5 }}>
+                  {currentEmoji}
+                </AvatarFallback>
+              </Avatar>
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{ boxShadow: `0 0 20px ${tag.color}66` }}
+                animate={{ scale: [1, 1.05, 1], opacity: [0.5, 0.8, 0.5] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              />
+            </motion.div>
+            <motion.button
+              className="absolute -bottom-1 -right-1 z-10 rounded-full bg-white p-1.5 shadow-md"
+              whileHover={{
+                scale: 1.2,
+                boxShadow: '0 0 15px rgba(147, 51, 234, 0.3)',
+              }}
+              onClick={e => {
+                e.stopPropagation();
+                setCurrentEmoji(getRandomEmoji());
+              }}
+              title="Change emoji"
+            >
+              <RefreshCw className="h-3 w-3 text-purple-500" />
+            </motion.button>
+          </div>
 
-      <AnimatePresence>
-        {isHovering && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            className={cn(
+              'truncate font-semibold',
+              tagView === 'grid' ? 'text-center' : '',
+            )}
+            style={{ fontSize: fontSize.get() * 1.2 }}
+          >
+            {tag.name}
+          </motion.div>
+        </div>
+
+        <AnimatePresence>
+          <motion.div
+            variants={actionButtonVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className={cn(
               'flex',
-              tagView === 'grid' ? 'mt-2 justify-center' : 'space-x-2',
+              tagView === 'list'
+                ? 'space-x-2'
+                : 'mt-4 justify-center space-x-4',
             )}
-            style={{ fontSize: fontSize.get() * 0.75 }}
           >
             <TagActionButton
               icon={Star}
-              onClick={() => toggleFavorite(tag.id)}
+              onClick={e => {
+                e.stopPropagation();
+                toggleFavorite(tag.id);
+              }}
               isActive={favoriteTagIds.includes(tag.id)}
               activeColor="bg-yellow-500"
-              tooltip={
-                favoriteTagIds.includes(tag.id)
-                  ? 'Remove from Favorites'
-                  : 'Add to Favorites'
-              }
             />
             <TagActionButton
               icon={Edit2}
-              onClick={() => {
+              onClick={e => {
+                e.stopPropagation();
                 setEditingTag(tag);
                 setIsTagEditFormDialogOpen(true);
               }}
-              tooltip="Edit Tag"
             />
             <TagActionButton
               icon={Trash2}
-              onClick={() => handleDeleteTag(tag.id)}
-              tooltip="Delete Tag"
+              onClick={e => {
+                e.stopPropagation();
+                handleDeleteTag();
+              }}
               className="text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
             />
-            <TagActionButton
-              icon={isDarkMode ? Sun : Moon}
-              onClick={() => setHighlightedTag(tag.id)}
-              tooltip="Highlight Tag"
-              className="text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-900"
-            />
-            <motion.div
-              className="z-10 flex cursor-move items-center justify-center"
-              whileHover={{ scale: 1.1 }}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <AnimatePresence>
+        {isSelected && (
+          <motion.div
+            className="absolute right-2 top-2"
+            variants={checkmarkVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+          >
+            <div
+              className="flex h-6 w-6 items-center justify-center rounded-full"
+              style={{ backgroundColor: tag.color }}
             >
-              <GripVertical className="h-5 w-5" />
-            </motion.div>
+              <Zap className="h-4 w-4 text-white" />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {highlightedTag === tag.id && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0, rotate: -180 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            exit={{ opacity: 0, scale: 0, rotate: 180 }}
-            transition={{ duration: 0.5 }}
-            className="absolute -right-3 -top-3"
-          >
-            <Zap className="drop-shadow-glow h-12 w-12 text-yellow-300" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {particlesVisible && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute h-2 w-2 rounded-full"
+              style={{ backgroundColor: tag.color }}
+              custom={i}
+              variants={particleVariants}
+              initial="hidden"
+              animate="visible"
+            />
+          ))}
+        </div>
+      )}
+
+      <motion.div
+        className="absolute inset-0 rounded-lg"
+        initial={false}
+        animate={{
+          boxShadow: isSelected
+            ? `0 0 0 2px ${tag.color}, 0 0 20px ${tag.color}66`
+            : 'none',
+        }}
+        transition={{ duration: 0.3 }}
+      />
+    </MotionCard>
   );
 };
 
@@ -340,8 +389,13 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme, setTheme } = useCurrentTheme();
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectionAnimationComplete, setSelectionAnimationComplete] =
+    useState(true);
   const { data: existingTags = [], isLoading, error } = useFetchTags();
   const updateTagMutation = useUpdateTag();
+  const deleteTagMutation = useDeleteTag();
   const {
     tagSize,
     tagView,
@@ -351,13 +405,12 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
     setTagView,
     setIsTagEditFormDialogOpen,
     setEditingTag,
+    toggleFavorite,
   } = useTagsStore();
 
   const isDarkMode = theme === 'dark';
 
-  const toggleDarkMode = () => {
-    setTheme(isDarkMode ? 'light' : 'dark');
-  };
+  const toggleDarkMode = () => setTheme(isDarkMode ? 'light' : 'dark');
 
   const filtered = existingTags.filter(tag =>
     tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -405,7 +458,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = async e => {
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
           const importedTags = JSON.parse(e.target?.result as string);
           console.log('Imported tags:', importedTags);
@@ -422,6 +475,62 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
       };
       reader.readAsText(file);
     }
+  };
+
+  const handleBatchDelete = async () => {
+    try {
+      await Promise.all(
+        selectedTags.map(id => deleteTagMutation.mutateAsync(id)),
+      );
+      toast.success('Tags Deleted', {
+        description: `${selectedTags.length} cosmic tags have been successfully deleted.`,
+        icon: <Trash2 className="h-5 w-5 text-red-500" />,
+      });
+      setSelectedTags([]);
+    } catch (error) {
+      console.error('Batch Delete Error:', error);
+      toast.error('Error', {
+        description: 'Failed to delete the selected cosmic tags.',
+      });
+    }
+  };
+
+  const handleBatchFavorite = () => {
+    selectedTags.forEach(id => toggleFavorite(id));
+    toast.success('Tags Updated', {
+      description: `${selectedTags.length} cosmic tags have been updated.`,
+      icon: <Star className="h-5 w-5 text-yellow-500" />,
+    });
+    setSelectedTags([]);
+  };
+
+  const handleSelectTag = (tagId: string) => {
+    if (!selectionMode) {
+      setSelectionMode(true);
+      setSelectionAnimationComplete(false);
+    }
+    setSelectedTags(prev =>
+      prev.includes(tagId) ? prev.filter(id => id !== tagId) : [...prev, tagId],
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedTags.length === sortedTags.length) {
+      setSelectedTags([]);
+      setSelectionMode(false);
+    } else {
+      setSelectedTags(sortedTags.map(tag => tag.id));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedTags([]);
+    setSelectionMode(false);
+  };
+
+  const selectionOverlayVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1 },
   };
 
   return (
@@ -530,17 +639,83 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
                 }}
               >
                 {sortedTags.map((tag, index) => (
-                  <DraggableTagItem
+                  <TagItem
                     key={tag.id}
                     tag={tag}
                     index={index}
                     moveTag={moveTag}
                     tagSize={tagSize}
+                    isSelected={selectedTags.includes(tag.id)}
+                    onSelect={handleSelectTag}
+                    selectionMode={selectionMode}
                   />
                 ))}
               </motion.div>
             )}
           </ScrollArea>
+
+          <AnimatePresence>
+            {selectionMode && (
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={selectionOverlayVariants}
+                className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 transform"
+                onAnimationComplete={() => setSelectionAnimationComplete(true)}
+              >
+                <div
+                  className={cn(
+                    'flex items-center space-x-4 rounded-full px-6 py-3 shadow-lg',
+                    isDarkMode
+                      ? 'bg-purple-900 text-purple-100'
+                      : 'bg-purple-100 text-purple-900',
+                  )}
+                >
+                  <span className="text-sm font-medium">
+                    {selectedTags.length} selected
+                  </span>
+                  <TagActionButton
+                    icon={Check}
+                    onClick={handleSelectAll}
+                    tooltip={
+                      selectedTags.length === sortedTags.length
+                        ? 'Deselect All'
+                        : 'Select All'
+                    }
+                    className={cn(
+                      'transition-colors',
+                      selectedTags.length === sortedTags.length
+                        ? 'bg-green-500 text-white'
+                        : isDarkMode
+                          ? 'bg-purple-700 text-purple-100'
+                          : 'bg-purple-300 text-purple-900',
+                    )}
+                  />
+                  <TagActionButton
+                    icon={Star}
+                    onClick={handleBatchFavorite}
+                    tooltip="Favorite Selected"
+                    className="text-yellow-500"
+                  />
+                  <TagActionButton
+                    icon={Trash2}
+                    onClick={handleBatchDelete}
+                    tooltip="Delete Selected"
+                    className="text-red-500"
+                  />
+                  <TagActionButton
+                    icon={X}
+                    onClick={handleClearSelection}
+                    tooltip="Clear Selection"
+                    className={
+                      isDarkMode ? 'text-purple-300' : 'text-purple-700'
+                    }
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <TagUpdateFormDialog
             isOpen={isTagEditFormDialogOpen}

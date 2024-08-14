@@ -61,7 +61,7 @@ const TagListDialog: React.FC<TagDialogProps> = ({
         <Dialog open={isOpen} onOpenChange={onClose}>
           <DialogContent
             className={cn(
-              'overflow-hidden rounded-lg p-0 shadow-lg sm:max-w-[700px]',
+              'overflow-hidden rounded-lg p-0 shadow-lg sm:max-w-[900px]',
               isDarkMode
                 ? 'bg-gradient-to-br from-gray-900 via-purple-950 to-indigo-950'
                 : 'bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50',
@@ -192,11 +192,7 @@ const TagListDialog: React.FC<TagDialogProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <ExistingTagsList
-                  isDarkMode={isDarkMode}
-                  searchTerm={searchTerm}
-                  sortBy={sortBy}
-                />
+                <ExistingTagsList searchTerm={searchTerm} sortBy={sortBy} />
               </motion.div>
 
               <DialogFooter>
