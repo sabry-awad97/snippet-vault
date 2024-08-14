@@ -1,13 +1,17 @@
+// Prevents additional console window on Windows in release
+// The following attribute conditionally applies settings based on the compilation environment.
+// Specifically, when the code is not being compiled in debug mode and is being compiled on a Windows OS,
+// it configures the program to use the Windows subsystem for GUI applications.
+#![cfg_attr(
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
+)]
+
 use chrono::Local;
-use rodio::{Decoder, OutputStream, Sink};
 use serde::{Deserialize, Serialize};
-use std::{
-    fs::File,
-    io::BufReader,
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc, Mutex,
-    },
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc, Mutex,
 };
 use tauri::{
     AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
@@ -236,10 +240,6 @@ fn send_notification(app: &AppHandle, state: &mut AppState) {
         .notify(app)
         .unwrap();
 
-    // Play the notification sound
-    let sound_file_path = "./assets/notification_sound.wav";
-    play_sound(sound_file_path.to_owned());
-
     // Reset the tray icon after 5 seconds
     let app_handle = app.clone();
     std::thread::spawn(move || {
@@ -257,16 +257,4 @@ fn show_stats(app: &AppHandle, state: &AppState) {
     let count = state.notification_count.load(Ordering::Relaxed);
     let stats = format!("Notifications sent: {}", count);
     app.tray_handle().set_tooltip(&stats).unwrap();
-}
-
-fn play_sound(path: String) {
-    std::thread::spawn(move || {
-        // Get a output stream handle to the default physical sound device
-        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-        let sink = Sink::try_new(&stream_handle).unwrap();
-        let file = BufReader::new(File::open(path).unwrap());
-        let source = Decoder::new(file).unwrap();
-        sink.append(source);
-        sink.sleep_until_end();
-    });
 }
