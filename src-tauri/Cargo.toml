@@ -26,7 +26,12 @@ log = "0.4.22"
 prisma = { path = "../prisma" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tauri = { version = "1.7.0", features = ["windows7-compat"] }
+tauri = { version = "1.7.0", features = [ "notification-all",
+    "icon-png",
+    "system-tray",
+    "notification",
+    "windows7-compat",
+] }
 thiserror = "1.0.62"
 tokio = { version = "1.38.0", features = ["full"] }
 
@@ -34,4 +39,4 @@ tokio = { version = "1.38.0", features = ["full"] }
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
-custom-protocol = [ "tauri/custom-protocol" ]
+custom-protocol = ["tauri/custom-protocol"]
