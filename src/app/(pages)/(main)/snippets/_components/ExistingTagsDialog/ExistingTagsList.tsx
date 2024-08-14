@@ -5,8 +5,10 @@ import { useDeleteTag, useFetchTags, useUpdateTag } from '@/hooks/useTags';
 import { Tag } from '@/lib/schemas/tag';
 import { cn } from '@/lib/utils';
 import { getRandomEmoji } from '@/lib/utils/emojiHelper';
+import { saveAs } from 'file-saver';
 import { AnimatePresence, motion, useSpring } from 'framer-motion';
 import {
+  Download,
   Edit2,
   Grid,
   GripVertical,
@@ -18,6 +20,7 @@ import {
   Sun,
   TagIcon,
   Trash2,
+  Upload,
   Zap,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -335,6 +338,7 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
   searchTerm,
   sortBy,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { theme, setTheme } = useCurrentTheme();
   const { data: existingTags = [], isLoading, error } = useFetchTags();
   const updateTagMutation = useUpdateTag();
@@ -386,6 +390,39 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
     backgroundOpacity.set(tagSize / 300);
     borderRadius.set(tagSize / 10);
   }, [tagSize, backgroundOpacity, borderRadius]);
+
+  const exportTags = () => {
+    const tagsJson = JSON.stringify(sortedTags, null, 2);
+    const blob = new Blob([tagsJson], { type: 'application/json' });
+    saveAs(blob, 'cosmic-tags-export.json');
+    toast.success('Tags Exported', {
+      description: 'Your cosmic tags have been successfully exported.',
+      icon: <Download className="h-5 w-5 text-green-500" />,
+    });
+  };
+
+  const importTags = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async e => {
+        try {
+          const importedTags = JSON.parse(e.target?.result as string);
+          console.log('Imported tags:', importedTags);
+          toast.success('Tags Imported', {
+            description: 'Your cosmic tags have been successfully imported.',
+            icon: <Upload className="h-5 w-5 text-blue-500" />,
+          });
+        } catch (error) {
+          console.error('Import error:', error);
+          toast.error('Import Failed', {
+            description: 'Failed to import tags. Please check the file format.',
+          });
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -440,6 +477,23 @@ const ExistingTagsList: React.FC<ExistingTagsListProps> = ({
                   handleValueChange(newTags);
                 }}
                 tooltip="Shuffle Tags"
+              />
+              <TagActionButton
+                icon={Download}
+                onClick={exportTags}
+                tooltip="Export Tags"
+              />
+              <TagActionButton
+                icon={Upload}
+                onClick={() => fileInputRef.current?.click()}
+                tooltip="Import Tags"
+              />
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept=".json"
+                onChange={importTags}
               />
             </div>
           </div>

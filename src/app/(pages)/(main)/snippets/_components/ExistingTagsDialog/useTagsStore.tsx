@@ -1,6 +1,6 @@
 import { Tag } from '@/lib/schemas/tag';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface TagsState {
   favoriteTagIds: string[];
@@ -49,7 +49,7 @@ export const useTagsStore = create<TagsState>()(
     }),
     {
       name: 'tags-storage',
-      getStorage: () => localStorage,
+      storage: createJSONStorage(() => localStorage),
     },
   ),
 );
