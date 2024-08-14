@@ -24,10 +24,13 @@ futures = "0.3.30"
 jsonwebtoken = "9.3.0"
 log = "0.4.22"
 prisma = { path = "../prisma" }
+rodio = "0.19.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tauri = { version = "1.7.0", features = [ "notification-all",
+tauri = { version = "1.7.0", features = [ "shell-all",
+    "notification-all",
     "icon-png",
+    "shell-open-api",
     "system-tray",
     "notification",
     "windows7-compat",

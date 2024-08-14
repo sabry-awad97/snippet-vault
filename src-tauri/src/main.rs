@@ -1,8 +1,13 @@
 use chrono::Local;
+use rodio::{Decoder, OutputStream, Sink};
 use serde::{Deserialize, Serialize};
-use std::sync::{
-    atomic::{AtomicUsize, Ordering},
-    Arc, Mutex,
+use std::{
+    fs::File,
+    io::BufReader,
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc, Mutex,
+    },
 };
 use tauri::{
     AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
@@ -216,12 +221,14 @@ fn show_time(app: &AppHandle) {
 fn send_notification(app: &AppHandle, state: &mut AppState) {
     let count = state.notification_count.fetch_add(1, Ordering::Relaxed) + 1;
 
+    // Update the system tray icon
     app.tray_handle()
         .set_icon(tauri::Icon::Raw(
             include_bytes!("../icons/icon_notification.png").to_vec(),
         ))
         .unwrap();
 
+    // Create and show the notification
     tauri::api::notification::Notification::new(app.config().tauri.bundle.identifier.clone())
         .title("New Notification")
         .body(format!("This is test notification #{}", count))
@@ -229,7 +236,11 @@ fn send_notification(app: &AppHandle, state: &mut AppState) {
         .notify(app)
         .unwrap();
 
-    // Reset icon after 5 seconds
+    // Play the notification sound
+    let sound_file_path = "./assets/notification_sound.wav";
+    play_sound(sound_file_path.to_owned());
+
+    // Reset the tray icon after 5 seconds
     let app_handle = app.clone();
     std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_secs(5));
@@ -246,4 +257,16 @@ fn show_stats(app: &AppHandle, state: &AppState) {
     let count = state.notification_count.load(Ordering::Relaxed);
     let stats = format!("Notifications sent: {}", count);
     app.tray_handle().set_tooltip(&stats).unwrap();
+}
+
+fn play_sound(path: String) {
+    std::thread::spawn(move || {
+        // Get a output stream handle to the default physical sound device
+        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+        let sink = Sink::try_new(&stream_handle).unwrap();
+        let file = BufReader::new(File::open(path).unwrap());
+        let source = Decoder::new(file).unwrap();
+        sink.append(source);
+        sink.sleep_until_end();
+    });
 }

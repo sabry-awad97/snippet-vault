@@ -15,6 +15,9 @@
       "all": false,
       "notification": {
         "all": true
+      },
+      "shell": {
+        "all": true
       }
     },
     "bundle": {
@@ -25,7 +28,7 @@
         "depends": []
       },
       "externalBin": [],
-      "icon": ["icons/icon_default.png"],
+      "icon": ["icons/icon_default.png", "icons/icon.ico"],
       "identifier": "com.snippet-vault.dev",
       "longDescription": "",
       "macOS": {
